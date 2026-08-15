@@ -4,12 +4,13 @@ import styles from './TendencyTooltip.module.css'
 
 const TOOLTIP_WIDTH = 340
 const GAP = 10 // px between trigger and tooltip
+const TOOLTIP_MAX_HEIGHT = 480
 
 /**
  * Find the tier whose range contains `value`.
  * If no exact match, returns the nearest tier by boundary distance.
  */
-function findTier(tiers, value) {
+function findActiveTier(tiers, value) {
   if (!tiers?.length) return null
 
   // Exact range match
@@ -53,8 +54,8 @@ export default function TendencyTooltip({ guide, value, children }) {
       x = rect.left - TOOLTIP_WIDTH - GAP
     }
 
-    // Keep tooltip within viewport vertically (rough estimate: 250px max height)
-    y = Math.min(y, window.innerHeight - 260)
+    // Keep tooltip within viewport vertically
+    y = Math.min(y, window.innerHeight - TOOLTIP_MAX_HEIGHT - 8)
     y = Math.max(y, 8)
 
     setPos({ x, y })
@@ -72,7 +73,7 @@ export default function TendencyTooltip({ guide, value, children }) {
     return <span>{children}</span>
   }
 
-  const tier = findTier(guide.tiers, value)
+  const activeTier = findActiveTier(guide.tiers, value)
 
   return (
     <>
@@ -83,7 +84,7 @@ export default function TendencyTooltip({ guide, value, children }) {
       {pos && createPortal(
         <div
           className={styles.popup}
-          style={{ left: pos.x, top: pos.y, width: TOOLTIP_WIDTH }}
+          style={{ left: pos.x, top: pos.y, width: TOOLTIP_WIDTH, maxHeight: TOOLTIP_MAX_HEIGHT }}
           onMouseEnter={keepOpen}
           onMouseLeave={hide}
         >
@@ -91,10 +92,22 @@ export default function TendencyTooltip({ guide, value, children }) {
             <p className={styles.definition}>{guide.definition}</p>
           )}
 
-          {tier && (
-            <div className={styles.tier}>
-              <span className={styles.tierRange}>{formatTierRange(tier.range)}</span>
-              <span className={styles.tierLabel}>{tier.label}</span>
+          {guide.tiers?.length > 0 && (
+            <div className={styles.tierList}>
+              <div className={styles.tierListLabel}>Scale</div>
+              {guide.tiers.map((t, i) => {
+                const isActive = activeTier === t
+                return (
+                  <div
+                    key={i}
+                    className={`${styles.tierRow}${isActive ? ' ' + styles.tierRowActive : ''}`}
+                  >
+                    <span className={styles.tierRange}>{formatTierRange(t.range)}</span>
+                    <span className={styles.tierLabel}>{t.label}</span>
+                    {isActive && <span className={styles.tierActiveDot} />}
+                  </div>
+                )
+              })}
             </div>
           )}
 

@@ -11,24 +11,51 @@
   padding: 12px 14px;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6), 0 2px 8px rgba(0, 0, 0, 0.4);
   pointer-events: auto;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
 }
 
 .definition {
   font-size: 12px;
   line-height: 1.55;
   color: #6e728e;
-  margin: 0 0 10px;
+  margin: 0;
 }
 
-.tier {
+/* Full tier scale list */
+.tierList {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.tierListLabel {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+  color: #3a3e5c;
+  margin-bottom: 4px;
+}
+
+.tierRow {
   display: flex;
   align-items: baseline;
   gap: 8px;
-  padding: 7px 10px;
-  background: rgba(77, 166, 255, 0.07);
-  border: 1px solid rgba(77, 166, 255, 0.15);
-  border-radius: 6px;
-  margin-bottom: 10px;
+  padding: 5px 8px;
+  border-radius: 5px;
+  position: relative;
+}
+
+.tierRowActive {
+  background: rgba(77, 166, 255, 0.09);
+  border: 1px solid rgba(77, 166, 255, 0.20);
+}
+
+.tierRow:not(.tierRowActive) {
+  border: 1px solid transparent;
 }
 
 .tierRange {
@@ -37,6 +64,11 @@
   font-variant-numeric: tabular-nums;
   color: #4da6ff;
   flex-shrink: 0;
+  min-width: 42px;
+}
+
+.tierRow:not(.tierRowActive) .tierRange {
+  color: #3a4060;
 }
 
 .tierLabel {
@@ -45,9 +77,26 @@
   line-height: 1.4;
 }
 
+.tierRow:not(.tierRowActive) .tierLabel {
+  color: #4a4e6e;
+}
+
+.tierActiveDot {
+  display: inline-block;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: #4da6ff;
+  flex-shrink: 0;
+  margin-left: auto;
+  align-self: center;
+}
+
 .meta {
   display: flex;
   gap: 16px;
+  padding-top: 2px;
+  border-top: 1px solid #1a1d38;
 }
 
 .metaItem {
