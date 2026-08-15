@@ -122,7 +122,7 @@
       "dynamic_dropdown": null
     },
     "Jump Shooting:Spot Up Shot Mid-Range": {
-      "value": 34,
+      "value": 23,
       "type": "bitfield",
       "group": "Jump Shooting",
       "length": null,
@@ -136,7 +136,7 @@
       "dynamic_dropdown": null
     },
     "Jump Shooting:Spot Up Shot Three": {
-      "value": 15,
+      "value": 56,
       "type": "bitfield",
       "group": "Jump Shooting",
       "length": null,
@@ -304,7 +304,7 @@
       "dynamic_dropdown": null
     },
     "Driving:Spot Up Drive": {
-      "value": 35,
+      "value": 24,
       "type": "bitfield",
       "group": "Driving",
       "length": null,
@@ -479,28 +479,28 @@
       "dynamic_dropdown": null
     },
     "Freelance:Iso vs. Elite Defender": {
-      "value": 17,
+      "value": 43,
       "type": "bitfield",
       "group": "Freelance",
       "length": null,
       "dynamic_dropdown": null
     },
     "Freelance:Iso vs. Good Defender": {
-      "value": 25,
+      "value": 55,
       "type": "bitfield",
       "group": "Freelance",
       "length": null,
       "dynamic_dropdown": null
     },
     "Freelance:Iso vs. Average Defender": {
-      "value": 33,
+      "value": 68,
       "type": "bitfield",
       "group": "Freelance",
       "length": null,
       "dynamic_dropdown": null
     },
     "Freelance:Iso vs. Poor Defender": {
-      "value": 42,
+      "value": 75,
       "type": "bitfield",
       "group": "Freelance",
       "length": null,
@@ -514,14 +514,14 @@
       "dynamic_dropdown": null
     },
     "Freelance:Shot": {
-      "value": 49,
+      "value": 69,
       "type": "bitfield",
       "group": "Freelance",
       "length": null,
       "dynamic_dropdown": null
     },
     "Freelance:Touches": {
-      "value": 48,
+      "value": 68,
       "type": "bitfield",
       "group": "Freelance",
       "length": null,
@@ -535,28 +535,28 @@
       "dynamic_dropdown": null
     },
     "Post Game:Post Up": {
-      "value": 42,
+      "value": 51,
       "type": "bitfield",
       "group": "Post Game",
       "length": null,
       "dynamic_dropdown": null
     },
     "Post Game:Post Back Down": {
-      "value": 36,
+      "value": 48,
       "type": "bitfield",
       "group": "Post Game",
       "length": null,
       "dynamic_dropdown": null
     },
     "Post Game:Post Aggressive Backdown": {
-      "value": 30,
+      "value": 38,
       "type": "bitfield",
       "group": "Post Game",
       "length": null,
       "dynamic_dropdown": null
     },
     "Post Game:Post Face Up": {
-      "value": 30,
+      "value": 37,
       "type": "bitfield",
       "group": "Post Game",
       "length": null,
@@ -570,21 +570,21 @@
       "dynamic_dropdown": null
     },
     "Post Game:Post Drive": {
-      "value": 21,
-      "type": "bitfield",
-      "group": "Post Game",
-      "length": null,
-      "dynamic_dropdown": null
-    },
-    "Post Game:Post Drop Step": {
       "value": 26,
       "type": "bitfield",
       "group": "Post Game",
       "length": null,
       "dynamic_dropdown": null
     },
+    "Post Game:Post Drop Step": {
+      "value": 30,
+      "type": "bitfield",
+      "group": "Post Game",
+      "length": null,
+      "dynamic_dropdown": null
+    },
     "Post Game:Shoot From Post": {
-      "value": 40,
+      "value": 48,
       "type": "bitfield",
       "group": "Post Game",
       "length": null,

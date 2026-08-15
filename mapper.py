@@ -149,7 +149,15 @@ def compute(stats: PlayerStats) -> dict:
 
     t["Jump Shooting:Spot Up Shot Mid-Range"]    = _scale(cs_approx * cs_mid_frac * _spot_up_mid_scale, 0, 3.0, 5, 55)  # cap 55
     t["Jump Shooting:Off Screen Shot Mid-Range"] = _scale(stats.synergy_offscreen * cs_mid_frac, 0, 1.5, 5, 50)  # cap 50
-    t["Jump Shooting:Spot Up Shot Three"]        = _scale(cs_approx * cs_3_frac, 0, 3.0, 5, 75)   # cap 75
+    # Spot Up Three — cap 75
+    # 2013-14+: catch_shoot_fga is directly measured; split by cs_3_frac to isolate 3PT portion.
+    # Pre-2013: synergy_spotup is ALREADY 3PT-anchored (total_3pt_fga × 0.96 proxy) — do NOT
+    # multiply by cs_3_frac again. That double-discounts mid-range-heavy players like Dirk
+    # whose 3PT shot fraction is small even though they genuinely spot up for threes.
+    _spot_3_vol = (stats.catch_shoot_fga * cs_3_frac
+                   if stats.catch_shoot_fga > 0
+                   else stats.synergy_spotup)
+    t["Jump Shooting:Spot Up Shot Three"]        = _scale(_spot_3_vol, 0, 3.0, 5, 75)   # cap 75
     t["Jump Shooting:Off Screen Shot Three"]     = _scale(stats.synergy_offscreen * cs_3_frac, 0, 1.5, 5, 65)  # cap 65
 
     # ── Contested jumpers — cap 55 ────────────────────────────────────────
@@ -360,12 +368,13 @@ def compute(stats: PlayerStats) -> dict:
     t["Freelance:Spot vs. Cut"] = _scale(spot_frac, 0, 1, 5, 85)
 
     # ISO vs defender tiers — caps per CSV (Elite=50, Good=60, Average=70, Poor=75)
-    # Ordering: Poor > Average > Good > Elite (attack weaker defenders more freely).
-    # Stagger multipliers and high_raw so the scale yields correct relative ordering.
-    t["Freelance:Iso vs. Elite Defender"]   = _scale(iso_freq * 0.50, 0,  7, 3, 50)  # cap 50
-    t["Freelance:Iso vs. Good Defender"]    = _scale(iso_freq * 0.75, 0,  9, 5, 60)  # cap 60
-    t["Freelance:Iso vs. Average Defender"] = _scale(iso_freq * 0.90, 0,  9, 5, 70)  # cap 70
-    t["Freelance:Iso vs. Poor Defender"]    = _scale(iso_freq,        0,  8, 5, 75)  # cap 75
+    # CSV: Primary/Elite Creator vs Poor = 55-70, vs Good = 35-55, vs Elite = 25-45.
+    # high_raw = ~4 poss/game ≈ elite ISO usage ceiling (Kobe/KD territory → caps out).
+    # Stagger multipliers so the scale yields correct relative ordering.
+    t["Freelance:Iso vs. Elite Defender"]   = _scale(iso_freq * 0.50, 0, 2.5, 3, 50)  # cap 50
+    t["Freelance:Iso vs. Good Defender"]    = _scale(iso_freq * 0.75, 0, 3.5, 5, 60)  # cap 60
+    t["Freelance:Iso vs. Average Defender"] = _scale(iso_freq * 0.90, 0, 4.0, 5, 70)  # cap 70
+    t["Freelance:Iso vs. Poor Defender"]    = _scale(iso_freq,        0, 4.0, 5, 75)  # cap 75
 
     # Play Discipline  — cap 90
     # Recalibrated anchors: NBA norm TOV rate ~12-20%; disciplined players rarely exceed 15%.
@@ -373,10 +382,16 @@ def compute(stats: PlayerStats) -> dict:
     t["Freelance:Play Discipline"] = _scale(1 - tov_rate, 0.75, 0.97, 20, 90)
 
     # Shot  — cap 75
-    t["Freelance:Shot"] = _scale(stats.fga, 5, 25, 15, 75)
+    # CSV: NBA Norm 30-45, Featured 45-55, Primary/Star 60-70, Superstar 75.
+    # Use PPG as the scoring-role weight — captures volume + efficiency better than raw FGA.
+    # 23 PPG → ~69 (Elite Scoring Engine), 10 PPG → ~37 (Connector), 25+ → 75 cap.
+    t["Freelance:Shot"] = _scale(stats.pts, 3, 25, 10, 75)
 
     # Touches  — cap 75
-    t["Freelance:Touches"] = _scale(stats.pts + stats.ast, 5, 45, 20, 75)
+    # CSV: NBA Norm 35-45, Featured 45-55, Primary/Hub 60-70, Max Hub 75.
+    # ast×1.5 weights playmaking contribution; ast drives touch involvement beyond scoring.
+    # Dirk (23 pts + 2.7 ast → 27.05) → ~68 (Primary Destination). LeBron-tier (28+8 ast) → 75.
+    t["Freelance:Touches"] = _scale(stats.pts + stats.ast * 1.5, 3, 30, 10, 75)
 
     # Transition Spot Up
     t["Freelance:Transition Spot Up"] = _scale(
@@ -385,24 +400,34 @@ def compute(stats: PlayerStats) -> dict:
     # ── POST GAME ─────────────────────────────────────────────────────────
 
     # Post Up  — cap 85
-    t["Post Game:Post Up"] = _scale(post_freq, 0, 10, 5, 85)
+    # CSV: Featured/Primary 50-65, Star Post Hub 70-80, Extreme 85.
+    # 8 poss/game ≈ primary post engine ceiling; 5.5 (Dirk) → ~60 (Primary Post Option).
+    t["Post Game:Post Up"] = _scale(post_freq, 0, 8, 5, 85)
 
     # Post Back Down  — cap 80
-    t["Post Game:Post Back Down"]           = _scale(post_freq, 0, 11, 5, 80)
+    # CSV: Strong/Heavy 50-65, Dominant 70-75.
+    t["Post Game:Post Back Down"]           = _scale(post_freq, 0, 8, 5, 80)
     # Post Aggressive Backdown  — cap 70
-    t["Post Game:Post Aggressive Backdown"] = _scale(post_freq, 0, 12, 5, 70)
+    # CSV: Physical 35-50, Elite Power 55-65. Must stay 10-20 pts below Post Back Down.
+    t["Post Game:Post Aggressive Backdown"] = _scale(post_freq, 0, 9, 5, 70)
     # Post Face Up  — cap 60
-    t["Post Game:Post Face Up"]             = _scale(post_freq, 0, 10, 5, 60)
+    # CSV: Regular 40-50, Frequent Face-Up 50-55.
+    t["Post Game:Post Face Up"]             = _scale(post_freq, 0, 8, 5, 60)
     # Post Spin  — cap 55
+    # CSV: Regular 30-35, Advanced 35-45, Signature 50. Keep high_raw=12 so non-spinners stay low.
     t["Post Game:Post Spin"]                = _scale(post_freq, 0, 12, 5, 55)
     # Post Drive  — cap 55
-    t["Post Game:Post Drive"]               = _scale(post_freq, 0, 14, 5, 55)
+    # CSV: Face-Up Driver 30-45, Primary Post-Drive 50.
+    t["Post Game:Post Drive"]               = _scale(post_freq, 0, 11, 5, 55)
     # Post Drop Step  — cap 60
-    t["Post Game:Post Drop Step"]           = _scale(post_freq, 0, 12, 5, 60)
+    # CSV: Power Big 35-45, Elite Drop-Step 50-55.
+    t["Post Game:Post Drop Step"]           = _scale(post_freq, 0, 10, 5, 60)
 
     # Shoot From Post  — cap 75
+    # CSV: Scoring-Oriented 40-55, Primary/Elite Post Scorer 60-70.
+    # Tighten high_raw to 4: (fadeaway+hook)×0.5 + post_freq×0.3; 4 = elite shot-first post player.
     shoot_post_raw = (stats.fga_fadeaway + stats.fga_hook) * 0.5 + post_freq * 0.3
-    t["Post Game:Shoot From Post"] = _scale(shoot_post_raw, 0, 5, 5, 75)
+    t["Post Game:Shoot From Post"] = _scale(shoot_post_raw, 0, 4, 5, 75)
 
     # Hook left/right  — cap 50
     hook_per_side = stats.fga_hook / 2
