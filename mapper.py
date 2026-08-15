@@ -84,6 +84,15 @@ def compute(stats: PlayerStats) -> dict:
     # Face-up ISO: remove post-up overlap to avoid inflating dribble moves
     faceup_iso = max(0.0, iso_freq - post_freq * 0.3)
 
+    # PnR ball-handler discount for ISO vs. defender tiers.
+    # Pass-first guards accumulate unassisted FGM from PnR drives, not true isolation.
+    # ast_ratio signals playmaking orientation: 0.1 = scorer, 0.5+ = PnR guard.
+    # Discount linearly: full weight at ast_ratio≈0.1, floor 0.25 at ast_ratio≈0.5+.
+    # Dribble-move tendencies (faceup_iso) are intentionally left undiscounted —
+    # PnR ball handlers ARE creative with the ball even if they don't truly isolate.
+    ast_ratio = _pct(stats.ast, stats.ast + stats.fga)
+    iso_score_freq = iso_freq * max(0.25, 1.0 - ast_ratio * 1.5)
+
     # ── JUMP SHOOTING ─────────────────────────────────────────────────────
 
     # Shot Under Basket  — cap 85
@@ -163,8 +172,15 @@ def compute(stats: PlayerStats) -> dict:
     t["Jump Shooting:Off Screen Shot Three"]     = _scale(stats.synergy_offscreen * cs_3_frac, 0, 1.5, 5, 65)  # cap 65
 
     # ── Contested jumpers — cap 55 ────────────────────────────────────────
-    t["Jump Shooting:Contested Jumper Mid-Range"] = _scale(pct_mid, 0.05, 0.55, 5, 55)
-    t["Jump Shooting:Contested Jumper Three"]     = _scale(pct_3,  0.02, 0.40, 5, 55)
+    # Contested Jumper is a subset of base shooting tendency — must never exceed it.
+    t["Jump Shooting:Contested Jumper Mid-Range"] = min(
+        _scale(pct_mid, 0.05, 0.55, 5, 55),
+        t["Jump Shooting:Shot Mid-Range"]
+    )
+    t["Jump Shooting:Contested Jumper Three"] = min(
+        _scale(pct_3, 0.02, 0.40, 5, 55),
+        t["Jump Shooting:Shot Three"]
+    )
 
     # ── Stepback jumpers — cap 55 / 60 ───────────────────────────────────
     t["Jump Shooting:Stepback Jumper Mid-Range"] = _scale(pct_stepback, 0, 0.05, 5, 55)
@@ -373,10 +389,11 @@ def compute(stats: PlayerStats) -> dict:
     # CSV: Primary/Elite Creator vs Poor = 55-70, vs Good = 35-55, vs Elite = 25-45.
     # high_raw = ~4 poss/game ≈ elite ISO usage ceiling (Kobe/KD territory → caps out).
     # Stagger multipliers so the scale yields correct relative ordering.
-    t["Freelance:Iso vs. Elite Defender"]   = _scale(iso_freq * 0.50, 0, 2.5, 3, 50)  # cap 50
-    t["Freelance:Iso vs. Good Defender"]    = _scale(iso_freq * 0.75, 0, 3.5, 5, 60)  # cap 60
-    t["Freelance:Iso vs. Average Defender"] = _scale(iso_freq * 0.90, 0, 4.0, 5, 70)  # cap 70
-    t["Freelance:Iso vs. Poor Defender"]    = _scale(iso_freq,        0, 4.0, 5, 75)  # cap 75
+    # Use iso_score_freq (PnR-discounted) so pass-first guards don't read as ISO scorers.
+    t["Freelance:Iso vs. Elite Defender"]   = _scale(iso_score_freq * 0.50, 0, 2.5, 3, 50)  # cap 50
+    t["Freelance:Iso vs. Good Defender"]    = _scale(iso_score_freq * 0.75, 0, 3.5, 5, 60)  # cap 60
+    t["Freelance:Iso vs. Average Defender"] = _scale(iso_score_freq * 0.90, 0, 4.0, 5, 70)  # cap 70
+    t["Freelance:Iso vs. Poor Defender"]    = _scale(iso_score_freq,        0, 4.0, 5, 75)  # cap 75
 
     # Play Discipline  — cap 90
     # Recalibrated anchors: NBA norm TOV rate ~12-20%; disciplined players rarely exceed 15%.
@@ -384,10 +401,17 @@ def compute(stats: PlayerStats) -> dict:
     t["Freelance:Play Discipline"] = _scale(1 - tov_rate, 0.75, 0.97, 20, 90)
 
     # Shot  — cap 75
-    # CSV: NBA Norm 30-45, Featured 45-55, Primary/Star 60-70, Superstar 75.
-    # Use PPG as the scoring-role weight — captures volume + efficiency better than raw FGA.
-    # 23 PPG → ~69 (Elite Scoring Engine), 10 PPG → ~37 (Connector), 25+ → 75 cap.
-    t["Freelance:Shot"] = _scale(stats.pts, 3, 25, 10, 75)
+    # CSV tiers: 0-5 Non-Scoring, 10-15 Bailout, 20-25 Low-Usage, 30-35 Connector,
+    #            40-45 Featured Role Scorer, 50-55 High-Volume Option,
+    #            60-65 Primary Scoring Option, 70 Elite Scoring Engine, 75 Max Superstar.
+    # FGA (60%) + PPG (40%): FGA drives shot-selection willingness; PPG anchors scoring role.
+    # A player shooting 18 FGA at low efficiency reads as high-volume, not a connector.
+    # ast_ratio discount: pass-first guards hold the ball far more than they shoot;
+    # floor 0.60 so extreme PGs (Rondo, Nash) still retain 60% weight.
+    # Rondo (~10 PPG, 10 FGA, ast_ratio=0.53) → 24 (Low-Usage). Dirk (23, 17, 0.14) → 61 (Primary).
+    _shot_raw = stats.fga * 0.6 + stats.pts * 0.4
+    _shot_adj = _shot_raw * max(0.60, 1.0 - ast_ratio)
+    t["Freelance:Shot"] = _scale(_shot_adj, 2, 21, 10, 75)
 
     # Touches  — cap 75
     # CSV: NBA Norm 35-45, Featured 45-55, Primary/Hub 60-70, Max Hub 75.
