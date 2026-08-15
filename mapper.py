@@ -72,8 +72,10 @@ def compute(stats: PlayerStats) -> dict:
     pct_ra         = _pct(stats.fga_restricted,  fga)
     pct_close      = _pct(stats.fga_paint_nonra, fga)
     pct_mid        = _pct(stats.fga_mid,         fga)
-    # Prefer box-score fg3a for the 3PT numerator — more reliable than zone sum for old seasons
-    three_fga = stats.total_3pt_fga if stats.total_3pt_fga > 0 else stats.fg3a
+    # Use the higher of zone-sum and box-score 3PT FGA. Zone data occasionally
+    # undercounts for older seasons (some shots fall outside categorized zones);
+    # fg3a from general splits is authoritative. Taking the max recovers both.
+    three_fga = max(stats.total_3pt_fga, stats.fg3a) if stats.total_3pt_fga > 0 else stats.fg3a
     pct_3          = _pct(three_fga,   fga)
     pct_stepback   = _pct(stats.fga_step_back,   fga)
     pct_turnaround = _pct(stats.fga_turnaround,  fga)

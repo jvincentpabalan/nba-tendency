@@ -452,12 +452,24 @@ def _compute_synergy_fallbacks(stats: PlayerStats) -> None:
                 stats.synergy_spotup = spot_vol * 1.20
 
     # ── Off-screen (POSS/game) ────────────────────────────────────────────
-    # ~20–25% of catch-and-shoot 3PT attempts come off screens.
-    if stats.synergy_offscreen == 0 and stats.catch_shoot_fga > 0:
+    # 2013-14+: ~25% of catch-and-shoot 3PT attempts come off screens.
+    # Pre-2013: no player tracking, so proxy via assisted 3PT volume.
+    #   Assisted 3PT makes × assisted_rate ≈ catch-and-shoot 3PT makes.
+    #   ~30% of those are off-screen; / 0.55 to convert FGM → POSS estimate.
+    #   This is conservative — it can't distinguish a stationary corner spacer
+    #   (15% off-screen) from a curl specialist (60%+), so treat as a floor.
+    if stats.synergy_offscreen == 0:
         total_3 = stats.total_3pt_fga or stats.fga_atb3
-        denom = max(total_3 + stats.fga_mid, 0.01)
-        c_s_3_frac = total_3 / denom
-        stats.synergy_offscreen = stats.catch_shoot_fga * c_s_3_frac * 0.25
+        if stats.catch_shoot_fga > 0:
+            denom = max(total_3 + stats.fga_mid, 0.01)
+            c_s_3_frac = total_3 / denom
+            stats.synergy_offscreen = stats.catch_shoot_fga * c_s_3_frac * 0.25
+        elif stats.assisted_fgm > 0 and total_3 > 0:
+            _fgm_total = stats.assisted_fgm + stats.unassisted_fgm
+            if _fgm_total > 0:
+                _assisted_rate = stats.assisted_fgm / _fgm_total
+                _est_cs_3pt_makes = total_3 * _assisted_rate
+                stats.synergy_offscreen = (_est_cs_3pt_makes * 0.30) / 0.55
 
     # ── Transition (POSS/game) ────────────────────────────────────────────
     # Running layups are included in fga_driving_layup (can't separate).

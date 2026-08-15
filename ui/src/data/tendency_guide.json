@@ -1,0 +1,5840 @@
+{
+  "Freelance:Shot": {
+    "definition": "Definition: Team-relative selection weight for ending a meaningful offensive involvement with a shot attempt. Higher values increase scoring aggression after opportunity exists. In live gameplay, higher Shot does not guarantee higher FGA when another player has materially greater Touch, initiation, play-type, or reset involvement. Use possession-ending evidence for the historical baseline, then normalize Shot and Touch together across the current roster. Validate full simulation separately.",
+    "tiers": [
+      {
+        "range": [
+          0,
+          5
+        ],
+        "label": "Non-Scoring Role"
+      },
+      {
+        "range": [
+          10,
+          15
+        ],
+        "label": "Bailout / Emergency Attempts"
+      },
+      {
+        "range": [
+          20,
+          25
+        ],
+        "label": "Low-Usage Scorer"
+      },
+      {
+        "range": [
+          30,
+          35
+        ],
+        "label": "Connector / Controlled Role Usage"
+      },
+      {
+        "range": [
+          40,
+          45
+        ],
+        "label": "Featured Role Scorer"
+      },
+      {
+        "range": [
+          50,
+          55
+        ],
+        "label": "High-Volume Option"
+      },
+      {
+        "range": [
+          60,
+          65
+        ],
+        "label": "Primary Scoring Option"
+      },
+      {
+        "range": [
+          70,
+          70
+        ],
+        "label": "Elite Scoring Engine"
+      },
+      {
+        "range": [
+          75,
+          75
+        ],
+        "label": "Maximum Superstar Usage Profile"
+      }
+    ],
+    "nba_norm": "30–45",
+    "cap": 75
+  },
+  "Freelance:Touches": {
+    "definition": "Definition: Team-relative live-game opportunity and involvement weight. It affects how often the offense seeks, initiates through, returns to, or keeps the player involved through catches, handling, passes, handoffs, post entries, screens, resets, and playmaking decisions. Moderate Touch gaps can create large differences in meaningful opportunities and total attempts. Touch is not a direct conversion of raw NBA touches and must be normalized across the entire roster. It does not require the player to shoot.",
+    "tiers": [
+      {
+        "range": [
+          0,
+          5
+        ],
+        "label": "Outside the Offensive Flow"
+      },
+      {
+        "range": [
+          10,
+          15
+        ],
+        "label": "Rare Involvement"
+      },
+      {
+        "range": [
+          20,
+          25
+        ],
+        "label": "Low-Touch Role Player"
+      },
+      {
+        "range": [
+          30,
+          35
+        ],
+        "label": "Standard Rotation Involvement"
+      },
+      {
+        "range": [
+          40,
+          45
+        ],
+        "label": "Regular Offensive Flow Piece"
+      },
+      {
+        "range": [
+          50,
+          55
+        ],
+        "label": "Featured Secondary Involvement"
+      },
+      {
+        "range": [
+          60,
+          65
+        ],
+        "label": "Primary Offensive Destination / Hub"
+      },
+      {
+        "range": [
+          70,
+          70
+        ],
+        "label": "Heliocentric Offensive Engine"
+      },
+      {
+        "range": [
+          75,
+          75
+        ],
+        "label": "Maximum Touch / Hub Profile"
+      }
+    ],
+    "nba_norm": "35–45",
+    "cap": 75
+  },
+  "Jump Shooting:Shot Close": {
+    "definition": "Definition: Overall selection weight for attempting shots from the short close-range area, generally outside the immediate under-basket zone but inside the mid-range area. This can include short push shots, hooks, runners, short fades, and other close attempts. It controls the location preference, while specific tendencies such as Floater or post moves help select the shot type.",
+    "tiers": [
+      {
+        "range": [
+          0,
+          5
+        ],
+        "label": "No Close-Range Shot Role"
+      },
+      {
+        "range": [
+          10,
+          15
+        ],
+        "label": "Rare Close Attempt"
+      },
+      {
+        "range": [
+          20,
+          25
+        ],
+        "label": "Limited Short-Range Usage"
+      },
+      {
+        "range": [
+          30,
+          35
+        ],
+        "label": "Regular Close-Range Option"
+      },
+      {
+        "range": [
+          40,
+          45
+        ],
+        "label": "Strong Short-Area Scorer"
+      },
+      {
+        "range": [
+          50,
+          55
+        ],
+        "label": "Featured Close-Range Threat"
+      },
+      {
+        "range": [
+          60,
+          60
+        ],
+        "label": "Extreme / Outlier Profile"
+      }
+    ],
+    "nba_norm": "20–35",
+    "cap": 60
+  },
+  "Jump Shooting:Shot Under Basket": {
+    "definition": "Definition: Selection weight for immediately attempting a point-blank shot once the player is already under or directly beside the basket. This includes standing layups, dump-off finishes, seals, dunker-spot catches, and quick no-dribble attempts. It does not create the positioning or control Driving Layup, Driving Dunk, offensive rebounding, or Putback frequency.",
+    "tiers": [
+      {
+        "range": [
+          0,
+          5
+        ],
+        "label": "No Under-Basket Usage"
+      },
+      {
+        "range": [
+          10,
+          15
+        ],
+        "label": "Rare Point-Blank Attempt"
+      },
+      {
+        "range": [
+          20,
+          25
+        ],
+        "label": "Limited Under-Rim Finisher"
+      },
+      {
+        "range": [
+          30,
+          35
+        ],
+        "label": "Regular Basket-Area Finisher"
+      },
+      {
+        "range": [
+          40,
+          45
+        ],
+        "label": "Reliable Under-Rim Threat"
+      },
+      {
+        "range": [
+          50,
+          55
+        ],
+        "label": "Featured Interior Finisher"
+      },
+      {
+        "range": [
+          60,
+          65
+        ],
+        "label": "High Under-Basket Preference"
+      },
+      {
+        "range": [
+          70,
+          75
+        ],
+        "label": "Rim-Runner / Dunker-Spot Specialist"
+      },
+      {
+        "range": [
+          80,
+          85
+        ],
+        "label": "Extreme Under-Basket Specialist"
+      }
+    ],
+    "nba_norm": "20–45",
+    "cap": 85
+  },
+  "Jump Shooting:Shot Mid-Range": {
+    "definition": "Definition: Overall selection weight for taking shots from the mid-range area. This acts as the global mid-range volume gate, while Spot-Up Mid, Off-Screen Mid, Dribble Pull-Up Mid, Stepback Mid, post shots, and other contextual tendencies help determine how those mid-range attempts are created.",
+    "tiers": [
+      {
+        "range": [
+          0,
+          5
+        ],
+        "label": "No Meaningful Mid-Range Role"
+      },
+      {
+        "range": [
+          10,
+          15
+        ],
+        "label": "Low Mid-Range Volume"
+      },
+      {
+        "range": [
+          20,
+          25
+        ],
+        "label": "Regular Secondary Mid Usage"
+      },
+      {
+        "range": [
+          30,
+          35
+        ],
+        "label": "High Mid-Range Shot Share"
+      },
+      {
+        "range": [
+          40,
+          45
+        ],
+        "label": "Elite / Outlier Mid-Range Volume"
+      },
+      {
+        "range": [
+          45,
+          45
+        ],
+        "label": "Extreme / Outlier Profile"
+      }
+    ],
+    "nba_norm": "5–15",
+    "cap": 45
+  },
+  "Jump Shooting:Spot Up Shot Mid-Range": {
+    "definition": "Definition: Conditional selection weight for taking a mid-range jumper from a stationary or settled catch. This includes elbow catches, face-up catches, pick-and-pop opportunities, short-roll catches, and traditional catch-and-shoot mids. It does not control total mid-range volume and should operate beneath the player’s Shot Mid tendency. Because this is a rare modern shot type, values above 35 should be reserved for documented specialists.",
+    "tiers": [
+      {
+        "range": [
+          0,
+          5
+        ],
+        "label": "No Stationary Catch-Mid Role"
+      },
+      {
+        "range": [
+          10,
+          15
+        ],
+        "label": "Rare Spot-Up Mid"
+      },
+      {
+        "range": [
+          20,
+          25
+        ],
+        "label": "Selective Catch-Mid Option"
+      },
+      {
+        "range": [
+          30,
+          35
+        ],
+        "label": "Regular Stationary Mid Threat"
+      },
+      {
+        "range": [
+          40,
+          45
+        ],
+        "label": "Featured Catch-Mid Specialist"
+      },
+      {
+        "range": [
+          50,
+          50
+        ],
+        "label": "Elite / Outlier Spot-Up Mid"
+      },
+      {
+        "range": [
+          55,
+          55
+        ],
+        "label": "Extreme / Outlier Profile"
+      }
+    ],
+    "nba_norm": "5–15",
+    "cap": 55
+  },
+  "Jump Shooting:Off Screen Shot Mid-Range": {
+    "definition": "Definition: Conditional selection weight for taking a mid-range jumper after off-ball movement or a screening action, including curls, pindowns, flares, handoffs, relocations, and movement catches. It does not control total mid-range volume and should operate beneath Shot Mid and alongside play types and playbook actions. Modern offenses usually convert these actions into threes or drives, so values above 30 require clear film evidence.",
+    "tiers": [
+      {
+        "range": [
+          0,
+          5
+        ],
+        "label": "No Movement Mid-Range Role"
+      },
+      {
+        "range": [
+          10,
+          15
+        ],
+        "label": "Rare Movement Mid"
+      },
+      {
+        "range": [
+          20,
+          25
+        ],
+        "label": "Selective Screen-Action Mid"
+      },
+      {
+        "range": [
+          30,
+          35
+        ],
+        "label": "Regular Movement Mid Option"
+      },
+      {
+        "range": [
+          40,
+          45
+        ],
+        "label": "Featured Off-Screen Mid Specialist"
+      },
+      {
+        "range": [
+          50,
+          50
+        ],
+        "label": "Elite Outlier"
+      }
+    ],
+    "nba_norm": "0–10",
+    "cap": 50
+  },
+  "Jump Shooting:Shot Three": {
+    "definition": "Definition: Overall selection weight for taking shots from three-point range. This acts as the global three-point volume gate, while Spot-Up Three, Off-Screen Three, Dribble Pull-Up Three, Stepback Jumper Three, Transition Pull-Up Three, Contested Jumper Three, play types, and team spacing help determine how those attempts are created. This does not determine three-point accuracy.",
+    "tiers": [
+      {
+        "range": [
+          0,
+          5
+        ],
+        "label": "No Meaningful Three-Point Role"
+      },
+      {
+        "range": [
+          10,
+          15
+        ],
+        "label": "Emergency / Bailout Threes"
+      },
+      {
+        "range": [
+          20,
+          25
+        ],
+        "label": "Low-Volume Perimeter Usage"
+      },
+      {
+        "range": [
+          30,
+          35
+        ],
+        "label": "Selective Three-Point Shooter"
+      },
+      {
+        "range": [
+          40,
+          45
+        ],
+        "label": "Regular Three-Point Threat"
+      },
+      {
+        "range": [
+          50,
+          55
+        ],
+        "label": "High-Volume Arc Option"
+      },
+      {
+        "range": [
+          60,
+          65
+        ],
+        "label": "Primary Three-Point Scorer"
+      },
+      {
+        "range": [
+          70,
+          70
+        ],
+        "label": "Elite Three-Point Volume"
+      },
+      {
+        "range": [
+          75,
+          75
+        ],
+        "label": "Extreme / Outlier Profile"
+      }
+    ],
+    "nba_norm": "25–45",
+    "cap": 75
+  },
+  "Jump Shooting:Spot Up Shot Three": {
+    "definition": "Definition: Conditional selection weight for taking a three-point jumper from a stationary or settled catch when a viable perimeter shot is available. This includes traditional spot-ups, kickouts, drive-and-kick catches, pick-and-pop catches, trail opportunities, and settled relocation catches. It does not control total three-point volume and should operate beneath the player’s Shot Three tendency.",
+    "tiers": [
+      {
+        "range": [
+          0,
+          5
+        ],
+        "label": "No Catch-and-Shoot Three Role"
+      },
+      {
+        "range": [
+          10,
+          15
+        ],
+        "label": "Rare Stationary Three"
+      },
+      {
+        "range": [
+          20,
+          25
+        ],
+        "label": "Selective Open Catch"
+      },
+      {
+        "range": [
+          30,
+          35
+        ],
+        "label": "Regular Spot-Up Option"
+      },
+      {
+        "range": [
+          40,
+          45
+        ],
+        "label": "Dependable Floor Spacer"
+      },
+      {
+        "range": [
+          50,
+          55
+        ],
+        "label": "Featured Catch-and-Shoot Threat"
+      },
+      {
+        "range": [
+          60,
+          65
+        ],
+        "label": "High-Gravity Spot-Up Shooter"
+      },
+      {
+        "range": [
+          70,
+          70
+        ],
+        "label": "Elite Stationary Marksman"
+      },
+      {
+        "range": [
+          75,
+          75
+        ],
+        "label": "Extreme / Outlier Profile"
+      }
+    ],
+    "nba_norm": "30–50",
+    "cap": 75
+  },
+  "Jump Shooting:Off Screen Shot Three": {
+    "definition": "Definition: Conditional selection weight for taking a three-point jumper after off-ball movement or a screening action, including curls, pindowns, flares, handoffs, relocations, screen-assisted catches, and movement into pop or spacing opportunities. It does not control total three-point volume and should operate beneath Shot Three alongside play types and playbook actions.",
+    "tiers": [
+      {
+        "range": [
+          0,
+          5
+        ],
+        "label": "No Movement Three Role"
+      },
+      {
+        "range": [
+          10,
+          15
+        ],
+        "label": "Rare Movement Three"
+      },
+      {
+        "range": [
+          20,
+          25
+        ],
+        "label": "Selective Screen-Action Three"
+      },
+      {
+        "range": [
+          30,
+          35
+        ],
+        "label": "Regular Designed Movement Option"
+      },
+      {
+        "range": [
+          40,
+          45
+        ],
+        "label": "Featured Off-Screen Shooter"
+      },
+      {
+        "range": [
+          50,
+          55
+        ],
+        "label": "Elite Movement Threat"
+      },
+      {
+        "range": [
+          60,
+          60
+        ],
+        "label": "Exceptional Screen-Gravity Specialist"
+      },
+      {
+        "range": [
+          65,
+          65
+        ],
+        "label": "True Outlier"
+      }
+    ],
+    "nba_norm": "5–20",
+    "cap": 65
+  },
+  "Jump Shooting:Contested Jumper Mid-Range": {
+    "definition": "Definition: Selection weight for attempting a mid-range jumper when the defender remains close, attached, recovering, or actively contesting. Higher values increase willingness to shoot through pressure after a mid-range opportunity exists. This does not control overall mid-range volume, shooting ability, or contest success.",
+    "tiers": [
+      {
+        "range": [
+          0,
+          5
+        ],
+        "label": "Avoids Contested Mid-Range Shots"
+      },
+      {
+        "range": [
+          10,
+          15
+        ],
+        "label": "Accepts Light Pressure Only"
+      },
+      {
+        "range": [
+          20,
+          25
+        ],
+        "label": "Selective Tough Mid-Range Shooter"
+      },
+      {
+        "range": [
+          30,
+          35
+        ],
+        "label": "Regular Contested Mid Shooter"
+      },
+      {
+        "range": [
+          40,
+          45
+        ],
+        "label": "Strong Pressure Shot Maker"
+      },
+      {
+        "range": [
+          50,
+          55
+        ],
+        "label": "Elite Tough-Mid Specialist"
+      }
+    ],
+    "nba_norm": "10–25",
+    "cap": 55
+  },
+  "Jump Shooting:Contested Jumper Three": {
+    "definition": "Definition: Selection weight for attempting a three-point jumper when the defender is close, recovering, attached, or actively contesting. Higher values increase willingness to shoot through perimeter pressure after a three-point opportunity exists. This does not control overall three-point volume, shooting ability, or contest success.",
+    "tiers": [
+      {
+        "range": [
+          0,
+          5
+        ],
+        "label": "Avoids Guarded Threes"
+      },
+      {
+        "range": [
+          10,
+          15
+        ],
+        "label": "Accepts Light Perimeter Pressure"
+      },
+      {
+        "range": [
+          20,
+          25
+        ],
+        "label": "Selective Tough-Three Taker"
+      },
+      {
+        "range": [
+          30,
+          35
+        ],
+        "label": "Regular Guarded-Three Shooter"
+      },
+      {
+        "range": [
+          40,
+          45
+        ],
+        "label": "High-Confidence Pressure Shooter"
+      },
+      {
+        "range": [
+          50,
+          55
+        ],
+        "label": "Elite Tough-Three Specialist"
+      }
+    ],
+    "nba_norm": "5–20",
+    "cap": 55
+  },
+  "Jump Shooting:Stepback Jumper Mid-Range": {
+    "definition": "Definition: Selection weight for converting a stepback, retreat dribble, or backward escape into a mid-range jumper. This is the shot-selection tendency after separation is created and is separate from Driving Step Back, normal pull-up mids, spot-up mids, post fades, and off-screen mid-range shots.",
+    "tiers": [
+      {
+        "range": [
+          0,
+          5
+        ],
+        "label": "No Stepback Mid Game"
+      },
+      {
+        "range": [
+          10,
+          15
+        ],
+        "label": "Rare Mid-Range Escape Shot"
+      },
+      {
+        "range": [
+          20,
+          25
+        ],
+        "label": "Selective Stepback Mid"
+      },
+      {
+        "range": [
+          30,
+          35
+        ],
+        "label": "Regular Stepback Mid Creator"
+      },
+      {
+        "range": [
+          40,
+          45
+        ],
+        "label": "Featured Separation Scorer"
+      },
+      {
+        "range": [
+          50,
+          50
+        ],
+        "label": "Signature Stepback Mid Threat"
+      },
+      {
+        "range": [
+          55,
+          55
+        ],
+        "label": "Elite Specialist"
+      }
+    ],
+    "nba_norm": "5–20",
+    "cap": 55
+  },
+  "Jump Shooting:Stepback Jumper Three": {
+    "definition": "Definition: Selection weight for converting a stepback, retreat dribble, pull-back escape, or backward separation move into a three-point jumper. This is separate from Driving Step Back, normal pull-up threes, spot-up threes, off-screen threes, and general three-point volume.",
+    "tiers": [
+      {
+        "range": [
+          0,
+          5
+        ],
+        "label": "No Stepback-Three Game"
+      },
+      {
+        "range": [
+          10,
+          15
+        ],
+        "label": "Rare Perimeter Escape Shot"
+      },
+      {
+        "range": [
+          20,
+          25
+        ],
+        "label": "Selective Stepback Three"
+      },
+      {
+        "range": [
+          30,
+          35
+        ],
+        "label": "Regular Stepback-Three Creator"
+      },
+      {
+        "range": [
+          40,
+          45
+        ],
+        "label": "Featured Separation Shooter"
+      },
+      {
+        "range": [
+          50,
+          55
+        ],
+        "label": "Signature Stepback-Three Threat"
+      },
+      {
+        "range": [
+          60,
+          60
+        ],
+        "label": "Generational Specialist"
+      }
+    ],
+    "nba_norm": "5–20",
+    "cap": 60
+  },
+  "Jump Shooting:Spin Jumper": {
+    "definition": "Definition: Selection weight for attempting a jumper after using a spin or turn-around dribble move to create separation. This is for self-created spinning jump shots, not post spins, post fades, regular pull-ups, stepbacks, or driving spin finishes.",
+    "tiers": [
+      {
+        "range": [
+          0,
+          5
+        ],
+        "label": "No Spin Jumper Game"
+      },
+      {
+        "range": [
+          10,
+          15
+        ],
+        "label": "Rare Spin-Shot Counter"
+      },
+      {
+        "range": [
+          20,
+          25
+        ],
+        "label": "Selective Turnaround Jumper"
+      },
+      {
+        "range": [
+          30,
+          35
+        ],
+        "label": "Regular Spin-Shot Creator"
+      },
+      {
+        "range": [
+          40,
+          40
+        ],
+        "label": "Signature Spin Jumper Threat"
+      },
+      {
+        "range": [
+          45,
+          45
+        ],
+        "label": "Extreme / Outlier Profile"
+      }
+    ],
+    "nba_norm": "5–15",
+    "cap": 45
+  },
+  "Jump Shooting:Transition Pull Up Three": {
+    "definition": "Definition: Selection weight for taking a self-created pull-up three while advancing the ball in transition or early offense before the defense and half-court action are fully established. This excludes catch-and-shoot transition threes, trail threes, ordinary half-court pull-ups, and stepback threes.",
+    "tiers": [
+      {
+        "range": [
+          0,
+          5
+        ],
+        "label": "No Early-Offense Pull-Up Three"
+      },
+      {
+        "range": [
+          10,
+          15
+        ],
+        "label": "Selective Transition Pull-Up"
+      },
+      {
+        "range": [
+          20,
+          25
+        ],
+        "label": "Willing Early-Clock Shooter"
+      },
+      {
+        "range": [
+          30,
+          35
+        ],
+        "label": "Aggressive Transition Pull-Up Threat"
+      },
+      {
+        "range": [
+          40,
+          40
+        ],
+        "label": "Signature Fastbreak Three Threat"
+      },
+      {
+        "range": [
+          45,
+          45
+        ],
+        "label": "Extreme / Outlier Profile"
+      }
+    ],
+    "nba_norm": "5–15",
+    "cap": 45
+  },
+  "Jump Shooting:Drive Pull Up Mid-Range": {
+    "definition": "Definition: Selection weight for taking a mid-range jumper off the live dribble after creating space with movement, pace, a screen, or a stop-and-rise action. This identifies the pull-up shot form and is separate from overall mid-range volume, spot-up mids, off-screen mids, stepbacks, floaters, post fades, and contested-shot willingness.",
+    "tiers": [
+      {
+        "range": [
+          0,
+          5
+        ],
+        "label": "No Pull-Up Mid Game"
+      },
+      {
+        "range": [
+          10,
+          15
+        ],
+        "label": "Rare Stop-and-Pop Mid"
+      },
+      {
+        "range": [
+          20,
+          25
+        ],
+        "label": "Selective Pull-Up Mid"
+      },
+      {
+        "range": [
+          30,
+          35
+        ],
+        "label": "Regular Off-Dribble Mid Shooter"
+      },
+      {
+        "range": [
+          40,
+          45
+        ],
+        "label": "Featured Pull-Up Mid Scorer"
+      },
+      {
+        "range": [
+          50,
+          55
+        ],
+        "label": "High-Volume Pull-Up Mid Threat"
+      },
+      {
+        "range": [
+          60,
+          65
+        ],
+        "label": "Primary Pull-Up Mid Creator"
+      },
+      {
+        "range": [
+          70,
+          70
+        ],
+        "label": "Extreme / Outlier Profile"
+      }
+    ],
+    "nba_norm": "10–30",
+    "cap": 70
+  },
+  "Jump Shooting:Drive Pull Up Three": {
+    "definition": "Definition: Selection weight for taking a three-point jumper off the live dribble after creating space with movement, pace, a screen, hesitation, or stop-and-rise action. This identifies the pull-up shot form and is separate from overall three-point volume, spot-up threes, off-screen threes, transition pull-up threes, stepback threes, and contested-shot willingness.",
+    "tiers": [
+      {
+        "range": [
+          0,
+          5
+        ],
+        "label": "No Pull-Up Three Game"
+      },
+      {
+        "range": [
+          10,
+          15
+        ],
+        "label": "Selective Off-Dribble Three"
+      },
+      {
+        "range": [
+          20,
+          25
+        ],
+        "label": "Occasional Screen Pull-Up Threat"
+      },
+      {
+        "range": [
+          30,
+          35
+        ],
+        "label": "Reliable Pull-Up Arc Creator"
+      },
+      {
+        "range": [
+          40,
+          45
+        ],
+        "label": "Featured Off-Bounce Three Scorer"
+      },
+      {
+        "range": [
+          50,
+          50
+        ],
+        "label": "Extreme / Outlier Profile"
+      }
+    ],
+    "nba_norm": "5–20",
+    "cap": 50
+  },
+  "Driving:Drive": {
+    "definition": "Definition: Overall selection weight for initiating an on-ball drive from the perimeter, face-up position, or live-dribble action. Higher values make the player more likely to put the ball on the floor and attack rather than remain in a shooting, passing, or reset branch. This does not control drive success, drive commitment after an advantage is created, finishing type, or contact seeking.",
+    "tiers": [
+      {
+        "range": [
+          0,
+          5
+        ],
+        "label": "No Self-Initiated Drive Role"
+      },
+      {
+        "range": [
+          10,
+          15
+        ],
+        "label": "Rare On-Ball Attack"
+      },
+      {
+        "range": [
+          20,
+          25
+        ],
+        "label": "Limited Rim Pressure"
+      },
+      {
+        "range": [
+          30,
+          35
+        ],
+        "label": "Controlled Drive Usage"
+      },
+      {
+        "range": [
+          40,
+          45
+        ],
+        "label": "Regular Downhill Threat"
+      },
+      {
+        "range": [
+          50,
+          55
+        ],
+        "label": "Featured Paint-Pressure Creator"
+      },
+      {
+        "range": [
+          60,
+          65
+        ],
+        "label": "Primary Rim-Pressure Creator"
+      },
+      {
+        "range": [
+          70,
+          70
+        ],
+        "label": "Elite / Outlier Drive Engine"
+      },
+      {
+        "range": [
+          75,
+          75
+        ],
+        "label": "Extreme / Outlier Profile"
+      }
+    ],
+    "nba_norm": "25–45",
+    "cap": 75
+  },
+  "Driving:Spot Up Drive": {
+    "definition": "Definition: Willingness to attack off the catch from a stationary or spaced position when the defender closes out, rotates late, or gives a driving lane. This is for catch-and-go attacks, not isolation drives, pick-and-roll ball handling, off-screen attacks, or self-created dribble breakdowns.",
+    "tiers": [
+      {
+        "range": [
+          0,
+          5
+        ],
+        "label": "No Catch-and-Go Role"
+      },
+      {
+        "range": [
+          10,
+          15
+        ],
+        "label": "Rare Closeout Attack"
+      },
+      {
+        "range": [
+          20,
+          25
+        ],
+        "label": "Limited Rip-and-Go Threat"
+      },
+      {
+        "range": [
+          30,
+          35
+        ],
+        "label": "Selective Catch Drive Option"
+      },
+      {
+        "range": [
+          40,
+          45
+        ],
+        "label": "Reliable Closeout Attacker"
+      },
+      {
+        "range": [
+          50,
+          55
+        ],
+        "label": "Featured Catch-and-Go Driver"
+      },
+      {
+        "range": [
+          60,
+          65
+        ],
+        "label": "Elite Advantage Attacker"
+      },
+      {
+        "range": [
+          70,
+          70
+        ],
+        "label": "Extreme Closeout Pressure"
+      }
+    ],
+    "nba_norm": "20–40",
+    "cap": 70
+  },
+  "Driving:Off Screen Drive": {
+    "definition": "Definition: Conditional willingness to attack after receiving the ball from an off-ball screen or movement action, including curls, pindowns, handoffs, and similar catches. This is a movement-drive branch, not a general Drive rating and not a label for rim runners who do not handle the ball in these actions.",
+    "tiers": [
+      {
+        "range": [
+          0,
+          5
+        ],
+        "label": "No Off-Screen Attack Role"
+      },
+      {
+        "range": [
+          10,
+          15
+        ],
+        "label": "Rare Movement Drive"
+      },
+      {
+        "range": [
+          20,
+          25
+        ],
+        "label": "Situational Curl / Handoff Attack"
+      },
+      {
+        "range": [
+          30,
+          35
+        ],
+        "label": "Regular Movement-Drive Option"
+      },
+      {
+        "range": [
+          40,
+          45
+        ],
+        "label": "Featured Off-Screen Attacker"
+      },
+      {
+        "range": [
+          50,
+          55
+        ],
+        "label": "Elite Curl / Handoff Driver"
+      },
+      {
+        "range": [
+          60,
+          60
+        ],
+        "label": "Extreme Specialist"
+      }
+    ],
+    "nba_norm": "5–20",
+    "cap": 60
+  },
+  "Jump Shooting:Use Glass": {
+    "definition": "Definition: Selection weight for using the backboard on an eligible layup or close finish when the approach angle allows it. Higher values favor a bank finish over a direct finish. This does not increase layup frequency, determine finishing ability, or apply to ordinary bank jump shots.",
+    "tiers": [
+      {
+        "range": [
+          0,
+          5
+        ],
+        "label": "Avoids Glass Finishes"
+      },
+      {
+        "range": [
+          10,
+          15
+        ],
+        "label": "Occasional Bank Finish"
+      },
+      {
+        "range": [
+          20,
+          25
+        ],
+        "label": "Regular Use-Glass Finisher"
+      },
+      {
+        "range": [
+          30,
+          35
+        ],
+        "label": "Frequent Glass Specialist"
+      },
+      {
+        "range": [
+          40,
+          45
+        ],
+        "label": "Elite Glass-Finish Preference"
+      },
+      {
+        "range": [
+          45,
+          45
+        ],
+        "label": "Extreme / Outlier Profile"
+      }
+    ],
+    "nba_norm": "5–15",
+    "cap": 45
+  },
+  "Jump Shooting:Step Through Shot": {
+    "definition": "Definition: Selection weight for using step-through footwork after a defender commits, allowing the player to move around or underneath the contest before attempting a close shot or layup. This can occur from a drive, paint catch, face-up, or post-adjacent situation and is separate from post-move tendencies.",
+    "tiers": [
+      {
+        "range": [
+          0,
+          5
+        ],
+        "label": "No Step-Through Package"
+      },
+      {
+        "range": [
+          10,
+          15
+        ],
+        "label": "Rare Step-Through"
+      },
+      {
+        "range": [
+          20,
+          25
+        ],
+        "label": "Selective Footwork Finish"
+      },
+      {
+        "range": [
+          30,
+          35
+        ],
+        "label": "Regular Step-Through User"
+      },
+      {
+        "range": [
+          40,
+          45
+        ],
+        "label": "High-Level Step-Through Finisher"
+      },
+      {
+        "range": [
+          50,
+          50
+        ],
+        "label": "Extreme / Outlier Profile"
+      }
+    ],
+    "nba_norm": "10–25",
+    "cap": 50
+  },
+  "Layups And Dunks:Driving Layup": {
+    "definition": "Definition: Frequency and selection weight of attempting a standard layup while attacking the rim with forward momentum when a viable layup window exists. Higher values make driving layups a larger part of the player’s finishing package. This does not control drive initiation, layup ability or success, contact frequency, Driving Dunk, Floater, or special gather selection.",
+    "tiers": [
+      {
+        "range": [
+          0,
+          5
+        ],
+        "label": "No Driving-Layup Role"
+      },
+      {
+        "range": [
+          10,
+          15
+        ],
+        "label": "Rare Driving-Layup Attempt"
+      },
+      {
+        "range": [
+          20,
+          25
+        ],
+        "label": "Limited Layup Finisher"
+      },
+      {
+        "range": [
+          30,
+          35
+        ],
+        "label": "Selective Driving Layup"
+      },
+      {
+        "range": [
+          40,
+          45
+        ],
+        "label": "Regular Driving-Layup Finisher"
+      },
+      {
+        "range": [
+          50,
+          55
+        ],
+        "label": "Active Layup-Attack Threat"
+      },
+      {
+        "range": [
+          60,
+          65
+        ],
+        "label": "Frequent Driving-Layup Finisher"
+      },
+      {
+        "range": [
+          70,
+          75
+        ],
+        "label": "High Driving-Layup Preference"
+      },
+      {
+        "range": [
+          80,
+          80
+        ],
+        "label": "Extreme / Outlier Profile"
+      }
+    ],
+    "nba_norm": "20–50",
+    "cap": 80
+  },
+  "Layups And Dunks:Spin Layup": {
+    "definition": "Definition: Selection weight for using a spin gather or spinning layup finish after entering the paint. The spin is part of the finishing sequence and may change the player’s angle around the defender. This is separate from Driving Spin, post spins, and ordinary reverse layups.",
+    "tiers": [
+      {
+        "range": [
+          0,
+          5
+        ],
+        "label": "No Spin-Layup Package"
+      },
+      {
+        "range": [
+          10,
+          15
+        ],
+        "label": "Rare Spin Finish"
+      },
+      {
+        "range": [
+          20,
+          25
+        ],
+        "label": "Selective Spin Gather"
+      },
+      {
+        "range": [
+          30,
+          35
+        ],
+        "label": "Regular Spin-Layup User"
+      },
+      {
+        "range": [
+          40,
+          45
+        ],
+        "label": "Strong Spin Finisher"
+      },
+      {
+        "range": [
+          50,
+          55
+        ],
+        "label": "Featured Spin-Layup Threat"
+      },
+      {
+        "range": [
+          60,
+          65
+        ],
+        "label": "Elite Spin Finisher"
+      },
+      {
+        "range": [
+          70,
+          70
+        ],
+        "label": "Extreme / Outlier Profile"
+      }
+    ],
+    "nba_norm": "5–25",
+    "cap": 70
+  },
+  "Layups And Dunks:Euro Step Layup": {
+    "definition": "Definition: Selection weight for using a two-step lateral gather to avoid or move around a defender before a layup or dunk attempt. This does not increase drive frequency, create the finishing window, or guarantee that the Eurostep succeeds.",
+    "tiers": [
+      {
+        "range": [
+          0,
+          5
+        ],
+        "label": "No Eurostep Package"
+      },
+      {
+        "range": [
+          10,
+          15
+        ],
+        "label": "Rare Eurostep"
+      },
+      {
+        "range": [
+          20,
+          25
+        ],
+        "label": "Selective Euro Finish"
+      },
+      {
+        "range": [
+          30,
+          35
+        ],
+        "label": "Regular Eurostep User"
+      },
+      {
+        "range": [
+          40,
+          45
+        ],
+        "label": "Strong Eurostep Finisher"
+      },
+      {
+        "range": [
+          50,
+          55
+        ],
+        "label": "Featured Eurostep Threat"
+      },
+      {
+        "range": [
+          60,
+          65
+        ],
+        "label": "Elite Eurostep Finisher"
+      },
+      {
+        "range": [
+          70,
+          75
+        ],
+        "label": "Elite / Outlier Range"
+      }
+    ],
+    "nba_norm": "10–30",
+    "cap": 75
+  },
+  "Layups And Dunks:Hop Step Layup": {
+    "definition": "Definition: Selection weight for using a hop gather or jump-stop-style finishing move to change the approach angle, create space, split defenders, or absorb contact before a layup or dunk. This is a finishing gather and is separate from hop jumpers or stationary shot footwork.",
+    "tiers": [
+      {
+        "range": [
+          0,
+          5
+        ],
+        "label": "No Hop-Step Package"
+      },
+      {
+        "range": [
+          10,
+          15
+        ],
+        "label": "Rare Hop Gather"
+      },
+      {
+        "range": [
+          20,
+          25
+        ],
+        "label": "Selective Hop Step"
+      },
+      {
+        "range": [
+          30,
+          35
+        ],
+        "label": "Regular Hop-Step Finisher"
+      },
+      {
+        "range": [
+          40,
+          45
+        ],
+        "label": "Strong Hop-Gather User"
+      },
+      {
+        "range": [
+          50,
+          55
+        ],
+        "label": "Featured Hop-Step Threat"
+      },
+      {
+        "range": [
+          60,
+          65
+        ],
+        "label": "Elite / Outlier Range"
+      }
+    ],
+    "nba_norm": "5–25",
+    "cap": 65
+  },
+  "Layups And Dunks:Floater": {
+    "definition": "Definition: Selection weight for attempting a soft runner, push shot, or floater from the lane before reaching the immediate rim area, usually to score over or around interior defenders. This is separate from ordinary close shots, pull-up mid-range jumpers, and standard driving layups.",
+    "tiers": [
+      {
+        "range": [
+          0,
+          5
+        ],
+        "label": "No Floater Package"
+      },
+      {
+        "range": [
+          10,
+          15
+        ],
+        "label": "Rare Floater"
+      },
+      {
+        "range": [
+          20,
+          25
+        ],
+        "label": "Selective Runner"
+      },
+      {
+        "range": [
+          30,
+          35
+        ],
+        "label": "Regular Floater User"
+      },
+      {
+        "range": [
+          40,
+          45
+        ],
+        "label": "Strong Lane-Floater Threat"
+      },
+      {
+        "range": [
+          50,
+          55
+        ],
+        "label": "Featured Floater Scorer"
+      },
+      {
+        "range": [
+          60,
+          65
+        ],
+        "label": "High-Level Floater Specialist"
+      },
+      {
+        "range": [
+          70,
+          75
+        ],
+        "label": "Elite / Outlier Range"
+      }
+    ],
+    "nba_norm": "10–30",
+    "cap": 75
+  },
+  "Layups And Dunks:Standing Dunk": {
+    "definition": "Definition: Frequency and selection weight of attempting a dunk from a stationary or near-stationary position at the rim after a catch, seal, offensive rebound, drop-step, or completed stop. Higher values favor a standing dunk over a standing layup when the player is eligible. This does not control standing-dunk ability, success, positioning, or how often the player reaches the rim.",
+    "tiers": [
+      {
+        "range": [
+          0,
+          5
+        ],
+        "label": "Avoids Standing Dunks"
+      },
+      {
+        "range": [
+          10,
+          15
+        ],
+        "label": "Rare Standing-Dunk Attempt"
+      },
+      {
+        "range": [
+          20,
+          25
+        ],
+        "label": "Selective Interior Dunk"
+      },
+      {
+        "range": [
+          30,
+          35
+        ],
+        "label": "Regular Standing-Dunk Finisher"
+      },
+      {
+        "range": [
+          40,
+          45
+        ],
+        "label": "Strong Interior Dunk Preference"
+      },
+      {
+        "range": [
+          50,
+          55
+        ],
+        "label": "Frequent Standing-Dunk Finisher"
+      },
+      {
+        "range": [
+          60,
+          65
+        ],
+        "label": "High Standing-Dunk Preference"
+      },
+      {
+        "range": [
+          70,
+          75
+        ],
+        "label": "Dominant Standing-Dunk Finisher"
+      },
+      {
+        "range": [
+          80,
+          85
+        ],
+        "label": "Elite / Outlier Range"
+      }
+    ],
+    "nba_norm": "0–25",
+    "cap": 85
+  },
+  "Layups And Dunks:Driving Dunk": {
+    "definition": "Definition: Frequency and selection weight of attempting a dunk while attacking the rim with forward momentum. Higher values favor a driving dunk over a driving layup when a viable dunk window exists. This does not control drive frequency, dunk ability, success, contact-dunk eligibility, or flashy-dunk style.",
+    "tiers": [
+      {
+        "range": [
+          0,
+          5
+        ],
+        "label": "Avoids Driving Dunks"
+      },
+      {
+        "range": [
+          10,
+          15
+        ],
+        "label": "Rare Driving-Dunk Attempt"
+      },
+      {
+        "range": [
+          20,
+          25
+        ],
+        "label": "Selective Driving Dunk"
+      },
+      {
+        "range": [
+          30,
+          35
+        ],
+        "label": "Regular Driving-Dunk Finisher"
+      },
+      {
+        "range": [
+          40,
+          45
+        ],
+        "label": "Active Rim-Attack Dunker"
+      },
+      {
+        "range": [
+          50,
+          55
+        ],
+        "label": "Frequent Driving-Dunk Threat"
+      },
+      {
+        "range": [
+          60,
+          65
+        ],
+        "label": "High Driving-Dunk Preference"
+      },
+      {
+        "range": [
+          70,
+          75
+        ],
+        "label": "Elite Driving-Dunk Finisher"
+      },
+      {
+        "range": [
+          80,
+          80
+        ],
+        "label": "Extreme / Outlier Profile"
+      }
+    ],
+    "nba_norm": "15–40",
+    "cap": 80
+  },
+  "Layups And Dunks:Flashy Dunk": {
+    "definition": "Definition: Frequency and selection weight of choosing a flashy, acrobatic, forceful, or higher-risk dunk animation instead of a safer basic dunk after a dunk attempt has already been selected. This does not increase overall dunk frequency, create a dunk window, or determine dunk success.",
+    "tiers": [
+      {
+        "range": [
+          0,
+          5
+        ],
+        "label": "Basic / Safe Dunks Only"
+      },
+      {
+        "range": [
+          10,
+          15
+        ],
+        "label": "Rare Flashy Finish"
+      },
+      {
+        "range": [
+          20,
+          25
+        ],
+        "label": "Selective Style Dunk"
+      },
+      {
+        "range": [
+          30,
+          35
+        ],
+        "label": "Regular Flashy-Dunk Usage"
+      },
+      {
+        "range": [
+          40,
+          45
+        ],
+        "label": "Frequent High-Style Dunker"
+      },
+      {
+        "range": [
+          50,
+          55
+        ],
+        "label": "Featured Flashy-Dunk Threat"
+      },
+      {
+        "range": [
+          60,
+          65
+        ],
+        "label": "Elite Showmanship / Power Style"
+      },
+      {
+        "range": [
+          70,
+          70
+        ],
+        "label": "Extreme / Outlier Profile"
+      }
+    ],
+    "nba_norm": "0–20",
+    "cap": 70
+  },
+  "Layups And Dunks:Alley-Oop": {
+    "definition": "Definition: Frequency of attempting to receive and finish lob passes when a viable opportunity is available. Higher values make the player a more active vertical target and more willing to complete alley-oop finishes. This does not control how often the player throws lob passes.",
+    "tiers": [
+      {
+        "range": [
+          10,
+          15
+        ],
+        "label": "Rare Alley-Oop Finish"
+      },
+      {
+        "range": [
+          20,
+          25
+        ],
+        "label": "Selective Vertical Target"
+      },
+      {
+        "range": [
+          30,
+          35
+        ],
+        "label": "Regular Alley-Oop Option"
+      },
+      {
+        "range": [
+          40,
+          45
+        ],
+        "label": "Frequent Lob-Finishing Threat"
+      },
+      {
+        "range": [
+          50,
+          55
+        ],
+        "label": "Featured Vertical Finisher"
+      },
+      {
+        "range": [
+          60,
+          65
+        ],
+        "label": "High-Level Alley-Oop Threat"
+      },
+      {
+        "range": [
+          70,
+          75
+        ],
+        "label": "Elite Lob Finisher"
+      },
+      {
+        "range": [
+          80,
+          85
+        ],
+        "label": "Elite / Outlier Range"
+      }
+    ],
+    "nba_norm": "15–35",
+    "cap": 85
+  },
+  "Layups And Dunks:Putback": {
+    "definition": "Definition: Frequency of immediate scoring attempts after securing or touching an offensive rebound. Higher values favor tips, lay-ins, dunks, or quick go-back-up attempts instead of securing the ball and resetting. This does not control how often the player crashes the offensive glass or obtains the rebound.",
+    "tiers": [
+      {
+        "range": [
+          10,
+          15
+        ],
+        "label": "Rare Second-Chance Attempt"
+      },
+      {
+        "range": [
+          20,
+          25
+        ],
+        "label": "Selective Go-Back-Up Finisher"
+      },
+      {
+        "range": [
+          30,
+          35
+        ],
+        "label": "Regular Putback Attempt"
+      },
+      {
+        "range": [
+          40,
+          45
+        ],
+        "label": "Active Putback Finisher"
+      },
+      {
+        "range": [
+          50,
+          55
+        ],
+        "label": "Featured Putback Threat"
+      },
+      {
+        "range": [
+          60,
+          65
+        ],
+        "label": "Elite Putback Specialist"
+      },
+      {
+        "range": [
+          70,
+          70
+        ],
+        "label": "Extreme / Outlier Profile"
+      }
+    ],
+    "nba_norm": "10–35",
+    "cap": 70
+  },
+  "Layups And Dunks:Crash": {
+    "definition": "Definition: Conditional frequency that meaningful contact during an attacking finish produces a stumble, loss of balance, crash, or fall-to-the-floor outcome. Crash does not create the drive, contact opportunity, foul call, or finishing attempt itself. It is separate from Drive, Attack Strong on Drive, Draw Foul/FTA, size/strength/physicality, offensive rebounding, and Putback.",
+    "tiers": [
+      {
+        "range": [
+          10,
+          15
+        ],
+        "label": "Rare Crash / Fall Outcome"
+      },
+      {
+        "range": [
+          20,
+          25
+        ],
+        "label": "Occasional Contact Stumble / Fall"
+      },
+      {
+        "range": [
+          30,
+          35
+        ],
+        "label": "Regular Crash / Fall Outcome"
+      },
+      {
+        "range": [
+          40,
+          45
+        ],
+        "label": "Frequent Crash / Fall Profile"
+      },
+      {
+        "range": [
+          50,
+          55
+        ],
+        "label": "Very Frequent Crash / Fall Profile"
+      },
+      {
+        "range": [
+          60,
+          65
+        ],
+        "label": "Signature / Extreme Crash Profile"
+      },
+      {
+        "range": [
+          70,
+          70
+        ],
+        "label": "Exceptional Crash / Fall Outlier"
+      }
+    ],
+    "nba_norm": "10–30",
+    "cap": 60
+  },
+  "Driving:Drive Right": {
+    "definition": "Definition: Drive Right is directional preference after a drive opportunity exists; Drive controls how often the player drives. Below 50 favors left, above 50 favors right, and 50 means genuinely balanced direction, never unknown or missing research. Use player-specific evidence in this order: left-versus-right event/tracking data → multi-game film or manual charting → explicit directional scouting. Dominant hand is supporting context only. NBA.com Drives establishes volume, not direction. Drive 30+ players with unresolved direction must not be finalized at 50; very low-volume drivers may use 50 only as documented low-opportunity neutral.",
+    "tiers": [
+      {
+        "range": [
+          30,
+          30
+        ],
+        "label": "Very Strong Left Preference"
+      },
+      {
+        "range": [
+          35,
+          35
+        ],
+        "label": "Strong Left Lean"
+      },
+      {
+        "range": [
+          40,
+          40
+        ],
+        "label": "Clear Left Lean"
+      },
+      {
+        "range": [
+          45,
+          45
+        ],
+        "label": "Mild Left Lean"
+      },
+      {
+        "range": [
+          50,
+          50
+        ],
+        "label": "Balanced / Neutral"
+      },
+      {
+        "range": [
+          55,
+          55
+        ],
+        "label": "Mild Right Lean"
+      },
+      {
+        "range": [
+          60,
+          60
+        ],
+        "label": "Clear Right Lean"
+      },
+      {
+        "range": [
+          65,
+          65
+        ],
+        "label": "Strong Right Lean"
+      },
+      {
+        "range": [
+          70,
+          70
+        ],
+        "label": "Very Strong Right Preference"
+      },
+      {
+        "range": [
+          75,
+          95
+        ],
+        "label": "Extreme / Outlier Right Preference"
+      }
+    ],
+    "nba_norm": null,
+    "cap": 30
+  },
+  "Drive Setup:Triple Threat Pump Fake": {
+    "definition": "Definition: Conditional frequency of selecting a shot fake from a stationary or triple-threat catch before shooting, driving, passing, or resetting. For interior players, this includes standing up-fakes near the basket. Higher values increase branch selection, not effectiveness. Keep the value evidence-based because excessive settings can create unnecessary pump-fake spam even when defender pressure does not warrant it.",
+    "tiers": [
+      {
+        "range": [
+          0,
+          5
+        ],
+        "label": "Never / No Pump Fake"
+      },
+      {
+        "range": [
+          10,
+          15
+        ],
+        "label": "Rare Pump Fake"
+      },
+      {
+        "range": [
+          20,
+          25
+        ],
+        "label": "Occasional Pump Fake"
+      },
+      {
+        "range": [
+          30,
+          35
+        ],
+        "label": "Regular Pump Fake Usage"
+      },
+      {
+        "range": [
+          40,
+          45
+        ],
+        "label": "Heavy Pump-Fake Usage"
+      },
+      {
+        "range": [
+          50,
+          55
+        ],
+        "label": "Elite / Outlier Pump-Fake Specialist"
+      }
+    ],
+    "nba_norm": "30–35",
+    "cap": null
+  },
+  "Drive Setup:Triple Threat Jab Step": {
+    "definition": "Definition: Conditional frequency of selecting a jab-step probe from triple-threat stance before shooting, driving, passing, or resetting. Higher values increase jab selection, not creation ability. Use repeated real behavior rather than handle ratings or generic creator status, because excessive settings can produce repeated or unnecessary jabs.",
+    "tiers": [
+      {
+        "range": [
+          0,
+          5
+        ],
+        "label": "Never / No Jab Step"
+      },
+      {
+        "range": [
+          10,
+          15
+        ],
+        "label": "Rare Jab Step"
+      },
+      {
+        "range": [
+          20,
+          25
+        ],
+        "label": "Occasional Jab Step"
+      },
+      {
+        "range": [
+          30,
+          35
+        ],
+        "label": "Regular Jab Usage"
+      },
+      {
+        "range": [
+          40,
+          45
+        ],
+        "label": "Heavy Jab Usage"
+      },
+      {
+        "range": [
+          50,
+          55
+        ],
+        "label": "Elite / Outlier Jab-Step Specialist"
+      }
+    ],
+    "nba_norm": "30–35",
+    "cap": null
+  },
+  "Drive Setup:Triple Threat Idle": {
+    "definition": "Definition: Conditional tendency to remain in the neutral stationary triple-threat state when an immediate shoot, jab, pump fake, drive, pass, or other active action does not take priority. Higher values increase willingness to stay neutral before another action is selected. This does not represent basketball IQ, general patience, total time of possession, or overall decision speed. Do not automatically lower Idle for limited creators or traditional bigs just to make them act quicker; moderate or high Idle can correctly discourage manufactured offense when no immediate action is available. Quick rim finishing is governed separately by scoring/finishing tendencies and context. A high-Idle player can still immediately shoot, pass, drive, or initiate when another action wins first.",
+    "tiers": [
+      {
+        "range": [
+          0,
+          5
+        ],
+        "label": "Almost Never Remains Neutral"
+      },
+      {
+        "range": [
+          10,
+          15
+        ],
+        "label": "Very Quick Into Another Action"
+      },
+      {
+        "range": [
+          20,
+          25
+        ],
+        "label": "Brief Neutral Read"
+      },
+      {
+        "range": [
+          30,
+          35
+        ],
+        "label": "Moderate Neutral-State Usage"
+      },
+      {
+        "range": [
+          40,
+          45
+        ],
+        "label": "Regular Idle / Hold Availability"
+      },
+      {
+        "range": [
+          50,
+          55
+        ],
+        "label": "High Neutral-State Preference"
+      },
+      {
+        "range": [
+          60,
+          65
+        ],
+        "label": "Very Passive Stationary-Action Profile"
+      }
+    ],
+    "nba_norm": "30–45",
+    "cap": null
+  },
+  "Drive Setup:Triple Threat Shoot": {
+    "definition": "Definition: Conditional frequency of immediately converting a stationary or triple-threat catch into a scoring attempt before holding or beginning a dribble sequence. Depending on location, this can be a jumper, standing interior shot, or quick catch-and-finish. It is not the universal control for immediate interior finishing: Shot Under Basket, Shot Close, Standing Dunk, Driving Dunk, Putback and other contextual finishing logic can independently produce an immediate attempt even when Triple Threat Shoot is low.",
+    "tiers": [
+      {
+        "range": [
+          0,
+          5
+        ],
+        "label": "Holds or Initiates Instead of Scoring"
+      },
+      {
+        "range": [
+          10,
+          15
+        ],
+        "label": "Rare Immediate Scoring Attempt"
+      },
+      {
+        "range": [
+          20,
+          25
+        ],
+        "label": "Selective Catch-to-Score Decision"
+      },
+      {
+        "range": [
+          30,
+          35
+        ],
+        "label": "Regular Quick Scoring Decision"
+      },
+      {
+        "range": [
+          40,
+          45
+        ],
+        "label": "Frequent Immediate Scoring"
+      },
+      {
+        "range": [
+          50,
+          50
+        ],
+        "label": "High Catch-to-Finish Urgency"
+      },
+      {
+        "range": [
+          55,
+          55
+        ],
+        "label": "Extreme / Outlier Profile"
+      }
+    ],
+    "nba_norm": "20–35",
+    "cap": 55
+  },
+  "Drive Setup:Setup With Sizeup": {
+    "definition": "Definition: Frequency and selection weight of a stationary or near-stationary size-up dribble used before the player commits to a drive, shot, or pass. This competes with No Setup Dribble when the pre-attack setup branch is available and is separate from the live-drive move tendencies.",
+    "tiers": [
+      {
+        "range": [
+          0,
+          5
+        ],
+        "label": "Never / No Size-Up Setup"
+      },
+      {
+        "range": [
+          10,
+          15
+        ],
+        "label": "Rare Size-Up Setup"
+      },
+      {
+        "range": [
+          20,
+          25
+        ],
+        "label": "Occasional Size-Up Setup"
+      },
+      {
+        "range": [
+          30,
+          35
+        ],
+        "label": "Regular Size-Up Usage / NBA Norm Ceiling"
+      },
+      {
+        "range": [
+          40,
+          45
+        ],
+        "label": "Heavy Size-Up Usage"
+      },
+      {
+        "range": [
+          50,
+          50
+        ],
+        "label": "Elite Size-Up Ceiling"
+      },
+      {
+        "range": [
+          55,
+          55
+        ],
+        "label": "Extreme Specialist Only"
+      }
+    ],
+    "nba_norm": null,
+    "cap": 55
+  },
+  "Drive Setup:Setup With Hesitation": {
+    "definition": "Definition: Frequency and selection weight of a hesitation-style setup used before the player commits to a drive, shot, or pass. This competes with No Setup Dribble when the pre-attack setup branch is available and is separate from Driving Dribble Hesitation after the drive begins.",
+    "tiers": [
+      {
+        "range": [
+          0,
+          5
+        ],
+        "label": "Never / No Setup Hesitation"
+      },
+      {
+        "range": [
+          10,
+          15
+        ],
+        "label": "Rare Setup Hesitation"
+      },
+      {
+        "range": [
+          20,
+          25
+        ],
+        "label": "Occasional Setup Hesitation"
+      },
+      {
+        "range": [
+          30,
+          35
+        ],
+        "label": "Regular Setup Hesitation / NBA Norm Ceiling"
+      },
+      {
+        "range": [
+          40,
+          45
+        ],
+        "label": "Heavy Setup Hesitation"
+      },
+      {
+        "range": [
+          50,
+          50
+        ],
+        "label": "Elite Setup Hesitation Ceiling"
+      },
+      {
+        "range": [
+          55,
+          55
+        ],
+        "label": "Extreme Specialist Only"
+      }
+    ],
+    "nba_norm": null,
+    "cap": 55
+  },
+  "Drive Setup:No Setup Dribble": {
+    "definition": "Definition: Selection weight for skipping pre-attack setup dribbles and moving directly into a drive, shot, pass, or play action. Lower values open the setup branch more often; higher values favor quicker initiation. This is independent from No Drive Dribble Move, which applies only after the player has begun attacking.",
+    "tiers": [
+      {
+        "range": [
+          0,
+          5
+        ],
+        "label": "Setup Branch Almost Always Available"
+      },
+      {
+        "range": [
+          10,
+          15
+        ],
+        "label": "Heavy Setup Creator"
+      },
+      {
+        "range": [
+          20,
+          25
+        ],
+        "label": "Frequent Setup Creator"
+      },
+      {
+        "range": [
+          30,
+          35
+        ],
+        "label": "Balanced Setup / Quick-Action Mix"
+      },
+      {
+        "range": [
+          40,
+          45
+        ],
+        "label": "Selective Setup / Quicker Initiation"
+      },
+      {
+        "range": [
+          50,
+          55
+        ],
+        "label": "Direct-Action Leaning"
+      },
+      {
+        "range": [
+          60,
+          65
+        ],
+        "label": "Rare Setup Branch"
+      },
+      {
+        "range": [
+          70,
+          75
+        ],
+        "label": "Immediate-Action Style"
+      },
+      {
+        "range": [
+          80,
+          85
+        ],
+        "label": "Near No-Setup Profile"
+      }
+    ],
+    "nba_norm": "5–25",
+    "cap": 85
+  },
+  "Driving:Driving Crossover": {
+    "definition": "Definition: Frequency and selection weight of a crossover used as a live-drive change-of-direction counter after the player begins attacking. This competes with No Drive Dribble Move, so a high value identifies a preferred move without requiring it on every drive.",
+    "tiers": [
+      {
+        "range": [
+          0,
+          5
+        ],
+        "label": "No Driving-Crossover Package"
+      },
+      {
+        "range": [
+          10,
+          15
+        ],
+        "label": "Rare Direction-Change Counter"
+      },
+      {
+        "range": [
+          20,
+          25
+        ],
+        "label": "Selective Crossover Attacker"
+      },
+      {
+        "range": [
+          30,
+          35
+        ],
+        "label": "Regular Driving Crossover"
+      },
+      {
+        "range": [
+          40,
+          45
+        ],
+        "label": "Strong Crossover Creator"
+      },
+      {
+        "range": [
+          50,
+          55
+        ],
+        "label": "Signature Downhill Crossover"
+      },
+      {
+        "range": [
+          60,
+          60
+        ],
+        "label": "Extreme / Outlier Profile"
+      }
+    ],
+    "nba_norm": "10–30",
+    "cap": 60
+  },
+  "Driving:Driving Double Crossover": {
+    "definition": "Definition: Frequency and selection weight of a chained two-direction crossover used during a live drive. This is a specialized combo counter, not two ordinary crossovers performed separately.",
+    "tiers": [
+      {
+        "range": [
+          0,
+          5
+        ],
+        "label": "No Double-Crossover Package"
+      },
+      {
+        "range": [
+          10,
+          15
+        ],
+        "label": "Rare Chained Crossover"
+      },
+      {
+        "range": [
+          20,
+          25
+        ],
+        "label": "Real Double-Crossover Counter"
+      },
+      {
+        "range": [
+          30,
+          35
+        ],
+        "label": "Signature Combo Handler"
+      },
+      {
+        "range": [
+          40,
+          40
+        ],
+        "label": "Extreme / Outlier Profile"
+      }
+    ],
+    "nba_norm": "0–10",
+    "cap": 40
+  },
+  "Driving:Driving Spin": {
+    "definition": "Definition: Frequency and selection weight of a full spin used to change direction or protect the ball during a live drive. The move can lead to a continued attack, pass, pull-up, or finish and is separate from Spin Layup.",
+    "tiers": [
+      {
+        "range": [
+          0,
+          5
+        ],
+        "label": "No Driving-Spin Package"
+      },
+      {
+        "range": [
+          10,
+          15
+        ],
+        "label": "Rare Spin Counter"
+      },
+      {
+        "range": [
+          20,
+          25
+        ],
+        "label": "Selective Spin Attack"
+      },
+      {
+        "range": [
+          30,
+          35
+        ],
+        "label": "Regular Spin Creator"
+      },
+      {
+        "range": [
+          40,
+          45
+        ],
+        "label": "Signature Spin Driver"
+      },
+      {
+        "range": [
+          50,
+          50
+        ],
+        "label": "Extreme / Outlier Profile"
+      }
+    ],
+    "nba_norm": "5–20",
+    "cap": 50
+  },
+  "Driving:Driving Half Spin": {
+    "definition": "Definition: Frequency and selection weight of a half-spin feint or partial turn used to change the drive angle, freeze the defender, or reset the attack without completing a full spin. Assign independently from Driving Spin.",
+    "tiers": [
+      {
+        "range": [
+          0,
+          5
+        ],
+        "label": "No Half-Spin Package"
+      },
+      {
+        "range": [
+          10,
+          15
+        ],
+        "label": "Rare Half-Spin Feint"
+      },
+      {
+        "range": [
+          20,
+          25
+        ],
+        "label": "Selective Half-Spin Counter"
+      },
+      {
+        "range": [
+          30,
+          35
+        ],
+        "label": "Regular Half-Spin Creator"
+      },
+      {
+        "range": [
+          40,
+          45
+        ],
+        "label": "Signature Half-Spin Handler"
+      },
+      {
+        "range": [
+          45,
+          45
+        ],
+        "label": "Extreme / Outlier Profile"
+      }
+    ],
+    "nba_norm": "0–15",
+    "cap": 45
+  },
+  "Driving:Driving Step Back": {
+    "definition": "Definition: Frequency and selection weight of a retreat or step-back dribble used during a live drive to create space, reset the angle, or reattack. It does not automatically produce a jumper and is separate from Stepback Jumper tendencies.",
+    "tiers": [
+      {
+        "range": [
+          0,
+          5
+        ],
+        "label": "No Driving-Stepback Package"
+      },
+      {
+        "range": [
+          10,
+          15
+        ],
+        "label": "Rare Retreat Counter"
+      },
+      {
+        "range": [
+          20,
+          25
+        ],
+        "label": "Selective Space Reset"
+      },
+      {
+        "range": [
+          30,
+          35
+        ],
+        "label": "Regular Driving Stepback"
+      },
+      {
+        "range": [
+          40,
+          45
+        ],
+        "label": "Featured Retreat Creator"
+      },
+      {
+        "range": [
+          50,
+          55
+        ],
+        "label": "Signature Driving Stepback"
+      },
+      {
+        "range": [
+          55,
+          55
+        ],
+        "label": "Extreme / Outlier Profile"
+      }
+    ],
+    "nba_norm": "5–20",
+    "cap": 55
+  },
+  "Driving:Driving Behind The Back": {
+    "definition": "Definition: Frequency and selection weight of a behind-the-back dribble used during a live drive to protect the ball, change direction, or avoid a defender. This is separate from stationary setup or size-up dribbling.",
+    "tiers": [
+      {
+        "range": [
+          0,
+          5
+        ],
+        "label": "No Driving Behind-the-Back"
+      },
+      {
+        "range": [
+          10,
+          15
+        ],
+        "label": "Rare Protection Counter"
+      },
+      {
+        "range": [
+          20,
+          25
+        ],
+        "label": "Selective Behind-the-Back Attack"
+      },
+      {
+        "range": [
+          30,
+          35
+        ],
+        "label": "Regular Creative Drive Move"
+      },
+      {
+        "range": [
+          40,
+          45
+        ],
+        "label": "Signature Behind-the-Back Creator"
+      },
+      {
+        "range": [
+          50,
+          50
+        ],
+        "label": "Extreme / Outlier Profile"
+      }
+    ],
+    "nba_norm": "5–15",
+    "cap": 50
+  },
+  "Driving:Driving Dribble Hesitation": {
+    "definition": "Definition: Frequency and selection weight of a hesitation used after the drive begins to pause the defender, change pace, or explode into a second burst. This is separate from Setup Hesitation before the attack.",
+    "tiers": [
+      {
+        "range": [
+          0,
+          5
+        ],
+        "label": "No Driving-Hesitation Package"
+      },
+      {
+        "range": [
+          10,
+          15
+        ],
+        "label": "Rare Pace Check"
+      },
+      {
+        "range": [
+          20,
+          25
+        ],
+        "label": "Selective Driving Hesitation"
+      },
+      {
+        "range": [
+          30,
+          35
+        ],
+        "label": "Regular Change-of-Pace Move"
+      },
+      {
+        "range": [
+          40,
+          45
+        ],
+        "label": "Strong Hesitation Creator"
+      },
+      {
+        "range": [
+          50,
+          55
+        ],
+        "label": "Featured Pace Manipulator"
+      },
+      {
+        "range": [
+          60,
+          65
+        ],
+        "label": "Elite Driving Hesitation"
+      },
+      {
+        "range": [
+          65,
+          65
+        ],
+        "label": "Extreme / Outlier Profile"
+      }
+    ],
+    "nba_norm": "10–30",
+    "cap": 65
+  },
+  "Driving:Driving In And Out": {
+    "definition": "Definition: Frequency and selection weight of an in-and-out dribble used during a live drive to fake a change of direction while keeping the ball on the same side and continuing the attack. This is deception, not a crossover.",
+    "tiers": [
+      {
+        "range": [
+          0,
+          5
+        ],
+        "label": "No In-and-Out Package"
+      },
+      {
+        "range": [
+          10,
+          15
+        ],
+        "label": "Rare Direction Fake"
+      },
+      {
+        "range": [
+          20,
+          25
+        ],
+        "label": "Selective In-and-Out"
+      },
+      {
+        "range": [
+          30,
+          35
+        ],
+        "label": "Regular Deception Move"
+      },
+      {
+        "range": [
+          40,
+          45
+        ],
+        "label": "Strong In-and-Out Creator"
+      },
+      {
+        "range": [
+          50,
+          55
+        ],
+        "label": "Featured Direction Manipulator"
+      },
+      {
+        "range": [
+          60,
+          65
+        ],
+        "label": "Elite In-and-Out Specialist"
+      },
+      {
+        "range": [
+          65,
+          65
+        ],
+        "label": "Extreme / Outlier Profile"
+      }
+    ],
+    "nba_norm": "5–25",
+    "cap": 65
+  },
+  "Driving:No Driving Dribble Move": {
+    "definition": "Definition: Selection weight for a simple or straight-line continuation instead of a driving dribble move once the player is attacking. Lower values open the move branch more often; higher values favor direct drives. This competes with the individual driving-move tendencies rather than completely disabling them.",
+    "tiers": [
+      {
+        "range": [
+          0,
+          5
+        ],
+        "label": "Almost Always Uses a Move or Counter"
+      },
+      {
+        "range": [
+          10,
+          15
+        ],
+        "label": "Heavy Move-Based Attacker"
+      },
+      {
+        "range": [
+          20,
+          25
+        ],
+        "label": "Frequent Move Creator"
+      },
+      {
+        "range": [
+          30,
+          35
+        ],
+        "label": "Balanced Direct / Move Mix"
+      },
+      {
+        "range": [
+          40,
+          45
+        ],
+        "label": "Controlled Drive Style"
+      },
+      {
+        "range": [
+          50,
+          55
+        ],
+        "label": "Direct-Leaning Attacker"
+      },
+      {
+        "range": [
+          60,
+          65
+        ],
+        "label": "Mostly Straight-Line Attacker"
+      },
+      {
+        "range": [
+          70,
+          75
+        ],
+        "label": "Rare Driving-Move Branch"
+      },
+      {
+        "range": [
+          80,
+          85
+        ],
+        "label": "Near No-Move Drive Style"
+      },
+      {
+        "range": [
+          90,
+          90
+        ],
+        "label": "Traditional Big No-Move Profile"
+      }
+    ],
+    "nba_norm": "5–35",
+    "cap": 90
+  },
+  "Driving:Attack Strong On Drive": {
+    "definition": "Definition: Controls willingness to continue the downhill attack toward the basket once a drive has begun or a driving advantage is created. Higher values make the player turn the corner, continue penetration and pressure the paint instead of stopping short for an early pull-up or reset. Lower values increase early pull-ups, perimeter stops, resets, or abandoned penetration. Drive controls how often the attack begins. Drive Step Back is a separate retreat/counter choice that can stop or reset the attack when help arrives. Crash is a separate contact-fall outcome after a finish meets contact.",
+    "tiers": [
+      {
+        "range": [
+          0,
+          5
+        ],
+        "label": "Avoids Drive Commitment"
+      },
+      {
+        "range": [
+          10,
+          15
+        ],
+        "label": "Rare Drive Continuation"
+      },
+      {
+        "range": [
+          20,
+          25
+        ],
+        "label": "Selective Downhill Follow-Through"
+      },
+      {
+        "range": [
+          30,
+          35
+        ],
+        "label": "Controlled Attack Commitment"
+      },
+      {
+        "range": [
+          40,
+          45
+        ],
+        "label": "Moderate Drive Pressure"
+      },
+      {
+        "range": [
+          50,
+          55
+        ],
+        "label": "Regular Drive Continuation"
+      },
+      {
+        "range": [
+          60,
+          65
+        ],
+        "label": "Strong Downhill Commitment"
+      },
+      {
+        "range": [
+          70,
+          75
+        ],
+        "label": "High Drive Commitment"
+      },
+      {
+        "range": [
+          80,
+          85
+        ],
+        "label": "Primary Rim-Pressure Engine"
+      },
+      {
+        "range": [
+          90,
+          90
+        ],
+        "label": "Extreme / Outlier Profile"
+      }
+    ],
+    "nba_norm": "50–75",
+    "cap": 90
+  },
+  "Passing:Dish To Open Man": {
+    "definition": "Definition: Conditional preference for passing to an open teammate after the player creates an advantage, draws help, penetrates the defense, or reaches a finishing decision. Higher values favor kickouts, dump-offs, and open-man passes over keeping the ball or forcing a shot. This is not general passing frequency, passing accuracy, or overall playmaking ability, and excessive values may cause early bailouts before the defense is fully pressured.",
+    "tiers": [
+      {
+        "range": [
+          0,
+          5
+        ],
+        "label": "Rarely Gives Up the Ball"
+      },
+      {
+        "range": [
+          10,
+          15
+        ],
+        "label": "Finish-First Decision Maker"
+      },
+      {
+        "range": [
+          20,
+          25
+        ],
+        "label": "Selective Kickout Passer"
+      },
+      {
+        "range": [
+          30,
+          35
+        ],
+        "label": "Balanced Scorer-Passer"
+      },
+      {
+        "range": [
+          40,
+          45
+        ],
+        "label": "High-Level Drive-and-Kick Reader"
+      },
+      {
+        "range": [
+          50,
+          55
+        ],
+        "label": "Pass-First Creator"
+      },
+      {
+        "range": [
+          60,
+          60
+        ],
+        "label": "Elite Assist Engine"
+      },
+      {
+        "range": [
+          65,
+          65
+        ],
+        "label": "Pass-Dominant Correction"
+      }
+    ],
+    "nba_norm": "25–45",
+    "cap": 65
+  },
+  "Passing:Flashy Pass": {
+    "definition": "Definition: Secondary pass-style selection tendency that controls how often the player chooses a creative, deceptive, stylish, or higher-risk pass animation after a pass has already been selected. This can include no-look, behind-the-back, wraparound, improvised, and other expressive passes. It does not increase general passing frequency or determine passing accuracy.",
+    "tiers": [
+      {
+        "range": [
+          0,
+          5
+        ],
+        "label": "Safe-Pass-Only Profile"
+      },
+      {
+        "range": [
+          10,
+          15
+        ],
+        "label": "Rare Flashy Pass"
+      },
+      {
+        "range": [
+          20,
+          25
+        ],
+        "label": "Occasional Flair"
+      },
+      {
+        "range": [
+          30,
+          35
+        ],
+        "label": "Regular Creative Passing"
+      },
+      {
+        "range": [
+          40,
+          45
+        ],
+        "label": "High-Flair Passer"
+      },
+      {
+        "range": [
+          50,
+          55
+        ],
+        "label": "Elite Creative Passer"
+      },
+      {
+        "range": [
+          60,
+          60
+        ],
+        "label": "Extreme Specialist"
+      }
+    ],
+    "nba_norm": "5–25",
+    "cap": 60
+  },
+  "Passing:Alley-Oop Pass": {
+    "definition": "Definition: Frequency of attempting alley-oop passes when a teammate is cutting, rolling, slipping, or running toward the rim and the game detects a viable lob window. Higher values increase willingness to choose the lob instead of a normal pass and may cause the player to accept more marginal lob windows. This does not create the opening, determine pass accuracy, or control the receiver’s finish.",
+    "tiers": [
+      {
+        "range": [
+          0,
+          5
+        ],
+        "label": "Avoids Lob Passes"
+      },
+      {
+        "range": [
+          10,
+          15
+        ],
+        "label": "Rare Lob Read"
+      },
+      {
+        "range": [
+          20,
+          25
+        ],
+        "label": "Selective Alley-Oop Passer"
+      },
+      {
+        "range": [
+          30,
+          35
+        ],
+        "label": "Regular Lob-Creation Threat"
+      },
+      {
+        "range": [
+          40,
+          45
+        ],
+        "label": "Frequent Roll / Cut Lob Creator"
+      },
+      {
+        "range": [
+          50,
+          55
+        ],
+        "label": "High-Volume Alley-Oop Facilitator"
+      },
+      {
+        "range": [
+          60,
+          60
+        ],
+        "label": "Elite Lob-Read Passer"
+      },
+      {
+        "range": [
+          65,
+          65
+        ],
+        "label": "Extreme / Outlier Profile"
+      }
+    ],
+    "nba_norm": "5–25",
+    "cap": 65
+  },
+  "Freelance:Roll vs. Pop": {
+    "definition": "Definition: Directional preference after the player actually sets a screen. Higher values favor rolling, diving, or slipping toward the basket. Lower values favor popping, fading, or spacing away from the screen. This does not determine screen frequency, screen quality, or whether the player is used as a screener.",
+    "tiers": [
+      {
+        "range": [
+          0,
+          5
+        ],
+        "label": "Pure Popper / No Roll"
+      },
+      {
+        "range": [
+          10,
+          15
+        ],
+        "label": "Heavy Popper"
+      },
+      {
+        "range": [
+          20,
+          25
+        ],
+        "label": "Pop-Leaning"
+      },
+      {
+        "range": [
+          30,
+          35
+        ],
+        "label": "Pop-First Balanced"
+      },
+      {
+        "range": [
+          40,
+          45
+        ],
+        "label": "Balanced Pop / Roll"
+      },
+      {
+        "range": [
+          50,
+          55
+        ],
+        "label": "Neutral / NBA Norm"
+      },
+      {
+        "range": [
+          60,
+          65
+        ],
+        "label": "Roll-Leaning"
+      },
+      {
+        "range": [
+          70,
+          75
+        ],
+        "label": "Strong Roller"
+      },
+      {
+        "range": [
+          80,
+          80
+        ],
+        "label": "Elite Roll Ceiling"
+      },
+      {
+        "range": [
+          85,
+          85
+        ],
+        "label": "Extreme Rim-Running Specialist"
+      }
+    ],
+    "nba_norm": "40–60",
+    "cap": 85
+  },
+  "Freelance:Spot vs. Cut": {
+    "definition": "Definition: General off-ball positioning preference when the player is not handling the ball or completing a screen action. Higher values favor remaining spaced, relocating around the perimeter, or settling into spot-up positions. Lower values favor cutting, diving, filling open interior space, or moving toward the basket. This does not determine how often plays call for cuts or spot-ups.",
+    "tiers": [
+      {
+        "range": [
+          0,
+          5
+        ],
+        "label": "Pure Cutter / No Spot-Up"
+      },
+      {
+        "range": [
+          10,
+          15
+        ],
+        "label": "Heavy Cutter"
+      },
+      {
+        "range": [
+          20,
+          25
+        ],
+        "label": "Cutter-Leaning"
+      },
+      {
+        "range": [
+          30,
+          35
+        ],
+        "label": "Cut-First Balanced"
+      },
+      {
+        "range": [
+          40,
+          45
+        ],
+        "label": "Balanced Cut / Spot"
+      },
+      {
+        "range": [
+          50,
+          55
+        ],
+        "label": "Neutral / NBA Norm"
+      },
+      {
+        "range": [
+          60,
+          65
+        ],
+        "label": "Spot-Up Leaning"
+      },
+      {
+        "range": [
+          70,
+          75
+        ],
+        "label": "Strong Spacer"
+      },
+      {
+        "range": [
+          80,
+          80
+        ],
+        "label": "Elite Spacer Ceiling"
+      },
+      {
+        "range": [
+          85,
+          85
+        ],
+        "label": "Extreme Spacer"
+      }
+    ],
+    "nba_norm": "40–60",
+    "cap": 85
+  },
+  "Freelance:Iso vs. Elite Defender": {
+    "definition": "Definition: Conditional willingness to attack one-on-one when the player’s primary defender is an elite defensive matchup. Higher values increase the likelihood that the player attacks individually rather than continuing the current team action. This does not determine isolation ability, scoring success, or total offensive usage; Play Discipline, Touch, play types, and team role still govern whether the opportunity occurs.",
+    "tiers": [
+      {
+        "range": [
+          0,
+          5
+        ],
+        "label": "Avoids Isolation vs Elite Defenders"
+      },
+      {
+        "range": [
+          10,
+          15
+        ],
+        "label": "Rare Attack vs Elite"
+      },
+      {
+        "range": [
+          20,
+          25
+        ],
+        "label": "Selective Creation vs Elite"
+      },
+      {
+        "range": [
+          30,
+          35
+        ],
+        "label": "Primary-Creator Confidence vs Elite"
+      },
+      {
+        "range": [
+          40,
+          45
+        ],
+        "label": "Elite Matchup-Independent Creator"
+      },
+      {
+        "range": [
+          50,
+          50
+        ],
+        "label": "Extreme / Outlier Profile"
+      }
+    ],
+    "nba_norm": "0–10",
+    "cap": 50
+  },
+  "Freelance:Iso vs. Good Defender": {
+    "definition": "Definition: Conditional willingness to attack one-on-one when the player’s primary defender is a good or above-average defensive matchup. Higher values increase the likelihood that the player attacks individually rather than continuing the current team action. This does not determine isolation ability, scoring success, or total offensive usage; Play Discipline, Touch, play types, and team role still govern whether the opportunity occurs.",
+    "tiers": [
+      {
+        "range": [
+          0,
+          5
+        ],
+        "label": "Avoids Isolation vs Good Defenders"
+      },
+      {
+        "range": [
+          10,
+          15
+        ],
+        "label": "Rare Attack vs Good"
+      },
+      {
+        "range": [
+          20,
+          25
+        ],
+        "label": "Selective Creation vs Good"
+      },
+      {
+        "range": [
+          30,
+          35
+        ],
+        "label": "Regular Creator vs Good"
+      },
+      {
+        "range": [
+          40,
+          45
+        ],
+        "label": "Strong Creator vs Good"
+      },
+      {
+        "range": [
+          50,
+          55
+        ],
+        "label": "Elite Creator vs Good"
+      },
+      {
+        "range": [
+          60,
+          60
+        ],
+        "label": "Extreme / Outlier Profile"
+      }
+    ],
+    "nba_norm": "0–15",
+    "cap": 60
+  },
+  "Freelance:Iso vs. Average Defender": {
+    "definition": "Definition: Conditional willingness to attack one-on-one when the player’s primary defender is an average defensive matchup. Higher values increase the likelihood that the player attacks individually rather than continuing the current team action. This does not determine isolation ability, scoring success, or total offensive usage; Play Discipline, Touch, play types, and team role still govern whether the opportunity occurs.",
+    "tiers": [
+      {
+        "range": [
+          0,
+          5
+        ],
+        "label": "Avoids Isolation vs Average Defenders"
+      },
+      {
+        "range": [
+          10,
+          15
+        ],
+        "label": "Rare Attack vs Average"
+      },
+      {
+        "range": [
+          20,
+          25
+        ],
+        "label": "Selective Creation vs Average"
+      },
+      {
+        "range": [
+          30,
+          35
+        ],
+        "label": "Controlled Creator Usage"
+      },
+      {
+        "range": [
+          40,
+          45
+        ],
+        "label": "Regular Creator Usage"
+      },
+      {
+        "range": [
+          50,
+          55
+        ],
+        "label": "Strong Creator Usage"
+      },
+      {
+        "range": [
+          60,
+          65
+        ],
+        "label": "Primary Matchup Attacker"
+      },
+      {
+        "range": [
+          70,
+          70
+        ],
+        "label": "Extreme / Outlier Profile"
+      }
+    ],
+    "nba_norm": "0–20",
+    "cap": 70
+  },
+  "Freelance:Iso vs. Poor Defender": {
+    "definition": "Definition: Conditional willingness to attack one-on-one when the player’s primary defender is a poor or exploitable defensive matchup. Higher values increase the likelihood that the player attacks individually rather than continuing the current team action. This does not determine isolation ability, scoring success, or total offensive usage; Play Discipline, Touch, play types, and team role still govern whether the opportunity occurs.",
+    "tiers": [
+      {
+        "range": [
+          0,
+          5
+        ],
+        "label": "Avoids Isolation Even vs Poor Defenders"
+      },
+      {
+        "range": [
+          10,
+          15
+        ],
+        "label": "Rare Mismatch Attack"
+      },
+      {
+        "range": [
+          20,
+          25
+        ],
+        "label": "Selective Mismatch Attack"
+      },
+      {
+        "range": [
+          30,
+          35
+        ],
+        "label": "Controlled Attack vs Poor"
+      },
+      {
+        "range": [
+          40,
+          45
+        ],
+        "label": "Regular Mismatch Punisher"
+      },
+      {
+        "range": [
+          50,
+          55
+        ],
+        "label": "Strong Mismatch Attacker"
+      },
+      {
+        "range": [
+          60,
+          65
+        ],
+        "label": "Star-Level Mismatch Hunter"
+      },
+      {
+        "range": [
+          70,
+          70
+        ],
+        "label": "Elite Creator vs Poor"
+      },
+      {
+        "range": [
+          75,
+          75
+        ],
+        "label": "Extreme / Outlier Profile"
+      }
+    ],
+    "nba_norm": "5–25",
+    "cap": 75
+  },
+  "Freelance:Play Discipline": {
+    "definition": "Definition: Controls how strictly and how long the player follows a called play, assigned action, or team structure before freelancing into a shot, drive, isolation, reset, or improvised decision. Higher values increase adherence to the designed action. Lower values give the player greater freedom to abandon the action early. This is not basketball IQ, decision quality, coachability, or general unselfishness.",
+    "tiers": [
+      {
+        "range": [
+          0,
+          5
+        ],
+        "label": "Pure Freelance / Immediately Abandons Structure"
+      },
+      {
+        "range": [
+          10,
+          15
+        ],
+        "label": "Very Low Discipline"
+      },
+      {
+        "range": [
+          20,
+          25
+        ],
+        "label": "Heavy Creator Freedom"
+      },
+      {
+        "range": [
+          30,
+          35
+        ],
+        "label": "Star-Level Freelancing"
+      },
+      {
+        "range": [
+          40,
+          45
+        ],
+        "label": "Balanced Creator Freedom"
+      },
+      {
+        "range": [
+          50,
+          55
+        ],
+        "label": "Normal Play Discipline"
+      },
+      {
+        "range": [
+          60,
+          65
+        ],
+        "label": "Strong System Discipline"
+      },
+      {
+        "range": [
+          70,
+          75
+        ],
+        "label": "High Play Adherence"
+      },
+      {
+        "range": [
+          80,
+          85
+        ],
+        "label": "Strict Role Execution"
+      },
+      {
+        "range": [
+          90,
+          90
+        ],
+        "label": "System-Locked Specialist"
+      }
+    ],
+    "nba_norm": "25–45",
+    "cap": 90
+  },
+  "Post Game:Post Up": {
+    "definition": "Definition: Frequency and selection weight for establishing, requesting, or accepting a post possession. This is the post-opportunity gate, not the shot decision. Assign primarily from post-up possessions, post touches, role, multi-year usage, and film; size, strength, or interior scoring ability alone do not justify a high value.",
+    "tiers": [
+      {
+        "range": [
+          0,
+          5
+        ],
+        "label": "No Post Initiation"
+      },
+      {
+        "range": [
+          10,
+          15
+        ],
+        "label": "Rare Mismatch Post"
+      },
+      {
+        "range": [
+          20,
+          25
+        ],
+        "label": "Occasional Secondary Post"
+      },
+      {
+        "range": [
+          30,
+          35
+        ],
+        "label": "Situational Post Option"
+      },
+      {
+        "range": [
+          40,
+          45
+        ],
+        "label": "Regular Post Option"
+      },
+      {
+        "range": [
+          50,
+          55
+        ],
+        "label": "Featured Post Scorer / Hub"
+      },
+      {
+        "range": [
+          60,
+          65
+        ],
+        "label": "Primary Post Option"
+      },
+      {
+        "range": [
+          70,
+          75
+        ],
+        "label": "Star Post Hub"
+      },
+      {
+        "range": [
+          80,
+          80
+        ],
+        "label": "Elite Post Engine"
+      },
+      {
+        "range": [
+          85,
+          85
+        ],
+        "label": "Extreme / Outlier Post Engine"
+      }
+    ],
+    "nba_norm": "10–45",
+    "cap": 85
+  },
+  "Post Game:Post Back Down": {
+    "definition": "Definition: Conditional preference for controlled backing down after a post catch. This represents patient pressure and measured displacement, not general post-up frequency. Assign from actual backdown behavior and keep separate from Post Aggressive Back Down.",
+    "tiers": [
+      {
+        "range": [
+          0,
+          5
+        ],
+        "label": "Avoids Backing Down"
+      },
+      {
+        "range": [
+          10,
+          15
+        ],
+        "label": "Rare Backdown"
+      },
+      {
+        "range": [
+          20,
+          25
+        ],
+        "label": "Selective Backdown"
+      },
+      {
+        "range": [
+          30,
+          35
+        ],
+        "label": "Controlled Backdown"
+      },
+      {
+        "range": [
+          40,
+          45
+        ],
+        "label": "Balanced Backdown Usage"
+      },
+      {
+        "range": [
+          50,
+          55
+        ],
+        "label": "Regular Backdown"
+      },
+      {
+        "range": [
+          60,
+          65
+        ],
+        "label": "Strong Backdown Preference"
+      },
+      {
+        "range": [
+          70,
+          75
+        ],
+        "label": "Dominant Backdown Style"
+      },
+      {
+        "range": [
+          80,
+          80
+        ],
+        "label": "Extreme / Outlier Backdown"
+      }
+    ],
+    "nba_norm": "10–45",
+    "cap": 80
+  },
+  "Post Game:Post Aggressive Backdown": {
+    "definition": "Definition: Conditional preference for forceful, displacement-oriented bumps after a post catch. This is not a general strength or post-scoring rating. It should normally remain 10-20 points below Post Back Down unless repeated bully-style possessions are clearly supported by film.",
+    "tiers": [
+      {
+        "range": [
+          0,
+          5
+        ],
+        "label": "No Aggressive Backdown"
+      },
+      {
+        "range": [
+          10,
+          15
+        ],
+        "label": "Rare Power Bump"
+      },
+      {
+        "range": [
+          20,
+          25
+        ],
+        "label": "Situational Physical Backdown"
+      },
+      {
+        "range": [
+          30,
+          35
+        ],
+        "label": "Controlled Power Usage"
+      },
+      {
+        "range": [
+          40,
+          45
+        ],
+        "label": "Regular Aggressive Backdown"
+      },
+      {
+        "range": [
+          50,
+          55
+        ],
+        "label": "Strong Physical Post Style"
+      },
+      {
+        "range": [
+          60,
+          65
+        ],
+        "label": "Elite Power Backdown"
+      },
+      {
+        "range": [
+          70,
+          70
+        ],
+        "label": "Extreme / Outlier Bully Style"
+      }
+    ],
+    "nba_norm": "10–30",
+    "cap": 70
+  },
+  "Post Game:Post Face Up": {
+    "definition": "Definition: Conditional preference to turn and face the defender from a post catch before shooting, driving, passing, or countering. This can be high for mobile bigs and wings even when Back Down is moderate.",
+    "tiers": [
+      {
+        "range": [
+          0,
+          5
+        ],
+        "label": "Never Faces Up"
+      },
+      {
+        "range": [
+          10,
+          15
+        ],
+        "label": "Rare Face-Up"
+      },
+      {
+        "range": [
+          20,
+          25
+        ],
+        "label": "Selective Face-Up"
+      },
+      {
+        "range": [
+          30,
+          35
+        ],
+        "label": "Balanced Face-Up Usage"
+      },
+      {
+        "range": [
+          40,
+          45
+        ],
+        "label": "Regular Face-Up Scorer"
+      },
+      {
+        "range": [
+          50,
+          55
+        ],
+        "label": "Frequent Face-Up Creator"
+      },
+      {
+        "range": [
+          60,
+          60
+        ],
+        "label": "Extreme / Outlier Face-Up Profile"
+      }
+    ],
+    "nba_norm": "10–35",
+    "cap": 60
+  },
+  "Post Game:Post Spin": {
+    "definition": "Definition: Conditional selection weight for a spin counter after post control is established. Assign from move-specific usage and film, not from general post skill or versatility.",
+    "tiers": [
+      {
+        "range": [
+          0,
+          5
+        ],
+        "label": "No Post Spin"
+      },
+      {
+        "range": [
+          10,
+          15
+        ],
+        "label": "Rare Post Spin"
+      },
+      {
+        "range": [
+          20,
+          25
+        ],
+        "label": "Selective Post Spin"
+      },
+      {
+        "range": [
+          30,
+          35
+        ],
+        "label": "Regular Post Spin"
+      },
+      {
+        "range": [
+          40,
+          45
+        ],
+        "label": "Advanced Spin Counter"
+      },
+      {
+        "range": [
+          50,
+          50
+        ],
+        "label": "Signature Post-Spin Threat"
+      },
+      {
+        "range": [
+          55,
+          55
+        ],
+        "label": "Extreme / Outlier Spin Specialist"
+      }
+    ],
+    "nba_norm": "10–30",
+    "cap": 55
+  },
+  "Post Game:Post Drive": {
+    "definition": "Definition: Conditional selection weight for driving toward the rim from a face-up or post-controlled catch. This is separate from the global Drive tendency and requires post or face-up opportunity.",
+    "tiers": [
+      {
+        "range": [
+          0,
+          5
+        ],
+        "label": "No Post Drive"
+      },
+      {
+        "range": [
+          10,
+          15
+        ],
+        "label": "Rare Post Drive"
+      },
+      {
+        "range": [
+          20,
+          25
+        ],
+        "label": "Selective Post Drive"
+      },
+      {
+        "range": [
+          30,
+          35
+        ],
+        "label": "Regular Post Drive"
+      },
+      {
+        "range": [
+          40,
+          45
+        ],
+        "label": "Strong Face-Up Drive Usage"
+      },
+      {
+        "range": [
+          50,
+          50
+        ],
+        "label": "Primary Post-Drive Creator"
+      },
+      {
+        "range": [
+          55,
+          55
+        ],
+        "label": "Extreme / Outlier Post Driver"
+      }
+    ],
+    "nba_norm": "10–30",
+    "cap": 55
+  },
+  "Post Game:Post Drop Step": {
+    "definition": "Definition: Conditional selection weight for using a drop step from established post position. Assign from actual move usage and interior role, not standing-dunk ability, strength, or size alone.",
+    "tiers": [
+      {
+        "range": [
+          0,
+          5
+        ],
+        "label": "No Drop Step"
+      },
+      {
+        "range": [
+          10,
+          15
+        ],
+        "label": "Rare Drop Step"
+      },
+      {
+        "range": [
+          20,
+          25
+        ],
+        "label": "Selective Drop Step"
+      },
+      {
+        "range": [
+          30,
+          35
+        ],
+        "label": "Regular Drop-Step Usage"
+      },
+      {
+        "range": [
+          40,
+          45
+        ],
+        "label": "Strong Power-Post Usage"
+      },
+      {
+        "range": [
+          50,
+          55
+        ],
+        "label": "Elite Drop-Step Scorer"
+      },
+      {
+        "range": [
+          60,
+          60
+        ],
+        "label": "Extreme / Outlier Drop-Step Specialist"
+      }
+    ],
+    "nba_norm": "10–30",
+    "cap": 60
+  },
+  "Post Game:Shoot From Post": {
+    "definition": "Definition: Conditional likelihood of ending an established post possession with a shot instead of passing, holding, resetting, or exiting. High Post Up does not require equally high Shoot From Post; passing hubs should often separate them.",
+    "tiers": [
+      {
+        "range": [
+          0,
+          5
+        ],
+        "label": "Almost Never Shoots From Post"
+      },
+      {
+        "range": [
+          10,
+          15
+        ],
+        "label": "Pass-or-Reset Post Player"
+      },
+      {
+        "range": [
+          20,
+          25
+        ],
+        "label": "Selective Post Shot"
+      },
+      {
+        "range": [
+          30,
+          35
+        ],
+        "label": "Balanced Post Decision"
+      },
+      {
+        "range": [
+          40,
+          45
+        ],
+        "label": "Regular Post Scorer"
+      },
+      {
+        "range": [
+          50,
+          55
+        ],
+        "label": "Scoring-Oriented Post Player"
+      },
+      {
+        "range": [
+          60,
+          65
+        ],
+        "label": "Primary Post Scorer"
+      },
+      {
+        "range": [
+          70,
+          70
+        ],
+        "label": "Elite Shot-First Post Scorer"
+      },
+      {
+        "range": [
+          75,
+          75
+        ],
+        "label": "Extreme / Outlier Post-Shot Commitment"
+      }
+    ],
+    "nba_norm": "10–35",
+    "cap": 75
+  },
+  "Post Game:Post Hook Left": {
+    "definition": "Definition: Conditional hook selection toward the left after a hook opportunity exists. This is a move-direction branch, not a general post-scoring rating. Assign from actual hook attempts and shoulder/turn preference, not handedness alone.",
+    "tiers": [
+      {
+        "range": [
+          0,
+          5
+        ],
+        "label": "No Hook in This Direction"
+      },
+      {
+        "range": [
+          10,
+          15
+        ],
+        "label": "Rare Directional Hook"
+      },
+      {
+        "range": [
+          20,
+          25
+        ],
+        "label": "Selective Directional Hook"
+      },
+      {
+        "range": [
+          30,
+          35
+        ],
+        "label": "Regular Directional Hook"
+      },
+      {
+        "range": [
+          40,
+          45
+        ],
+        "label": "Signature Hook Direction"
+      },
+      {
+        "range": [
+          50,
+          50
+        ],
+        "label": "Extreme / Outlier Hook Direction"
+      }
+    ],
+    "nba_norm": "0–15",
+    "cap": 50
+  },
+  "Post Game:Post Hook Right": {
+    "definition": "Definition: Conditional hook selection toward the right after a hook opportunity exists. This is a move-direction branch, not a general post-scoring rating. Assign from actual hook attempts and shoulder/turn preference, not handedness alone.",
+    "tiers": [
+      {
+        "range": [
+          0,
+          5
+        ],
+        "label": "No Hook in This Direction"
+      },
+      {
+        "range": [
+          10,
+          15
+        ],
+        "label": "Rare Directional Hook"
+      },
+      {
+        "range": [
+          20,
+          25
+        ],
+        "label": "Selective Directional Hook"
+      },
+      {
+        "range": [
+          30,
+          35
+        ],
+        "label": "Regular Directional Hook"
+      },
+      {
+        "range": [
+          40,
+          45
+        ],
+        "label": "Signature Hook Direction"
+      },
+      {
+        "range": [
+          50,
+          50
+        ],
+        "label": "Extreme / Outlier Hook Direction"
+      }
+    ],
+    "nba_norm": "0–15",
+    "cap": 50
+  },
+  "Post Game:Post Fade Left": {
+    "definition": "Definition: Conditional fadeaway selection toward the left after a fade opportunity exists. Assign from actual directional fade usage, not general mid-range ability or post reputation.",
+    "tiers": [
+      {
+        "range": [
+          0,
+          5
+        ],
+        "label": "No Fade in This Direction"
+      },
+      {
+        "range": [
+          10,
+          15
+        ],
+        "label": "Rare Directional Fade"
+      },
+      {
+        "range": [
+          20,
+          25
+        ],
+        "label": "Selective Directional Fade"
+      },
+      {
+        "range": [
+          30,
+          35
+        ],
+        "label": "Regular Directional Fade"
+      },
+      {
+        "range": [
+          40,
+          45
+        ],
+        "label": "Signature Fade Direction"
+      },
+      {
+        "range": [
+          50,
+          50
+        ],
+        "label": "Extreme / Outlier Fade Direction"
+      }
+    ],
+    "nba_norm": "0–20",
+    "cap": 50
+  },
+  "Post Game:Post Fade Right": {
+    "definition": "Definition: Conditional fadeaway selection toward the right after a fade opportunity exists. Assign from actual directional fade usage, not general mid-range ability or post reputation.",
+    "tiers": [
+      {
+        "range": [
+          0,
+          5
+        ],
+        "label": "No Fade in This Direction"
+      },
+      {
+        "range": [
+          10,
+          15
+        ],
+        "label": "Rare Directional Fade"
+      },
+      {
+        "range": [
+          20,
+          25
+        ],
+        "label": "Selective Directional Fade"
+      },
+      {
+        "range": [
+          30,
+          35
+        ],
+        "label": "Regular Directional Fade"
+      },
+      {
+        "range": [
+          40,
+          45
+        ],
+        "label": "Signature Fade Direction"
+      },
+      {
+        "range": [
+          50,
+          50
+        ],
+        "label": "Extreme / Outlier Fade Direction"
+      }
+    ],
+    "nba_norm": "0–20",
+    "cap": 50
+  },
+  "Post Game:Post Shimmy Shot": {
+    "definition": "Definition: Conditional shoulder fake or body feint from established post position before a shot or counter. This is a rare move-specific branch and should require recurring film evidence.",
+    "tiers": [
+      {
+        "range": [
+          0,
+          5
+        ],
+        "label": "No Shimmy Usage"
+      },
+      {
+        "range": [
+          10,
+          15
+        ],
+        "label": "Rare Post Feint"
+      },
+      {
+        "range": [
+          20,
+          25
+        ],
+        "label": "Occasional Shimmy Counter"
+      },
+      {
+        "range": [
+          30,
+          35
+        ],
+        "label": "Regular Post-Fake Usage"
+      },
+      {
+        "range": [
+          40,
+          40
+        ],
+        "label": "Signature Shimmy Creator"
+      },
+      {
+        "range": [
+          45,
+          45
+        ],
+        "label": "Extreme / Outlier Shimmy Specialist"
+      }
+    ],
+    "nba_norm": "0–20",
+    "cap": 45
+  },
+  "Post Game:Post Hop Shot": {
+    "definition": "Definition: Conditional post-specific lateral or backward hop used to create separation before a jumper. This is separate from Hop Step Layup and should be reserved for documented specialists.",
+    "tiers": [
+      {
+        "range": [
+          0,
+          5
+        ],
+        "label": "No Post Hop Shot"
+      },
+      {
+        "range": [
+          10,
+          15
+        ],
+        "label": "Rare Hop Jumper"
+      },
+      {
+        "range": [
+          20,
+          25
+        ],
+        "label": "Occasional Post Hop Shot"
+      },
+      {
+        "range": [
+          30,
+          35
+        ],
+        "label": "Advanced Post Hop Scorer"
+      },
+      {
+        "range": [
+          40,
+          40
+        ],
+        "label": "Signature Post Hop Specialist"
+      },
+      {
+        "range": [
+          45,
+          45
+        ],
+        "label": "Extreme / Outlier Hop Specialist"
+      }
+    ],
+    "nba_norm": "0–20",
+    "cap": 45
+  },
+  "Post Game:Post Step Back Shot": {
+    "definition": "Definition: Conditional retreat or separation jumper from post control. This is separate from perimeter stepback tendencies and should be assigned from move-specific post film.",
+    "tiers": [
+      {
+        "range": [
+          0,
+          5
+        ],
+        "label": "No Post Step Back"
+      },
+      {
+        "range": [
+          10,
+          15
+        ],
+        "label": "Rare Retreat Shot"
+      },
+      {
+        "range": [
+          20,
+          25
+        ],
+        "label": "Occasional Post Step Back"
+      },
+      {
+        "range": [
+          30,
+          35
+        ],
+        "label": "Regular Post Separation Shot"
+      },
+      {
+        "range": [
+          40,
+          45
+        ],
+        "label": "Signature Post Stepback"
+      },
+      {
+        "range": [
+          50,
+          50
+        ],
+        "label": "Extreme / Outlier Post Stepback"
+      }
+    ],
+    "nba_norm": "0–20",
+    "cap": 50
+  },
+  "Post Game:Post Up And Under": {
+    "definition": "Definition: Conditional post shot-fake counter followed by a step-around, step-through, or under finish. This is separate from Triple Threat Pump Fake and general Step Through Shot and should be reserved for documented usage.",
+    "tiers": [
+      {
+        "range": [
+          0,
+          5
+        ],
+        "label": "No Post Up & Under"
+      },
+      {
+        "range": [
+          10,
+          15
+        ],
+        "label": "Rare Post-Fake Counter"
+      },
+      {
+        "range": [
+          20,
+          25
+        ],
+        "label": "Occasional Up & Under"
+      },
+      {
+        "range": [
+          30,
+          35
+        ],
+        "label": "Regular Post-Fake Finish"
+      },
+      {
+        "range": [
+          40,
+          40
+        ],
+        "label": "Signature Up-and-Under Scorer"
+      },
+      {
+        "range": [
+          45,
+          45
+        ],
+        "label": "Extreme / Outlier Counter Specialist"
+      }
+    ],
+    "nba_norm": "0–20",
+    "cap": 45
+  },
+  "Defense:Take Charge": {
+    "definition": "Definition: Willingness to establish legal position and attempt to draw an offensive foul. Higher values increase charge attempts; excessive values can make defenders plant unnecessarily instead of contesting normally.",
+    "tiers": [
+      {
+        "range": [
+          0,
+          5
+        ],
+        "label": "Almost Never Attempts a Charge"
+      },
+      {
+        "range": [
+          10,
+          15
+        ],
+        "label": "Situational Charge Attempt"
+      },
+      {
+        "range": [
+          20,
+          25
+        ],
+        "label": "Regular Charge Awareness"
+      },
+      {
+        "range": [
+          30,
+          30
+        ],
+        "label": "Charge-Drawing Specialist"
+      },
+      {
+        "range": [
+          35,
+          35
+        ],
+        "label": "Extreme / Outlier Profile"
+      }
+    ],
+    "nba_norm": "5–15",
+    "cap": null
+  },
+  "Defense:Foul": {
+    "definition": "Definition: Overall likelihood that a player's defensive actions end in a foul, including reaches, contests, blocks, rotations, and physical contact. This controls foul risk, not the severity of the foul.",
+    "tiers": [
+      {
+        "range": [
+          0,
+          5
+        ],
+        "label": "Exceptionally Clean / Almost No Fouls"
+      },
+      {
+        "range": [
+          10,
+          15
+        ],
+        "label": "Extremely Foul-Avoidant"
+      },
+      {
+        "range": [
+          20,
+          25
+        ],
+        "label": "Very Disciplined Defender"
+      },
+      {
+        "range": [
+          30,
+          35
+        ],
+        "label": "Low Foul Frequency"
+      },
+      {
+        "range": [
+          40,
+          45
+        ],
+        "label": "Controlled Foul Rate"
+      },
+      {
+        "range": [
+          50,
+          55
+        ],
+        "label": "Standard NBA Foul Rate"
+      },
+      {
+        "range": [
+          60,
+          65
+        ],
+        "label": "Aggressive Foul Risk"
+      },
+      {
+        "range": [
+          70,
+          75
+        ],
+        "label": "Foul-Prone Defender"
+      },
+      {
+        "range": [
+          80,
+          85
+        ],
+        "label": "Heavy Foul Risk"
+      },
+      {
+        "range": [
+          90,
+          95
+        ],
+        "label": "Extreme Foul-Prone Profile"
+      }
+    ],
+    "nba_norm": "45–65",
+    "cap": 95
+  },
+  "Defense:Hard Foul": {
+    "definition": "Definition: Conditional willingness to use an unusually forceful, deliberate, or severe foul/stop once a foul or defensive-stop opportunity exists. Higher values favor hard wrap-ups, forceful collisions, deliberate hard transition/rim stops, or comparable severe contact rather than ordinary fouls. This does not control total foul frequency and must not be assigned from general physicality, strength, aggressive defense, blocks, contests, steals, or defensive reputation.",
+    "tiers": [
+      {
+        "range": [
+          0,
+          5
+        ],
+        "label": "Minimal / Avoids Hard-Foul Behavior"
+      },
+      {
+        "range": [
+          10,
+          15
+        ],
+        "label": "Rare Hard Stop"
+      },
+      {
+        "range": [
+          20,
+          20
+        ],
+        "label": "Occasional Hard-Contact Stop"
+      },
+      {
+        "range": [
+          25,
+          25
+        ],
+        "label": "Noticeable Hard-Foul Component"
+      },
+      {
+        "range": [
+          30,
+          35
+        ],
+        "label": "Repeated Hard-Contact Profile"
+      },
+      {
+        "range": [
+          40,
+          40
+        ],
+        "label": "Strong / Outlier Hard-Foul Profile"
+      },
+      {
+        "range": [
+          45,
+          45
+        ],
+        "label": "Exceptional Current-Scale Outlier"
+      }
+    ],
+    "nba_norm": "5–20",
+    "cap": 40
+  },
+  "Defense:Pass Interception": {
+    "definition": "Definition: Willingness to anticipate, jump, or reach into passing lanes. Higher values create more interception attempts and gambles; they do not represent interception skill or success by themselves.",
+    "tiers": [
+      {
+        "range": [
+          0,
+          5
+        ],
+        "label": "Never Attacks Passing Lanes"
+      },
+      {
+        "range": [
+          10,
+          15
+        ],
+        "label": "Rare Lane Gamble"
+      },
+      {
+        "range": [
+          20,
+          25
+        ],
+        "label": "Selective Interception Attempt"
+      },
+      {
+        "range": [
+          30,
+          35
+        ],
+        "label": "Controlled Lane Activity"
+      },
+      {
+        "range": [
+          40,
+          45
+        ],
+        "label": "Active Anticipator"
+      },
+      {
+        "range": [
+          50,
+          55
+        ],
+        "label": "Regular Passing-Lane Disruptor"
+      },
+      {
+        "range": [
+          60,
+          65
+        ],
+        "label": "High Interception Attempt Rate"
+      },
+      {
+        "range": [
+          70,
+          75
+        ],
+        "label": "Aggressive Lane Hunter"
+      },
+      {
+        "range": [
+          80,
+          85
+        ],
+        "label": "Elite / Outlier Range"
+      }
+    ],
+    "nba_norm": "35–55",
+    "cap": null
+  },
+  "Defense:On-Ball Steal": {
+    "definition": "Definition: Willingness to reach, swipe, or directly attack the ball while guarding the ball handler. Higher values create more steal attempts, whiffs, and possible fouls; they do not represent steal ability by themselves.",
+    "tiers": [
+      {
+        "range": [
+          0,
+          5
+        ],
+        "label": "Never Reaches"
+      },
+      {
+        "range": [
+          10,
+          15
+        ],
+        "label": "Rare Reach Attempt"
+      },
+      {
+        "range": [
+          20,
+          25
+        ],
+        "label": "Selective Ball Pressure"
+      },
+      {
+        "range": [
+          30,
+          35
+        ],
+        "label": "Controlled Reach Activity"
+      },
+      {
+        "range": [
+          40,
+          45
+        ],
+        "label": "Regular On-Ball Steal Attempts"
+      },
+      {
+        "range": [
+          50,
+          55
+        ],
+        "label": "Aggressive Hands"
+      },
+      {
+        "range": [
+          60,
+          65
+        ],
+        "label": "High Reach Frequency"
+      },
+      {
+        "range": [
+          70,
+          75
+        ],
+        "label": "Constant Ball Pressure"
+      },
+      {
+        "range": [
+          80,
+          85
+        ],
+        "label": "Elite / Outlier Range"
+      }
+    ],
+    "nba_norm": "30–45",
+    "cap": null
+  },
+  "Defense:Block Shot": {
+    "definition": "Definition: Willingness to leave the floor or attempt a swat when challenging a shot. Higher values create more block attempts and possible defensive mistakes; attributes, positioning, and sliders determine success.",
+    "tiers": [
+      {
+        "range": [
+          0,
+          5
+        ],
+        "label": "Never Attempts a Block"
+      },
+      {
+        "range": [
+          10,
+          15
+        ],
+        "label": "Rare Swat Attempt"
+      },
+      {
+        "range": [
+          20,
+          25
+        ],
+        "label": "Selective Block Attempt"
+      },
+      {
+        "range": [
+          30,
+          35
+        ],
+        "label": "Controlled Rim Challenge"
+      },
+      {
+        "range": [
+          40,
+          45
+        ],
+        "label": "Regular Block Activity"
+      },
+      {
+        "range": [
+          50,
+          55
+        ],
+        "label": "Strong Block-Attempt Profile"
+      },
+      {
+        "range": [
+          60,
+          65
+        ],
+        "label": "High Block Frequency"
+      },
+      {
+        "range": [
+          70,
+          75
+        ],
+        "label": "Aggressive Rim Challenge"
+      },
+      {
+        "range": [
+          80,
+          85
+        ],
+        "label": "Elite / Outlier Range"
+      }
+    ],
+    "nba_norm": "30–50",
+    "cap": null
+  },
+  "Defense:Contest Shot": {
+    "definition": "Definition: Willingness to challenge shots with a closeout, hand-up contest, body challenge, or vertical contest. Higher values create more contest attempts and effort; they do not represent contest quality or shot-deterrence ability by themselves.",
+    "tiers": [
+      {
+        "range": [
+          0,
+          5
+        ],
+        "label": "No Contest Effort"
+      },
+      {
+        "range": [
+          10,
+          15
+        ],
+        "label": "Rare / Late Contest"
+      },
+      {
+        "range": [
+          20,
+          25
+        ],
+        "label": "Selective Shot Challenge"
+      },
+      {
+        "range": [
+          30,
+          35
+        ],
+        "label": "Controlled Contest Activity"
+      },
+      {
+        "range": [
+          40,
+          45
+        ],
+        "label": "Regular Contest Effort"
+      },
+      {
+        "range": [
+          50,
+          55
+        ],
+        "label": "Strong Contest Activity"
+      },
+      {
+        "range": [
+          60,
+          65
+        ],
+        "label": "High Contest Frequency"
+      },
+      {
+        "range": [
+          70,
+          75
+        ],
+        "label": "Constant Shot Challenge"
+      },
+      {
+        "range": [
+          80,
+          85
+        ],
+        "label": "Elite / Outlier Range"
+      }
+    ],
+    "nba_norm": "40–55",
+    "cap": null
+  },
+  "Jump Shooting:Shot Mid Left": {
+    "definition": "Definition: Overall selection weight for taking shots from the mid-range area. This acts as the global mid-range volume gate, while Spot-Up Mid, Off-Screen Mid, Dribble Pull-Up Mid, Stepback Mid, post shots, and other contextual tendencies help determine how those mid-range attempts are created.",
+    "tiers": [
+      {
+        "range": [
+          0,
+          5
+        ],
+        "label": "No Meaningful Mid-Range Role"
+      },
+      {
+        "range": [
+          10,
+          15
+        ],
+        "label": "Low Mid-Range Volume"
+      },
+      {
+        "range": [
+          20,
+          25
+        ],
+        "label": "Regular Secondary Mid Usage"
+      },
+      {
+        "range": [
+          30,
+          35
+        ],
+        "label": "High Mid-Range Shot Share"
+      },
+      {
+        "range": [
+          40,
+          45
+        ],
+        "label": "Elite / Outlier Mid-Range Volume"
+      },
+      {
+        "range": [
+          45,
+          45
+        ],
+        "label": "Extreme / Outlier Profile"
+      }
+    ],
+    "nba_norm": "5–15",
+    "cap": 45
+  },
+  "Jump Shooting:Shot Mid Left-Center": {
+    "definition": "Definition: Overall selection weight for taking shots from the mid-range area. This acts as the global mid-range volume gate, while Spot-Up Mid, Off-Screen Mid, Dribble Pull-Up Mid, Stepback Mid, post shots, and other contextual tendencies help determine how those mid-range attempts are created.",
+    "tiers": [
+      {
+        "range": [
+          0,
+          5
+        ],
+        "label": "No Meaningful Mid-Range Role"
+      },
+      {
+        "range": [
+          10,
+          15
+        ],
+        "label": "Low Mid-Range Volume"
+      },
+      {
+        "range": [
+          20,
+          25
+        ],
+        "label": "Regular Secondary Mid Usage"
+      },
+      {
+        "range": [
+          30,
+          35
+        ],
+        "label": "High Mid-Range Shot Share"
+      },
+      {
+        "range": [
+          40,
+          45
+        ],
+        "label": "Elite / Outlier Mid-Range Volume"
+      },
+      {
+        "range": [
+          45,
+          45
+        ],
+        "label": "Extreme / Outlier Profile"
+      }
+    ],
+    "nba_norm": "5–15",
+    "cap": 45
+  },
+  "Jump Shooting:Shot Mid Center": {
+    "definition": "Definition: Overall selection weight for taking shots from the mid-range area. This acts as the global mid-range volume gate, while Spot-Up Mid, Off-Screen Mid, Dribble Pull-Up Mid, Stepback Mid, post shots, and other contextual tendencies help determine how those mid-range attempts are created.",
+    "tiers": [
+      {
+        "range": [
+          0,
+          5
+        ],
+        "label": "No Meaningful Mid-Range Role"
+      },
+      {
+        "range": [
+          10,
+          15
+        ],
+        "label": "Low Mid-Range Volume"
+      },
+      {
+        "range": [
+          20,
+          25
+        ],
+        "label": "Regular Secondary Mid Usage"
+      },
+      {
+        "range": [
+          30,
+          35
+        ],
+        "label": "High Mid-Range Shot Share"
+      },
+      {
+        "range": [
+          40,
+          45
+        ],
+        "label": "Elite / Outlier Mid-Range Volume"
+      },
+      {
+        "range": [
+          45,
+          45
+        ],
+        "label": "Extreme / Outlier Profile"
+      }
+    ],
+    "nba_norm": "5–15",
+    "cap": 45
+  },
+  "Jump Shooting:Shot Mid Right-Center": {
+    "definition": "Definition: Overall selection weight for taking shots from the mid-range area. This acts as the global mid-range volume gate, while Spot-Up Mid, Off-Screen Mid, Dribble Pull-Up Mid, Stepback Mid, post shots, and other contextual tendencies help determine how those mid-range attempts are created.",
+    "tiers": [
+      {
+        "range": [
+          0,
+          5
+        ],
+        "label": "No Meaningful Mid-Range Role"
+      },
+      {
+        "range": [
+          10,
+          15
+        ],
+        "label": "Low Mid-Range Volume"
+      },
+      {
+        "range": [
+          20,
+          25
+        ],
+        "label": "Regular Secondary Mid Usage"
+      },
+      {
+        "range": [
+          30,
+          35
+        ],
+        "label": "High Mid-Range Shot Share"
+      },
+      {
+        "range": [
+          40,
+          45
+        ],
+        "label": "Elite / Outlier Mid-Range Volume"
+      },
+      {
+        "range": [
+          45,
+          45
+        ],
+        "label": "Extreme / Outlier Profile"
+      }
+    ],
+    "nba_norm": "5–15",
+    "cap": 45
+  },
+  "Jump Shooting:Shot Mid Right": {
+    "definition": "Definition: Overall selection weight for taking shots from the mid-range area. This acts as the global mid-range volume gate, while Spot-Up Mid, Off-Screen Mid, Dribble Pull-Up Mid, Stepback Mid, post shots, and other contextual tendencies help determine how those mid-range attempts are created.",
+    "tiers": [
+      {
+        "range": [
+          0,
+          5
+        ],
+        "label": "No Meaningful Mid-Range Role"
+      },
+      {
+        "range": [
+          10,
+          15
+        ],
+        "label": "Low Mid-Range Volume"
+      },
+      {
+        "range": [
+          20,
+          25
+        ],
+        "label": "Regular Secondary Mid Usage"
+      },
+      {
+        "range": [
+          30,
+          35
+        ],
+        "label": "High Mid-Range Shot Share"
+      },
+      {
+        "range": [
+          40,
+          45
+        ],
+        "label": "Elite / Outlier Mid-Range Volume"
+      },
+      {
+        "range": [
+          45,
+          45
+        ],
+        "label": "Extreme / Outlier Profile"
+      }
+    ],
+    "nba_norm": "5–15",
+    "cap": 45
+  },
+  "Jump Shooting:Shot Three Left": {
+    "definition": "Definition: Overall selection weight for taking shots from three-point range. This acts as the global three-point volume gate, while Spot-Up Three, Off-Screen Three, Dribble Pull-Up Three, Stepback Jumper Three, Transition Pull-Up Three, Contested Jumper Three, play types, and team spacing help determine how those attempts are created. This does not determine three-point accuracy.",
+    "tiers": [
+      {
+        "range": [
+          0,
+          5
+        ],
+        "label": "No Meaningful Three-Point Role"
+      },
+      {
+        "range": [
+          10,
+          15
+        ],
+        "label": "Emergency / Bailout Threes"
+      },
+      {
+        "range": [
+          20,
+          25
+        ],
+        "label": "Low-Volume Perimeter Usage"
+      },
+      {
+        "range": [
+          30,
+          35
+        ],
+        "label": "Selective Three-Point Shooter"
+      },
+      {
+        "range": [
+          40,
+          45
+        ],
+        "label": "Regular Three-Point Threat"
+      },
+      {
+        "range": [
+          50,
+          55
+        ],
+        "label": "High-Volume Arc Option"
+      },
+      {
+        "range": [
+          60,
+          65
+        ],
+        "label": "Primary Three-Point Scorer"
+      },
+      {
+        "range": [
+          70,
+          70
+        ],
+        "label": "Elite Three-Point Volume"
+      },
+      {
+        "range": [
+          75,
+          75
+        ],
+        "label": "Extreme / Outlier Profile"
+      }
+    ],
+    "nba_norm": "25–45",
+    "cap": 75
+  },
+  "Jump Shooting:Shot Three Left-Center": {
+    "definition": "Definition: Overall selection weight for taking shots from three-point range. This acts as the global three-point volume gate, while Spot-Up Three, Off-Screen Three, Dribble Pull-Up Three, Stepback Jumper Three, Transition Pull-Up Three, Contested Jumper Three, play types, and team spacing help determine how those attempts are created. This does not determine three-point accuracy.",
+    "tiers": [
+      {
+        "range": [
+          0,
+          5
+        ],
+        "label": "No Meaningful Three-Point Role"
+      },
+      {
+        "range": [
+          10,
+          15
+        ],
+        "label": "Emergency / Bailout Threes"
+      },
+      {
+        "range": [
+          20,
+          25
+        ],
+        "label": "Low-Volume Perimeter Usage"
+      },
+      {
+        "range": [
+          30,
+          35
+        ],
+        "label": "Selective Three-Point Shooter"
+      },
+      {
+        "range": [
+          40,
+          45
+        ],
+        "label": "Regular Three-Point Threat"
+      },
+      {
+        "range": [
+          50,
+          55
+        ],
+        "label": "High-Volume Arc Option"
+      },
+      {
+        "range": [
+          60,
+          65
+        ],
+        "label": "Primary Three-Point Scorer"
+      },
+      {
+        "range": [
+          70,
+          70
+        ],
+        "label": "Elite Three-Point Volume"
+      },
+      {
+        "range": [
+          75,
+          75
+        ],
+        "label": "Extreme / Outlier Profile"
+      }
+    ],
+    "nba_norm": "25–45",
+    "cap": 75
+  },
+  "Jump Shooting:Shot Three Center": {
+    "definition": "Definition: Overall selection weight for taking shots from three-point range. This acts as the global three-point volume gate, while Spot-Up Three, Off-Screen Three, Dribble Pull-Up Three, Stepback Jumper Three, Transition Pull-Up Three, Contested Jumper Three, play types, and team spacing help determine how those attempts are created. This does not determine three-point accuracy.",
+    "tiers": [
+      {
+        "range": [
+          0,
+          5
+        ],
+        "label": "No Meaningful Three-Point Role"
+      },
+      {
+        "range": [
+          10,
+          15
+        ],
+        "label": "Emergency / Bailout Threes"
+      },
+      {
+        "range": [
+          20,
+          25
+        ],
+        "label": "Low-Volume Perimeter Usage"
+      },
+      {
+        "range": [
+          30,
+          35
+        ],
+        "label": "Selective Three-Point Shooter"
+      },
+      {
+        "range": [
+          40,
+          45
+        ],
+        "label": "Regular Three-Point Threat"
+      },
+      {
+        "range": [
+          50,
+          55
+        ],
+        "label": "High-Volume Arc Option"
+      },
+      {
+        "range": [
+          60,
+          65
+        ],
+        "label": "Primary Three-Point Scorer"
+      },
+      {
+        "range": [
+          70,
+          70
+        ],
+        "label": "Elite Three-Point Volume"
+      },
+      {
+        "range": [
+          75,
+          75
+        ],
+        "label": "Extreme / Outlier Profile"
+      }
+    ],
+    "nba_norm": "25–45",
+    "cap": 75
+  },
+  "Jump Shooting:Shot Three Right-Center": {
+    "definition": "Definition: Overall selection weight for taking shots from three-point range. This acts as the global three-point volume gate, while Spot-Up Three, Off-Screen Three, Dribble Pull-Up Three, Stepback Jumper Three, Transition Pull-Up Three, Contested Jumper Three, play types, and team spacing help determine how those attempts are created. This does not determine three-point accuracy.",
+    "tiers": [
+      {
+        "range": [
+          0,
+          5
+        ],
+        "label": "No Meaningful Three-Point Role"
+      },
+      {
+        "range": [
+          10,
+          15
+        ],
+        "label": "Emergency / Bailout Threes"
+      },
+      {
+        "range": [
+          20,
+          25
+        ],
+        "label": "Low-Volume Perimeter Usage"
+      },
+      {
+        "range": [
+          30,
+          35
+        ],
+        "label": "Selective Three-Point Shooter"
+      },
+      {
+        "range": [
+          40,
+          45
+        ],
+        "label": "Regular Three-Point Threat"
+      },
+      {
+        "range": [
+          50,
+          55
+        ],
+        "label": "High-Volume Arc Option"
+      },
+      {
+        "range": [
+          60,
+          65
+        ],
+        "label": "Primary Three-Point Scorer"
+      },
+      {
+        "range": [
+          70,
+          70
+        ],
+        "label": "Elite Three-Point Volume"
+      },
+      {
+        "range": [
+          75,
+          75
+        ],
+        "label": "Extreme / Outlier Profile"
+      }
+    ],
+    "nba_norm": "25–45",
+    "cap": 75
+  },
+  "Jump Shooting:Shot Three Right": {
+    "definition": "Definition: Overall selection weight for taking shots from three-point range. This acts as the global three-point volume gate, while Spot-Up Three, Off-Screen Three, Dribble Pull-Up Three, Stepback Jumper Three, Transition Pull-Up Three, Contested Jumper Three, play types, and team spacing help determine how those attempts are created. This does not determine three-point accuracy.",
+    "tiers": [
+      {
+        "range": [
+          0,
+          5
+        ],
+        "label": "No Meaningful Three-Point Role"
+      },
+      {
+        "range": [
+          10,
+          15
+        ],
+        "label": "Emergency / Bailout Threes"
+      },
+      {
+        "range": [
+          20,
+          25
+        ],
+        "label": "Low-Volume Perimeter Usage"
+      },
+      {
+        "range": [
+          30,
+          35
+        ],
+        "label": "Selective Three-Point Shooter"
+      },
+      {
+        "range": [
+          40,
+          45
+        ],
+        "label": "Regular Three-Point Threat"
+      },
+      {
+        "range": [
+          50,
+          55
+        ],
+        "label": "High-Volume Arc Option"
+      },
+      {
+        "range": [
+          60,
+          65
+        ],
+        "label": "Primary Three-Point Scorer"
+      },
+      {
+        "range": [
+          70,
+          70
+        ],
+        "label": "Elite Three-Point Volume"
+      },
+      {
+        "range": [
+          75,
+          75
+        ],
+        "label": "Extreme / Outlier Profile"
+      }
+    ],
+    "nba_norm": "25–45",
+    "cap": 75
+  },
+  "Jump Shooting:Shot Close Left": {
+    "definition": "Definition: Overall selection weight for attempting shots from the short close-range area, generally outside the immediate under-basket zone but inside the mid-range area. This can include short push shots, hooks, runners, short fades, and other close attempts. It controls the location preference, while specific tendencies such as Floater or post moves help select the shot type.",
+    "tiers": [
+      {
+        "range": [
+          0,
+          5
+        ],
+        "label": "No Close-Range Shot Role"
+      },
+      {
+        "range": [
+          10,
+          15
+        ],
+        "label": "Rare Close Attempt"
+      },
+      {
+        "range": [
+          20,
+          25
+        ],
+        "label": "Limited Short-Range Usage"
+      },
+      {
+        "range": [
+          30,
+          35
+        ],
+        "label": "Regular Close-Range Option"
+      },
+      {
+        "range": [
+          40,
+          45
+        ],
+        "label": "Strong Short-Area Scorer"
+      },
+      {
+        "range": [
+          50,
+          55
+        ],
+        "label": "Featured Close-Range Threat"
+      },
+      {
+        "range": [
+          60,
+          60
+        ],
+        "label": "Extreme / Outlier Profile"
+      }
+    ],
+    "nba_norm": "20–35",
+    "cap": 60
+  },
+  "Jump Shooting:Shot Close Middle": {
+    "definition": "Definition: Overall selection weight for attempting shots from the short close-range area, generally outside the immediate under-basket zone but inside the mid-range area. This can include short push shots, hooks, runners, short fades, and other close attempts. It controls the location preference, while specific tendencies such as Floater or post moves help select the shot type.",
+    "tiers": [
+      {
+        "range": [
+          0,
+          5
+        ],
+        "label": "No Close-Range Shot Role"
+      },
+      {
+        "range": [
+          10,
+          15
+        ],
+        "label": "Rare Close Attempt"
+      },
+      {
+        "range": [
+          20,
+          25
+        ],
+        "label": "Limited Short-Range Usage"
+      },
+      {
+        "range": [
+          30,
+          35
+        ],
+        "label": "Regular Close-Range Option"
+      },
+      {
+        "range": [
+          40,
+          45
+        ],
+        "label": "Strong Short-Area Scorer"
+      },
+      {
+        "range": [
+          50,
+          55
+        ],
+        "label": "Featured Close-Range Threat"
+      },
+      {
+        "range": [
+          60,
+          60
+        ],
+        "label": "Extreme / Outlier Profile"
+      }
+    ],
+    "nba_norm": "20–35",
+    "cap": 60
+  },
+  "Jump Shooting:Shot Close Right": {
+    "definition": "Definition: Overall selection weight for attempting shots from the short close-range area, generally outside the immediate under-basket zone but inside the mid-range area. This can include short push shots, hooks, runners, short fades, and other close attempts. It controls the location preference, while specific tendencies such as Floater or post moves help select the shot type.",
+    "tiers": [
+      {
+        "range": [
+          0,
+          5
+        ],
+        "label": "No Close-Range Shot Role"
+      },
+      {
+        "range": [
+          10,
+          15
+        ],
+        "label": "Rare Close Attempt"
+      },
+      {
+        "range": [
+          20,
+          25
+        ],
+        "label": "Limited Short-Range Usage"
+      },
+      {
+        "range": [
+          30,
+          35
+        ],
+        "label": "Regular Close-Range Option"
+      },
+      {
+        "range": [
+          40,
+          45
+        ],
+        "label": "Strong Short-Area Scorer"
+      },
+      {
+        "range": [
+          50,
+          55
+        ],
+        "label": "Featured Close-Range Threat"
+      },
+      {
+        "range": [
+          60,
+          60
+        ],
+        "label": "Extreme / Outlier Profile"
+      }
+    ],
+    "nba_norm": "20–35",
+    "cap": 60
+  }
+}

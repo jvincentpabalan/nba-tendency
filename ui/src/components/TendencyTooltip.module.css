@@ -1,0 +1,72 @@
+.trigger {
+  cursor: default;
+}
+
+.popup {
+  position: fixed;
+  z-index: 9999;
+  background: #0d0f22;
+  border: 1px solid #252848;
+  border-radius: 10px;
+  padding: 12px 14px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6), 0 2px 8px rgba(0, 0, 0, 0.4);
+  pointer-events: auto;
+}
+
+.definition {
+  font-size: 12px;
+  line-height: 1.55;
+  color: #6e728e;
+  margin: 0 0 10px;
+}
+
+.tier {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  padding: 7px 10px;
+  background: rgba(77, 166, 255, 0.07);
+  border: 1px solid rgba(77, 166, 255, 0.15);
+  border-radius: 6px;
+  margin-bottom: 10px;
+}
+
+.tierRange {
+  font-size: 11px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: #4da6ff;
+  flex-shrink: 0;
+}
+
+.tierLabel {
+  font-size: 12px;
+  color: #c8d0f0;
+  line-height: 1.4;
+}
+
+.meta {
+  display: flex;
+  gap: 16px;
+}
+
+.metaItem {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.metaKey {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  color: #3a3e5c;
+}
+
+.metaVal {
+  font-size: 12px;
+  font-weight: 600;
+  color: #8b8fa8;
+  font-variant-numeric: tabular-nums;
+}

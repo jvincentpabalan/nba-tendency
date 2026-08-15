@@ -1,5 +1,7 @@
 import { useState, useCallback, useRef } from 'react'
 import styles from './TendencyResults.module.css'
+import TendencyTooltip from './TendencyTooltip'
+import guide from '../data/tendency_guide.json'
 
 const GROUP_ORDER = [
   'Freelance',
@@ -196,7 +198,9 @@ export default function TendencyResults({ result }) {
                       >
                         <span className={styles.tendencyName}>
                           {isEdited && <span className={styles.editedDot} title="Edited" />}
-                          {t.name}
+                          <TendencyTooltip guide={guide[t.key]} value={currentVal}>
+                            {t.name}
+                          </TendencyTooltip>
                         </span>
                         <div className={styles.barTrack}>
                           <div
