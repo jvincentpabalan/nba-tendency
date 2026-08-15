@@ -10,6 +10,7 @@ Usage:
 
 import argparse
 import json
+import subprocess
 import sys
 import os
 
@@ -33,6 +34,8 @@ def parse_args():
                    help="Pretty-print JSON output (default: true)")
     p.add_argument("--debug", action="store_true",
                    help="Print key stat inputs before computing tendencies")
+    p.add_argument("--copy", action="store_true",
+                   help="Copy JSON output to clipboard (macOS pbcopy)")
     return p.parse_args()
 
 
@@ -138,6 +141,28 @@ def mock_stats(player_id: int, season: str) -> stats_collector.PlayerStats:
     return s
 
 
+def _copy_to_clipboard(text: str) -> None:
+    import platform
+    data = text.encode()
+    system = platform.system()
+    try:
+        if system == "Darwin":
+            subprocess.run(["pbcopy"], input=data, check=True)
+        elif system == "Windows":
+            subprocess.run(["clip"], input=data, check=True)
+        else:
+            # Linux: try xclip, fall back to xsel
+            try:
+                subprocess.run(["xclip", "-selection", "clipboard"], input=data, check=True)
+            except FileNotFoundError:
+                subprocess.run(["xsel", "--clipboard", "--input"], input=data, check=True)
+        print("\nJSON copied to clipboard.")
+    except FileNotFoundError:
+        print("\nError: no clipboard tool found. Install xclip or xsel on Linux.", file=sys.stderr)
+    except subprocess.CalledProcessError as e:
+        print(f"\nError copying to clipboard: {e}", file=sys.stderr)
+
+
 def main():
     args = parse_args()
 
@@ -185,6 +210,9 @@ def main():
         print(f"\nOutput written to {args.output}")
     else:
         print("\n" + json_str)
+
+    if args.copy:
+        _copy_to_clipboard(json_str)
 
 
 if __name__ == "__main__":

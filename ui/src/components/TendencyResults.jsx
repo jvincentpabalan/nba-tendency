@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useRef } from 'react'
 import styles from './TendencyResults.module.css'
 
 const GROUP_ORDER = [
@@ -49,6 +49,9 @@ export default function TendencyResults({ result }) {
     ...GROUP_ORDER.filter(g => groups[g]),
     ...Object.keys(groups).filter(g => !GROUP_ORDER.includes(g)),
   ]
+
+  const [copied, setCopied] = useState(false)
+  const copyTimerRef = useRef(null)
 
   const editedCount = Object.keys(overrides).length
   const hasEdits = editedCount > 0
@@ -101,21 +104,25 @@ export default function TendencyResults({ result }) {
     setOverrides({})
   }
 
-  function handleDownload() {
-    // Merge overrides into tendencies for download
+  function buildPayload() {
     const mergedTendencies = {}
     for (const [key, entry] of Object.entries(tendencies)) {
-      mergedTendencies[key] = {
-        ...entry,
-        value: effectiveValue(key),
-      }
+      mergedTendencies[key] = { ...entry, value: effectiveValue(key) }
     }
-    const payload = {
-      _version: result._version,
-      _format: result._format,
-      tendencies: mergedTendencies,
-    }
-    const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' })
+    return { _version: result._version, _format: result._format, tendencies: mergedTendencies }
+  }
+
+  function handleCopy() {
+    const json = JSON.stringify(buildPayload(), null, 2)
+    navigator.clipboard.writeText(json).then(() => {
+      setCopied(true)
+      clearTimeout(copyTimerRef.current)
+      copyTimerRef.current = setTimeout(() => setCopied(false), 2000)
+    })
+  }
+
+  function handleDownload() {
+    const blob = new Blob([JSON.stringify(buildPayload(), null, 2)], { type: 'application/json' })
     const url = URL.createObjectURL(blob)
     const a = document.createElement('a')
     a.href = url
@@ -148,6 +155,9 @@ export default function TendencyResults({ result }) {
               onClick={() => setEditMode(m => !m)}
             >
               {editMode ? 'Done Editing' : 'Edit Tendencies'}
+            </button>
+            <button className={styles.downloadBtn} onClick={handleCopy}>
+              {copied ? 'Copied!' : 'Copy JSON'}
             </button>
             <button className={styles.downloadBtn} onClick={handleDownload}>
               Download JSON
