@@ -259,7 +259,16 @@ def compute(stats: PlayerStats) -> dict:
     t["Layups And Dunks:Hop Step Layup"] = _scale(pct_driv_layup * 0.35, 0, 0.09, 5, 65)
 
     # Euro Step Layup  — cap 75
-    t["Layups And Dunks:Euro Step Layup"] = _scale(_pct(stats.fga_euro_step, fga), 0, 0.06, 5, 75)
+    # Pre-2013 shot data rarely tags attempts as "Euro Step"; those shots land in fga_driving_layup.
+    # When explicit data is missing, use a conservative floor estimate from driving layup volume
+    # scaled by ISO profile so low-ISO bigs stay near No Package (5–7).
+    euro_fga = stats.fga_euro_step
+    if euro_fga < 0.05 and stats.fga_driving_layup > 0.5:
+        # Pre-2013 floor estimate — no real data; 9% of driving layups × ISO scaler.
+        # Calibrated so typical NBA guards land in 10–17 (Rare), known users ~22–26 (Selective).
+        # Scaler: faceup_iso/3.0 so low-ISO bigs stay near No Package (5–7).
+        euro_fga = stats.fga_driving_layup * 0.09 * min(1.0, faceup_iso / 3.0)
+    t["Layups And Dunks:Euro Step Layup"] = _scale(_pct(euro_fga, fga), 0, 0.06, 5, 75)
 
     # Floater  — cap 75
     t["Layups And Dunks:Floater"] = _scale(pct_floater, 0, 0.06, 5, 75)
@@ -297,18 +306,26 @@ def compute(stats: PlayerStats) -> dict:
     t["Driving:Driving In And Out"]         = _scale(faceup_iso * 0.15, 0, 1.5, 5, 65) # cap 65
 
     # No Driving Dribble Move  — cap 90
-    # Measures straight-line continuation vs. adding a dribble move on attack.
-    # When total drive volume >= 1.0/game: ratio of driving layups vs. fancy finishes (euro/floater).
-    # When < 1.0/game: shot-type ratio is unreliable (max-floor distorts it for rare drivers like
-    # late-career Kidd). Estimate from ISO profile instead — high faceup_iso = move-creative
-    # even when driving infrequently; low ISO = defaults to straight line.
-    total_drive_atts = stats.fga_driving_layup + stats.fga_euro_step + stats.fga_floater
+    # Definition: selection weight for straight-line continuation vs. adding a dribble move
+    # once the player is attacking. This controls dribble moves during the drive (spin,
+    # crossover, hesitation), NOT the finishing type (euro step, floater).
+    # NBA norm: 5–35 (most players are in the move-creative range).
+    #
+    # Shot-type ratio gives a finishing-type signal (layup vs. euro/floater) that correlates
+    # with drive creativity but is not a direct measure of mid-drive dribble moves.
+    # faceup_iso is a better proxy for dribble-move creativity: high-ISO players who create
+    # off the dribble habitually add moves during drives too.
+    # Blend both: shot-type ratio anchors to observable data; faceup_iso captures the
+    # creative profile that the shot-type data can't fully separate (especially pre-2013).
+    total_drive_atts = stats.fga_driving_layup + euro_fga + stats.fga_floater
     if total_drive_atts >= 1.0:
-        straight_drive_pct = _pct(stats.fga_driving_layup, total_drive_atts)
+        shot_type_pct = _pct(stats.fga_driving_layup, total_drive_atts)
     else:
-        # Low-volume driver: infer tendency from ISO creativity profile
-        # Baseline 0.85 (straight-line) minus ISO penalty (up to 0.56 for elite movers)
-        straight_drive_pct = max(0.35, 0.85 - min(faceup_iso, 8) * 0.07)
+        shot_type_pct = 0.85  # sparse data: default to straight-line
+    # ISO-based penalty: elite ISO (faceup_iso ≥ 8) → 0.29 floor; low ISO → 0.85 baseline
+    iso_pct = max(0.29, 0.85 - min(faceup_iso, 8) * 0.07)
+    # Equal blend of shot-type signal and ISO creativity profile
+    straight_drive_pct = shot_type_pct * 0.5 + iso_pct * 0.5
     t["Driving:No Driving Dribble Move"] = _scale(straight_drive_pct, 0.20, 0.90, 10, 90)
 
     # Attack Strong On Drive  — cap 90
