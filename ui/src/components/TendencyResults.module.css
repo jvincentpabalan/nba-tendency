@@ -1,0 +1,265 @@
+.root {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* Result header */
+.resultHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.playerName {
+  font-size: 26px;
+  font-weight: 700;
+  color: #e2e4f0;
+  letter-spacing: -0.5px;
+}
+
+.meta {
+  font-size: 14px;
+  color: #5a5e80;
+  margin-top: 4px;
+}
+
+.headerActions {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 10px;
+}
+
+.headerButtons {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.editBadge {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 3px 8px;
+  border-radius: 20px;
+  background: rgba(200, 16, 46, 0.15);
+  color: #c8102e;
+  border: 1px solid rgba(200, 16, 46, 0.3);
+}
+
+/* Buttons */
+.downloadBtn,
+.editBtn,
+.resetAllBtn {
+  background: transparent;
+  border: 1px solid #2a2e50;
+  color: #8b8fa8;
+  border-radius: 7px;
+  padding: 8px 14px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: border-color 0.15s, color 0.15s, background 0.15s;
+  white-space: nowrap;
+}
+
+.downloadBtn:hover,
+.editBtn:hover {
+  border-color: #4a4e70;
+  color: #e2e4f0;
+}
+
+.editBtn.active {
+  background: rgba(200, 16, 46, 0.12);
+  border-color: rgba(200, 16, 46, 0.4);
+  color: #c8102e;
+}
+
+.editBtn.active:hover {
+  background: rgba(200, 16, 46, 0.2);
+}
+
+.resetAllBtn {
+  font-size: 12px;
+  padding: 6px 10px;
+  color: #5a5e80;
+}
+
+.resetAllBtn:hover {
+  border-color: #4a4e70;
+  color: #e2e4f0;
+}
+
+/* Groups grid */
+.groups {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(420px, 1fr));
+  gap: 16px;
+}
+
+/* Group card */
+.groupCard {
+  background: #13152a;
+  border: 1px solid #1e2240;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.groupHeader {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 14px 16px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+  transition: background 0.1s;
+}
+
+.groupHeader:hover {
+  background: rgba(255,255,255,0.03);
+}
+
+.groupName {
+  flex: 1;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+  color: #c8d0f0;
+  text-transform: uppercase;
+}
+
+.groupCount {
+  font-size: 12px;
+  color: #3a3e5c;
+  font-weight: 600;
+}
+
+.chevron {
+  font-size: 12px;
+  color: #3a3e5c;
+}
+
+/* Tendency rows */
+.tendencyList {
+  border-top: 1px solid #1e2240;
+  padding: 8px 0;
+}
+
+.tendencyRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 16px;
+  transition: background 0.1s;
+}
+
+.tendencyRow:hover {
+  background: rgba(255,255,255,0.02);
+}
+
+.tendencyRow.edited {
+  background: rgba(200, 16, 46, 0.04);
+}
+
+.tendencyName {
+  width: 200px;
+  min-width: 200px;
+  font-size: 13px;
+  color: #a0a4c0;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.editedDot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: #c8102e;
+  flex-shrink: 0;
+}
+
+.barTrack {
+  flex: 1;
+  height: 6px;
+  background: #1c1f38;
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.barFill {
+  height: 100%;
+  border-radius: 3px;
+  transition: width 0.2s ease, background 0.2s;
+}
+
+/* Static value display */
+.tendencyValue {
+  width: 28px;
+  text-align: right;
+  font-size: 13px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  cursor: default;
+}
+
+/* Edit mode controls */
+.editControls {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.valueInput {
+  width: 52px;
+  background: #1c1f38;
+  border: 1px solid #c8102e;
+  color: #e2e4f0;
+  border-radius: 5px;
+  padding: 3px 6px;
+  font-size: 13px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+  outline: none;
+}
+
+.valueInput:focus {
+  border-color: #e8304e;
+  box-shadow: 0 0 0 2px rgba(200, 16, 46, 0.15);
+}
+
+.resetBtn {
+  background: transparent;
+  border: none;
+  color: #3a3e5c;
+  font-size: 14px;
+  cursor: pointer;
+  padding: 2px 4px;
+  border-radius: 3px;
+  line-height: 1;
+  transition: color 0.1s;
+  flex-shrink: 0;
+}
+
+.resetBtn:hover {
+  color: #8b8fa8;
+}
+
+.resetBtn.visible {
+  color: #5a5e80;
+}
+
+.resetBtn.visible:hover {
+  color: #c8102e;
+}

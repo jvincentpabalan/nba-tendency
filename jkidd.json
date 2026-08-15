@@ -1,0 +1,701 @@
+{
+  "_version": "2K26",
+  "_format": "label_based",
+  "tendencies": {
+    "Jump Shooting:Shot Under Basket": {
+      "value": 22,
+      "type": "bitfield",
+      "group": "Jump Shooting",
+      "length": null,
+      "dynamic_dropdown": null
+    },
+    "Jump Shooting:Shot Close": {
+      "value": 11,
+      "type": "bitfield",
+      "group": "Jump Shooting",
+      "length": null,
+      "dynamic_dropdown": null
+    },
+    "Jump Shooting:Shot Mid-Range": {
+      "value": 19,
+      "type": "bitfield",
+      "group": "Jump Shooting",
+      "length": null,
+      "dynamic_dropdown": null
+    },
+    "Jump Shooting:Shot Three": {
+      "value": 75,
+      "type": "bitfield",
+      "group": "Jump Shooting",
+      "length": null,
+      "dynamic_dropdown": null
+    },
+    "Jump Shooting:Shot Mid Left": {
+      "value": 9,
+      "type": "bitfield",
+      "group": "Jump Shooting",
+      "length": null,
+      "dynamic_dropdown": null
+    },
+    "Jump Shooting:Shot Mid Left-Center": {
+      "value": 9,
+      "type": "bitfield",
+      "group": "Jump Shooting",
+      "length": null,
+      "dynamic_dropdown": null
+    },
+    "Jump Shooting:Shot Mid Center": {
+      "value": 19,
+      "type": "bitfield",
+      "group": "Jump Shooting",
+      "length": null,
+      "dynamic_dropdown": null
+    },
+    "Jump Shooting:Shot Mid Right-Center": {
+      "value": 9,
+      "type": "bitfield",
+      "group": "Jump Shooting",
+      "length": null,
+      "dynamic_dropdown": null
+    },
+    "Jump Shooting:Shot Mid Right": {
+      "value": 9,
+      "type": "bitfield",
+      "group": "Jump Shooting",
+      "length": null,
+      "dynamic_dropdown": null
+    },
+    "Jump Shooting:Shot Three Left": {
+      "value": 37,
+      "type": "bitfield",
+      "group": "Jump Shooting",
+      "length": null,
+      "dynamic_dropdown": null
+    },
+    "Jump Shooting:Shot Three Left-Center": {
+      "value": 37,
+      "type": "bitfield",
+      "group": "Jump Shooting",
+      "length": null,
+      "dynamic_dropdown": null
+    },
+    "Jump Shooting:Shot Three Center": {
+      "value": 75,
+      "type": "bitfield",
+      "group": "Jump Shooting",
+      "length": null,
+      "dynamic_dropdown": null
+    },
+    "Jump Shooting:Shot Three Right-Center": {
+      "value": 37,
+      "type": "bitfield",
+      "group": "Jump Shooting",
+      "length": null,
+      "dynamic_dropdown": null
+    },
+    "Jump Shooting:Shot Three Right": {
+      "value": 37,
+      "type": "bitfield",
+      "group": "Jump Shooting",
+      "length": null,
+      "dynamic_dropdown": null
+    },
+    "Jump Shooting:Shot Close Left": {
+      "value": 5,
+      "type": "bitfield",
+      "group": "Jump Shooting",
+      "length": null,
+      "dynamic_dropdown": null
+    },
+    "Jump Shooting:Shot Close Middle": {
+      "value": 11,
+      "type": "bitfield",
+      "group": "Jump Shooting",
+      "length": null,
+      "dynamic_dropdown": null
+    },
+    "Jump Shooting:Shot Close Right": {
+      "value": 5,
+      "type": "bitfield",
+      "group": "Jump Shooting",
+      "length": null,
+      "dynamic_dropdown": null
+    },
+    "Jump Shooting:Spot Up Shot Mid-Range": {
+      "value": 24,
+      "type": "bitfield",
+      "group": "Jump Shooting",
+      "length": null,
+      "dynamic_dropdown": null
+    },
+    "Jump Shooting:Off Screen Shot Mid-Range": {
+      "value": 5,
+      "type": "bitfield",
+      "group": "Jump Shooting",
+      "length": null,
+      "dynamic_dropdown": null
+    },
+    "Jump Shooting:Spot Up Shot Three": {
+      "value": 75,
+      "type": "bitfield",
+      "group": "Jump Shooting",
+      "length": null,
+      "dynamic_dropdown": null
+    },
+    "Jump Shooting:Off Screen Shot Three": {
+      "value": 5,
+      "type": "bitfield",
+      "group": "Jump Shooting",
+      "length": null,
+      "dynamic_dropdown": null
+    },
+    "Jump Shooting:Contested Jumper Mid-Range": {
+      "value": 21,
+      "type": "bitfield",
+      "group": "Jump Shooting",
+      "length": null,
+      "dynamic_dropdown": null
+    },
+    "Jump Shooting:Contested Jumper Three": {
+      "value": 55,
+      "type": "bitfield",
+      "group": "Jump Shooting",
+      "length": null,
+      "dynamic_dropdown": null
+    },
+    "Jump Shooting:Stepback Jumper Mid-Range": {
+      "value": 13,
+      "type": "bitfield",
+      "group": "Jump Shooting",
+      "length": null,
+      "dynamic_dropdown": null
+    },
+    "Jump Shooting:Stepback Jumper Three": {
+      "value": 20,
+      "type": "bitfield",
+      "group": "Jump Shooting",
+      "length": null,
+      "dynamic_dropdown": null
+    },
+    "Jump Shooting:Spin Jumper": {
+      "value": 8,
+      "type": "bitfield",
+      "group": "Jump Shooting",
+      "length": null,
+      "dynamic_dropdown": null
+    },
+    "Jump Shooting:Transition Pull Up Three": {
+      "value": 5,
+      "type": "bitfield",
+      "group": "Jump Shooting",
+      "length": null,
+      "dynamic_dropdown": null
+    },
+    "Jump Shooting:Drive Pull Up Mid-Range": {
+      "value": 6,
+      "type": "bitfield",
+      "group": "Jump Shooting",
+      "length": null,
+      "dynamic_dropdown": null
+    },
+    "Jump Shooting:Drive Pull Up Three": {
+      "value": 7,
+      "type": "bitfield",
+      "group": "Jump Shooting",
+      "length": null,
+      "dynamic_dropdown": null
+    },
+    "Jump Shooting:Use Glass": {
+      "value": 29,
+      "type": "bitfield",
+      "group": "Jump Shooting",
+      "length": null,
+      "dynamic_dropdown": null
+    },
+    "Jump Shooting:Step Through Shot": {
+      "value": 7,
+      "type": "bitfield",
+      "group": "Jump Shooting",
+      "length": null,
+      "dynamic_dropdown": null
+    },
+    "Layups And Dunks:Driving Layup": {
+      "value": 20,
+      "type": "bitfield",
+      "group": "Layups And Dunks",
+      "length": null,
+      "dynamic_dropdown": null
+    },
+    "Layups And Dunks:Standing Dunk": {
+      "value": 5,
+      "type": "bitfield",
+      "group": "Layups And Dunks",
+      "length": null,
+      "dynamic_dropdown": null
+    },
+    "Layups And Dunks:Driving Dunk": {
+      "value": 5,
+      "type": "bitfield",
+      "group": "Layups And Dunks",
+      "length": null,
+      "dynamic_dropdown": null
+    },
+    "Layups And Dunks:Flashy Dunk": {
+      "value": 5,
+      "type": "bitfield",
+      "group": "Layups And Dunks",
+      "length": null,
+      "dynamic_dropdown": null
+    },
+    "Layups And Dunks:Alley-Oop": {
+      "value": 5,
+      "type": "bitfield",
+      "group": "Layups And Dunks",
+      "length": null,
+      "dynamic_dropdown": null
+    },
+    "Layups And Dunks:Putback": {
+      "value": 12,
+      "type": "bitfield",
+      "group": "Layups And Dunks",
+      "length": null,
+      "dynamic_dropdown": null
+    },
+    "Layups And Dunks:Crash": {
+      "value": 6,
+      "type": "bitfield",
+      "group": "Layups And Dunks",
+      "length": null,
+      "dynamic_dropdown": null
+    },
+    "Layups And Dunks:Spin Layup": {
+      "value": 17,
+      "type": "bitfield",
+      "group": "Layups And Dunks",
+      "length": null,
+      "dynamic_dropdown": null
+    },
+    "Layups And Dunks:Hop Step Layup": {
+      "value": 16,
+      "type": "bitfield",
+      "group": "Layups And Dunks",
+      "length": null,
+      "dynamic_dropdown": null
+    },
+    "Layups And Dunks:Euro Step Layup": {
+      "value": 5,
+      "type": "bitfield",
+      "group": "Layups And Dunks",
+      "length": null,
+      "dynamic_dropdown": null
+    },
+    "Layups And Dunks:Floater": {
+      "value": 5,
+      "type": "bitfield",
+      "group": "Layups And Dunks",
+      "length": null,
+      "dynamic_dropdown": null
+    },
+    "Driving:Drive": {
+      "value": 24,
+      "type": "bitfield",
+      "group": "Driving",
+      "length": null,
+      "dynamic_dropdown": null
+    },
+    "Driving:Spot Up Drive": {
+      "value": 25,
+      "type": "bitfield",
+      "group": "Driving",
+      "length": null,
+      "dynamic_dropdown": null
+    },
+    "Driving:Off Screen Drive": {
+      "value": 5,
+      "type": "bitfield",
+      "group": "Driving",
+      "length": null,
+      "dynamic_dropdown": null
+    },
+    "Driving:Drive Right": {
+      "value": 50,
+      "type": "bitfield",
+      "group": "Driving",
+      "length": null,
+      "dynamic_dropdown": null
+    },
+    "Driving:Driving Crossover": {
+      "value": 15,
+      "type": "bitfield",
+      "group": "Driving",
+      "length": null,
+      "dynamic_dropdown": null
+    },
+    "Driving:Driving Spin": {
+      "value": 15,
+      "type": "bitfield",
+      "group": "Driving",
+      "length": null,
+      "dynamic_dropdown": null
+    },
+    "Driving:Driving Step Back": {
+      "value": 12,
+      "type": "bitfield",
+      "group": "Driving",
+      "length": null,
+      "dynamic_dropdown": null
+    },
+    "Driving:Driving Half Spin": {
+      "value": 13,
+      "type": "bitfield",
+      "group": "Driving",
+      "length": null,
+      "dynamic_dropdown": null
+    },
+    "Driving:Driving Double Crossover": {
+      "value": 13,
+      "type": "bitfield",
+      "group": "Driving",
+      "length": null,
+      "dynamic_dropdown": null
+    },
+    "Driving:Driving Behind The Back": {
+      "value": 15,
+      "type": "bitfield",
+      "group": "Driving",
+      "length": null,
+      "dynamic_dropdown": null
+    },
+    "Driving:Driving Dribble Hesitation": {
+      "value": 16,
+      "type": "bitfield",
+      "group": "Driving",
+      "length": null,
+      "dynamic_dropdown": null
+    },
+    "Driving:Driving In And Out": {
+      "value": 14,
+      "type": "bitfield",
+      "group": "Driving",
+      "length": null,
+      "dynamic_dropdown": null
+    },
+    "Driving:No Driving Dribble Move": {
+      "value": 20,
+      "type": "bitfield",
+      "group": "Driving",
+      "length": null,
+      "dynamic_dropdown": null
+    },
+    "Driving:Attack Strong On Drive": {
+      "value": 33,
+      "type": "bitfield",
+      "group": "Driving",
+      "length": null,
+      "dynamic_dropdown": null
+    },
+    "Drive Setup:Triple Threat Shoot": {
+      "value": 33,
+      "type": "bitfield",
+      "group": "Drive Setup",
+      "length": null,
+      "dynamic_dropdown": null
+    },
+    "Drive Setup:Triple Threat Pump Fake": {
+      "value": 10,
+      "type": "bitfield",
+      "group": "Drive Setup",
+      "length": null,
+      "dynamic_dropdown": null
+    },
+    "Drive Setup:Triple Threat Jab Step": {
+      "value": 17,
+      "type": "bitfield",
+      "group": "Drive Setup",
+      "length": null,
+      "dynamic_dropdown": null
+    },
+    "Drive Setup:Triple Threat Idle": {
+      "value": 10,
+      "type": "bitfield",
+      "group": "Drive Setup",
+      "length": null,
+      "dynamic_dropdown": null
+    },
+    "Drive Setup:Setup With Sizeup": {
+      "value": 16,
+      "type": "bitfield",
+      "group": "Drive Setup",
+      "length": null,
+      "dynamic_dropdown": null
+    },
+    "Drive Setup:Setup With Hesitation": {
+      "value": 15,
+      "type": "bitfield",
+      "group": "Drive Setup",
+      "length": null,
+      "dynamic_dropdown": null
+    },
+    "Drive Setup:No Setup Dribble": {
+      "value": 68,
+      "type": "bitfield",
+      "group": "Drive Setup",
+      "length": null,
+      "dynamic_dropdown": null
+    },
+    "Passing:Dish To Open Man": {
+      "value": 42,
+      "type": "bitfield",
+      "group": "Passing",
+      "length": null,
+      "dynamic_dropdown": null
+    },
+    "Passing:Flashy Pass": {
+      "value": 41,
+      "type": "bitfield",
+      "group": "Passing",
+      "length": null,
+      "dynamic_dropdown": null
+    },
+    "Passing:Alley-Oop Pass": {
+      "value": 35,
+      "type": "bitfield",
+      "group": "Passing",
+      "length": null,
+      "dynamic_dropdown": null
+    },
+    "Freelance:Roll vs. Pop": {
+      "value": 5,
+      "type": "bitfield",
+      "group": "Freelance",
+      "length": null,
+      "dynamic_dropdown": null
+    },
+    "Freelance:Spot vs. Cut": {
+      "value": 83,
+      "type": "bitfield",
+      "group": "Freelance",
+      "length": null,
+      "dynamic_dropdown": null
+    },
+    "Freelance:Iso vs. Elite Defender": {
+      "value": 8,
+      "type": "bitfield",
+      "group": "Freelance",
+      "length": null,
+      "dynamic_dropdown": null
+    },
+    "Freelance:Iso vs. Good Defender": {
+      "value": 12,
+      "type": "bitfield",
+      "group": "Freelance",
+      "length": null,
+      "dynamic_dropdown": null
+    },
+    "Freelance:Iso vs. Average Defender": {
+      "value": 15,
+      "type": "bitfield",
+      "group": "Freelance",
+      "length": null,
+      "dynamic_dropdown": null
+    },
+    "Freelance:Iso vs. Poor Defender": {
+      "value": 19,
+      "type": "bitfield",
+      "group": "Freelance",
+      "length": null,
+      "dynamic_dropdown": null
+    },
+    "Freelance:Play Discipline": {
+      "value": 60,
+      "type": "bitfield",
+      "group": "Freelance",
+      "length": null,
+      "dynamic_dropdown": null
+    },
+    "Freelance:Shot": {
+      "value": 22,
+      "type": "bitfield",
+      "group": "Freelance",
+      "length": null,
+      "dynamic_dropdown": null
+    },
+    "Freelance:Touches": {
+      "value": 35,
+      "type": "bitfield",
+      "group": "Freelance",
+      "length": null,
+      "dynamic_dropdown": null
+    },
+    "Freelance:Transition Spot Up": {
+      "value": 5,
+      "type": "bitfield",
+      "group": "Freelance",
+      "length": null,
+      "dynamic_dropdown": null
+    },
+    "Post Game:Post Up": {
+      "value": 8,
+      "type": "bitfield",
+      "group": "Post Game",
+      "length": null,
+      "dynamic_dropdown": null
+    },
+    "Post Game:Post Back Down": {
+      "value": 8,
+      "type": "bitfield",
+      "group": "Post Game",
+      "length": null,
+      "dynamic_dropdown": null
+    },
+    "Post Game:Post Aggressive Backdown": {
+      "value": 7,
+      "type": "bitfield",
+      "group": "Post Game",
+      "length": null,
+      "dynamic_dropdown": null
+    },
+    "Post Game:Post Face Up": {
+      "value": 7,
+      "type": "bitfield",
+      "group": "Post Game",
+      "length": null,
+      "dynamic_dropdown": null
+    },
+    "Post Game:Post Spin": {
+      "value": 7,
+      "type": "bitfield",
+      "group": "Post Game",
+      "length": null,
+      "dynamic_dropdown": null
+    },
+    "Post Game:Post Drive": {
+      "value": 6,
+      "type": "bitfield",
+      "group": "Post Game",
+      "length": null,
+      "dynamic_dropdown": null
+    },
+    "Post Game:Post Drop Step": {
+      "value": 7,
+      "type": "bitfield",
+      "group": "Post Game",
+      "length": null,
+      "dynamic_dropdown": null
+    },
+    "Post Game:Shoot From Post": {
+      "value": 7,
+      "type": "bitfield",
+      "group": "Post Game",
+      "length": null,
+      "dynamic_dropdown": null
+    },
+    "Post Game:Post Hook Left": {
+      "value": 5,
+      "type": "bitfield",
+      "group": "Post Game",
+      "length": null,
+      "dynamic_dropdown": null
+    },
+    "Post Game:Post Hook Right": {
+      "value": 5,
+      "type": "bitfield",
+      "group": "Post Game",
+      "length": null,
+      "dynamic_dropdown": null
+    },
+    "Post Game:Post Fade Left": {
+      "value": 6,
+      "type": "bitfield",
+      "group": "Post Game",
+      "length": null,
+      "dynamic_dropdown": null
+    },
+    "Post Game:Post Fade Right": {
+      "value": 6,
+      "type": "bitfield",
+      "group": "Post Game",
+      "length": null,
+      "dynamic_dropdown": null
+    },
+    "Post Game:Post Shimmy Shot": {
+      "value": 6,
+      "type": "bitfield",
+      "group": "Post Game",
+      "length": null,
+      "dynamic_dropdown": null
+    },
+    "Post Game:Post Hop Shot": {
+      "value": 6,
+      "type": "bitfield",
+      "group": "Post Game",
+      "length": null,
+      "dynamic_dropdown": null
+    },
+    "Post Game:Post Step Back Shot": {
+      "value": 5,
+      "type": "bitfield",
+      "group": "Post Game",
+      "length": null,
+      "dynamic_dropdown": null
+    },
+    "Post Game:Post Up And Under": {
+      "value": 6,
+      "type": "bitfield",
+      "group": "Post Game",
+      "length": null,
+      "dynamic_dropdown": null
+    },
+    "Defense:Pass Interception": {
+      "value": 62,
+      "type": "bitfield",
+      "group": "Defense",
+      "length": null,
+      "dynamic_dropdown": null
+    },
+    "Defense:On-Ball Steal": {
+      "value": 61,
+      "type": "bitfield",
+      "group": "Defense",
+      "length": null,
+      "dynamic_dropdown": null
+    },
+    "Defense:Block Shot": {
+      "value": 18,
+      "type": "bitfield",
+      "group": "Defense",
+      "length": null,
+      "dynamic_dropdown": null
+    },
+    "Defense:Contest Shot": {
+      "value": 47,
+      "type": "bitfield",
+      "group": "Defense",
+      "length": null,
+      "dynamic_dropdown": null
+    },
+    "Defense:Take Charge": {
+      "value": 19,
+      "type": "bitfield",
+      "group": "Defense",
+      "length": null,
+      "dynamic_dropdown": null
+    },
+    "Defense:Foul": {
+      "value": 33,
+      "type": "bitfield",
+      "group": "Defense",
+      "length": null,
+      "dynamic_dropdown": null
+    },
+    "Defense:Hard Foul": {
+      "value": 10,
+      "type": "bitfield",
+      "group": "Defense",
+      "length": null,
+      "dynamic_dropdown": null
+    }
+  },
+  "_player_id": 467,
+  "_season": "2010-11"
+}
