@@ -488,10 +488,12 @@ def _compute_synergy_fallbacks(stats: PlayerStats) -> None:
         if stats.catch_shoot_fga > 0:
             stats.synergy_spotup = stats.catch_shoot_fga * 1.20
         else:
-            # Older seasons (no player tracking): 3PT zone attempts are overwhelmingly
-            # catch-and-shoot spot-ups. Mid-range spot-ups are harder to isolate, so
-            # we anchor purely on 3PT volume as a conservative but reliable proxy.
-            spot_vol = stats.total_3pt_fga * 0.80
+            # Older seasons (no player tracking): use assisted 3PM rate when available
+            # (pct_uast_3pm from scoring splits). (1 - pct_uast_3pm) = fraction of 3PM
+            # that were catch-and-shoot — directly measures spot-up tendency vs. pull-up.
+            # Falls back to a flat 80% assumption when the field is missing.
+            cs_3_rate = (1.0 - stats.pct_uast_3pm) if stats.pct_uast_3pm > 0 else 0.80
+            spot_vol = stats.total_3pt_fga * cs_3_rate
             if spot_vol > 0.05:
                 stats.synergy_spotup = spot_vol * 1.20
 

@@ -99,7 +99,10 @@ def compute(stats: PlayerStats) -> dict:
     # ── JUMP SHOOTING ─────────────────────────────────────────────────────
 
     # Shot Under Basket  — cap 85
-    t["Jump Shooting:Shot Under Basket"] = _scale(pct_ra, 0, 0.45, 5, 85)
+    # high_raw=0.55: average wing (24% RA) → ~40 (within norm 20-45);
+    # elite rim-runners (55-60% RA) hit cap. 0.45 was too tight — mapped
+    # average wings to 48+ (above norm).
+    t["Jump Shooting:Shot Under Basket"] = _scale(pct_ra, 0, 0.55, 5, 85)
 
     # Shot Close  — cap 60
     t["Jump Shooting:Shot Close"] = _scale(pct_close, 0, 0.35, 5, 60)
@@ -182,7 +185,12 @@ def compute(stats: PlayerStats) -> dict:
     _spot_3_vol = (stats.catch_shoot_fga * cs_3_frac
                    if stats.catch_shoot_fga > 0
                    else stats.synergy_spotup)
-    t["Jump Shooting:Spot Up Shot Three"]        = _scale(_spot_3_vol, 0, 3.0, 5, 75)   # cap 75
+    # Pre-2013 proxy (total_3pt_fga × 0.96) inflates because it can't separate
+    # pull-up 3s from catch-and-shoot. Raise high_raw to 4.5 so moderate-volume
+    # shooters (Carmelo ~3.1/game) land in 50–55; only dedicated C&S specialists
+    # (Ray Allen 5+/game) approach the cap.
+    _spot_3_hrw = 3.0 if stats.catch_shoot_fga > 0 else 4.5
+    t["Jump Shooting:Spot Up Shot Three"]        = _scale(_spot_3_vol, 0, _spot_3_hrw, 5, 75)   # cap 75
     t["Jump Shooting:Off Screen Shot Three"]     = _scale(stats.synergy_offscreen * cs_3_frac, 0, 1.5, 5, 65)  # cap 65
 
     # ── Contested jumpers — cap 55 ────────────────────────────────────────
@@ -342,38 +350,39 @@ def compute(stats: PlayerStats) -> dict:
     # MUST be researched via tracking data, film, or scouting before finalizing any Drive ≥ 30 player.
     t["Driving:Drive Right"] = 50
 
-    # Driving dribble moves — caps per CSV
-    t["Driving:Driving Crossover"]          = _scale(faceup_iso, 0, 8,    5, 60)  # cap 60
-    t["Driving:Driving Spin"]               = _scale(faceup_iso * 0.3, 0, 2, 5, 50)  # cap 50
-    t["Driving:Driving Step Back"]          = _scale(pct_stepback, 0, 0.06, 5, 55)   # cap 55
-    t["Driving:Driving Half Spin"]          = _scale(faceup_iso * 0.2, 0, 1.5, 5, 45)  # cap 45
-    t["Driving:Driving Double Crossover"]   = _scale(faceup_iso * 0.15, 0, 1.0, 5, 40) # cap 40
-    t["Driving:Driving Behind The Back"]    = _scale(faceup_iso * 0.15, 0, 1.0, 5, 50) # cap 50
-    t["Driving:Driving Dribble Hesitation"] = _scale(faceup_iso * 0.25, 0, 2.0, 5, 65) # cap 65
-    t["Driving:Driving In And Out"]         = _scale(faceup_iso * 0.15, 0, 1.5, 5, 65) # cap 65
+    # Driving dribble moves — caps per CSV.
+    # high_raws calibrated so a realistic elite ISO ceiling (faceup_iso ≈ 10–11)
+    # approaches cap. The unassisted_fgm fallback produces faceup_iso ≈ 8–10 for
+    # heavy scorers (inflated vs. true Synergy ISO); raising high_raws absorbs
+    # that inflation without flattening the relative ordering across players.
+    # Crossover is the primary ISO move → lowest multiplier discount; secondary
+    # moves (Half Spin, Double Crossover, BtB) get wider ranges → they only cap
+    # for genuine signature-move users.
+    t["Driving:Driving Crossover"]          = _scale(faceup_iso,        0, 12,  5, 60)  # cap 60; cap at faceup_iso≈12
+    t["Driving:Driving Spin"]               = _scale(faceup_iso * 0.3,  0, 3.5, 5, 50)  # cap 50
+    t["Driving:Driving Step Back"]          = _scale(pct_stepback, 0, 0.06, 5, 55)      # cap 55 (unchanged)
+    t["Driving:Driving Half Spin"]          = _scale(faceup_iso * 0.2,  0, 2.5, 5, 45)  # cap 45
+    t["Driving:Driving Double Crossover"]   = _scale(faceup_iso * 0.15, 0, 2.0, 5, 40)  # cap 40
+    t["Driving:Driving Behind The Back"]    = _scale(faceup_iso * 0.15, 0, 2.0, 5, 50)  # cap 50
+    t["Driving:Driving Dribble Hesitation"] = _scale(faceup_iso * 0.25, 0, 2.8, 5, 65)  # cap 65
+    t["Driving:Driving In And Out"]         = _scale(faceup_iso * 0.15, 0, 2.0, 5, 65)  # cap 65
 
     # No Driving Dribble Move  — cap 90
-    # Definition: selection weight for straight-line continuation vs. adding a dribble move
-    # once the player is attacking. This controls dribble moves during the drive (spin,
-    # crossover, hesitation), NOT the finishing type (euro step, floater).
-    # NBA norm: 5–35 (most players are in the move-creative range).
+    # Definition: frequency that player attacks straight-line without adding a mid-drive
+    # counter (spin, crossover, hesitation). Must be INVERSELY related to individual dribble
+    # move tendencies — if Crossover/Hesitation are high, this must be low.
     #
-    # Shot-type ratio gives a finishing-type signal (layup vs. euro/floater) that correlates
-    # with drive creativity but is not a direct measure of mid-drive dribble moves.
-    # faceup_iso is a better proxy for dribble-move creativity: high-ISO players who create
-    # off the dribble habitually add moves during drives too.
-    # Blend both: shot-type ratio anchors to observable data; faceup_iso captures the
-    # creative profile that the shot-type data can't fully separate (especially pre-2013).
-    total_drive_atts = stats.fga_driving_layup + euro_fga + stats.fga_floater
-    if total_drive_atts >= 1.0:
-        shot_type_pct = _pct(stats.fga_driving_layup, total_drive_atts)
-    else:
-        shot_type_pct = 0.85  # sparse data: default to straight-line
-    # ISO-based penalty: elite ISO (faceup_iso ≥ 8) → 0.29 floor; low ISO → 0.85 baseline
-    iso_pct = max(0.29, 0.85 - min(faceup_iso, 8) * 0.07)
-    # Equal blend of shot-type signal and ISO creativity profile
-    straight_drive_pct = shot_type_pct * 0.5 + iso_pct * 0.5
-    t["Driving:No Driving Dribble Move"] = _scale(straight_drive_pct, 0.20, 0.90, 10, 90)
+    # Previous approach blended shot-type finishing ratio (straight layup vs. euro/floater)
+    # with faceup_iso. Problem: a player can use a crossover mid-drive and still finish with
+    # a straight layup — finishing type is the wrong proxy for mid-drive move usage.
+    # The floored iso_pct (min 0.29) also prevented elite ISO players from going below ~55.
+    #
+    # Pure faceup_iso inverse: the only available signal that directly measures "how often
+    # does this player create via dribble moves." High ISO = frequently adds moves = low No Move.
+    # Calibrated so faceup_iso ≈ 0 → 90 (cap, drives straight always);
+    #              faceup_iso ≈ 10 → 10 (out_low, almost always adds a move).
+    no_move_raw = max(0.0, 1.0 - faceup_iso / 10.0)
+    t["Driving:No Driving Dribble Move"] = _scale(no_move_raw, 0, 1.0, 10, 90)
 
     # Attack Strong On Drive  — cap 90
     # CSV: "controls willingness to CONTINUE the downhill attack toward the basket once
@@ -406,7 +415,7 @@ def compute(stats: PlayerStats) -> dict:
     t["Drive Setup:Triple Threat Pump Fake"] = _scale(stats.fta, 1, 9, 10, 55)
 
     # Triple Threat Jab Step  — cap 55
-    t["Drive Setup:Triple Threat Jab Step"]  = _scale(faceup_iso * 0.5, 0, 3.0, 5, 55)
+    t["Drive Setup:Triple Threat Jab Step"]  = _scale(faceup_iso * 0.5, 0, 4.5, 5, 55)
 
     # Triple Threat Idle  — cap 65
     # usage_proxy zeros out post players unfairly. Post players do idle in the post;
@@ -415,10 +424,10 @@ def compute(stats: PlayerStats) -> dict:
     t["Drive Setup:Triple Threat Idle"]      = _scale(idle_raw, 0, 0.45, 5, 65)
 
     # Setup With Sizeup  — cap 55
-    t["Drive Setup:Setup With Sizeup"]       = _scale(faceup_iso * 0.3, 0, 2.0, 5, 55)
+    t["Drive Setup:Setup With Sizeup"]       = _scale(faceup_iso * 0.3, 0, 3.0, 5, 55)
 
     # Setup With Hesitation  — cap 55
-    t["Drive Setup:Setup With Hesitation"]   = _scale(faceup_iso * 0.2, 0, 1.5, 5, 55)
+    t["Drive Setup:Setup With Hesitation"]   = _scale(faceup_iso * 0.2, 0, 2.5, 5, 55)
 
     # No Setup Dribble  — cap 85
     t["Drive Setup:No Setup Dribble"]        = _scale(
