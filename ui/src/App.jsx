@@ -18,8 +18,12 @@ export default function App() {
   const [rosterLoading, setRosterLoading] = useState(false)
   const [selectedPlayer, setSelectedPlayer] = useState(null)
   const [generating, setGenerating] = useState(false)
-  const [result, setResult] = useState(null)
   const [error, setError] = useState(null)
+
+  // rosterPlayers: [{ result, overrides: {} }]
+  // result contains _player_id, _touch_raw, _shot_raw, tendencies, etc.
+  const [rosterPlayers, setRosterPlayers] = useState([])
+  const [activePlayerId, setActivePlayerId] = useState(null)
 
   useEffect(() => {
     fetch('/api/teams').then(r => r.json()).then(setTeams).catch(() => {})
@@ -52,7 +56,6 @@ export default function App() {
   async function handleGenerate() {
     if (!selectedPlayer) return
     setGenerating(true)
-    setResult(null)
     setError(null)
     try {
       const res = await fetch('/api/generate', {
@@ -69,7 +72,17 @@ export default function App() {
         const body = await res.json().catch(() => ({}))
         throw new Error(body.detail || 'Generation failed')
       }
-      setResult(await res.json())
+      const result = await res.json()
+      setRosterPlayers(prev => {
+        const exists = prev.findIndex(p => p.result._player_id === result._player_id)
+        if (exists !== -1) {
+          const next = [...prev]
+          next[exists] = { ...next[exists], result }
+          return next
+        }
+        return [...prev, { result, overrides: {} }]
+      })
+      setActivePlayerId(result._player_id)
     } catch (e) {
       setError(e.message)
     } finally {
@@ -77,26 +90,99 @@ export default function App() {
     }
   }
 
+  // Normalize Freelance:Shot and Freelance:Touches across all roster players.
+  // The star player (highest raw score) keeps their individually-computed value.
+  // All others scale proportionally down from that anchor.
+  function handleNormalize() {
+    if (rosterPlayers.length < 2) return
+
+    const touchRaws = rosterPlayers.map(p => p.result._touch_raw ?? 0)
+    const shotRaws  = rosterPlayers.map(p => p.result._shot_raw  ?? 0)
+
+    const maxTouchRaw = Math.max(...touchRaws)
+    const maxShotRaw  = Math.max(...shotRaws)
+
+    const starTouchVal = rosterPlayers[touchRaws.indexOf(maxTouchRaw)]
+      .result.tendencies['Freelance:Touches'].value
+    const starShotVal = rosterPlayers[shotRaws.indexOf(maxShotRaw)]
+      .result.tendencies['Freelance:Shot'].value
+
+    setRosterPlayers(prev => prev.map((p, i) => {
+      const touchRatio = maxTouchRaw > 0 ? touchRaws[i] / maxTouchRaw : 0
+      const shotRatio  = maxShotRaw  > 0 ? shotRaws[i]  / maxShotRaw  : 0
+
+      const normTouch = Math.round(Math.max(10, Math.min(75, touchRatio * starTouchVal)))
+      const normShot  = Math.round(Math.max(10, Math.min(75, shotRatio  * starShotVal)))
+
+      const newOverrides = { ...p.overrides }
+      if (normTouch !== p.result.tendencies['Freelance:Touches'].value) {
+        newOverrides['Freelance:Touches'] = normTouch
+      } else {
+        delete newOverrides['Freelance:Touches']
+      }
+      if (normShot !== p.result.tendencies['Freelance:Shot'].value) {
+        newOverrides['Freelance:Shot'] = normShot
+      } else {
+        delete newOverrides['Freelance:Shot']
+      }
+
+      return { ...p, overrides: newOverrides }
+    }))
+  }
+
+  function handleOverrideChange(playerId, key, val) {
+    setRosterPlayers(prev => prev.map(p =>
+      p.result._player_id === playerId
+        ? { ...p, overrides: { ...p.overrides, [key]: val } }
+        : p
+    ))
+  }
+
+  function handleResetOverride(playerId, key) {
+    setRosterPlayers(prev => prev.map(p => {
+      if (p.result._player_id !== playerId) return p
+      const next = { ...p.overrides }
+      delete next[key]
+      return { ...p, overrides: next }
+    }))
+  }
+
+  function handleResetAll(playerId) {
+    setRosterPlayers(prev => prev.map(p =>
+      p.result._player_id === playerId ? { ...p, overrides: {} } : p
+    ))
+  }
+
+  function handleRemovePlayer(playerId) {
+    setRosterPlayers(prev => {
+      const next = prev.filter(p => p.result._player_id !== playerId)
+      if (activePlayerId === playerId) {
+        setActivePlayerId(next.length > 0 ? next[next.length - 1].result._player_id : null)
+      }
+      return next
+    })
+  }
+
   function handleTeamChange(e) {
     const team = teams.find(t => t.id === parseInt(e.target.value))
     setSelectedTeam(team || null)
-    setResult(null)
   }
 
   function handlePlayerChange(e) {
     const player = roster.find(p => p.player_id === parseInt(e.target.value))
     setSelectedPlayer(player || null)
-    setResult(null)
   }
 
   function handleSeasonChange(e) {
     setSeason(e.target.value)
     setRoster([])
     setSelectedPlayer(null)
-    setResult(null)
   }
 
   const canGenerate = !!selectedPlayer && !generating
+  const hasRoster = rosterPlayers.length > 0
+  const canNormalize = rosterPlayers.length >= 2
+  const activePlayer = rosterPlayers.find(p => p.result._player_id === activePlayerId) ?? null
 
   return (
     <div className={styles.app}>
@@ -170,11 +256,61 @@ export default function App() {
           )}
 
           {error && <p className={styles.error}>{error}</p>}
+
+          {hasRoster && (
+            <div className={styles.rosterSection}>
+              <div className={styles.rosterSectionHeader}>
+                <span className={styles.sidebarTitle}>Roster ({rosterPlayers.length})</span>
+                <button
+                  className={styles.clearRosterBtn}
+                  onClick={() => setRosterPlayers([])}
+                >
+                  Clear
+                </button>
+              </div>
+
+              <div className={styles.rosterList}>
+                {rosterPlayers.map(p => {
+                  const isActive = p.result._player_id === activePlayerId
+                  return (
+                    <div
+                      key={p.result._player_id}
+                      className={`${styles.rosterItem}${isActive ? ' ' + styles.rosterItemActive : ''}`}
+                      onClick={() => setActivePlayerId(p.result._player_id)}
+                    >
+                      <span className={styles.rosterItemName}>{p.result.player_name}</span>
+                      <button
+                        className={styles.rosterRemoveBtn}
+                        onClick={e => { e.stopPropagation(); handleRemovePlayer(p.result._player_id) }}
+                        title="Remove"
+                      >
+                        ✕
+                      </button>
+                    </div>
+                  )
+                })}
+              </div>
+
+              {canNormalize && (
+                <button className={styles.normalizeBtn} onClick={handleNormalize}>
+                  Normalize Freelance
+                </button>
+              )}
+            </div>
+          )}
         </aside>
 
         <main className={styles.main}>
-          {result ? (
-            <TendencyResults result={result} />
+          {activePlayer ? (
+            <TendencyResults
+              key={activePlayer.result._player_id}
+              result={activePlayer.result}
+              overrides={activePlayer.overrides}
+              onOverrideChange={(key, val) => handleOverrideChange(activePlayer.result._player_id, key, val)}
+              onResetOverride={(key) => handleResetOverride(activePlayer.result._player_id, key)}
+              onResetAll={() => handleResetAll(activePlayer.result._player_id)}
+              onRemove={() => handleRemovePlayer(activePlayer.result._player_id)}
+            />
           ) : (
             <div className={styles.empty}>
               <div className={styles.emptyIcon}>🏀</div>

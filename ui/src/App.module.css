@@ -164,6 +164,107 @@
   line-height: 1.4;
 }
 
+/* Roster section in sidebar */
+.rosterSection {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding-top: 6px;
+  border-top: 1px solid #1e2240;
+}
+
+.rosterSectionHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.clearRosterBtn {
+  background: transparent;
+  border: none;
+  color: #3a3e5c;
+  font-size: 12px;
+  cursor: pointer;
+  padding: 2px 4px;
+  transition: color 0.15s;
+}
+
+.clearRosterBtn:hover {
+  color: #8b8fa8;
+}
+
+.rosterList {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.rosterItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 6px 10px;
+  background: #1c1f38;
+  border: 1px solid #2a2e50;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: border-color 0.15s;
+}
+
+.rosterItem:hover {
+  border-color: #4a4e70;
+}
+
+.rosterItemActive {
+  border-color: #c8102e;
+  background: rgba(200, 16, 46, 0.06);
+}
+
+.rosterItemName {
+  font-size: 12px;
+  color: #a0a4c0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  flex: 1;
+}
+
+.rosterRemoveBtn {
+  background: transparent;
+  border: none;
+  color: #3a3e5c;
+  font-size: 11px;
+  cursor: pointer;
+  padding: 2px 4px;
+  flex-shrink: 0;
+  line-height: 1;
+  transition: color 0.15s;
+}
+
+.rosterRemoveBtn:hover {
+  color: #c8102e;
+}
+
+.normalizeBtn {
+  background: #1c1f38;
+  border: 1px solid #4a4e70;
+  color: #a0a4c0;
+  border-radius: 7px;
+  padding: 9px 14px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  text-align: center;
+  transition: border-color 0.15s, color 0.15s, background 0.15s;
+}
+
+.normalizeBtn:hover {
+  border-color: #00c896;
+  color: #00c896;
+  background: rgba(0, 200, 150, 0.06);
+}
+
 /* Main content */
 .main {
   flex: 1;

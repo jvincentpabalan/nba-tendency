@@ -258,12 +258,15 @@ def collect(player_id: int, season: str) -> PlayerStats:
         chart = client.fetch_shot_chart(player_id, season)
         shots = client.parse_result_set(chart, "Shot_Chart_Detail")
 
-        # Aggregate shot attempts by (zone_basic, zone_area)
+        # Aggregate shot attempts by (zone_basic, zone_area).
+        # API returns area with abbreviation suffix e.g. "Left Side(L)" — strip it.
         from collections import defaultdict
         zone_counts = defaultdict(int)
         for s in shots:
-            key = (s.get("SHOT_ZONE_BASIC", ""), s.get("SHOT_ZONE_AREA", ""))
-            zone_counts[key] += 1
+            basic = s.get("SHOT_ZONE_BASIC", "")
+            area = s.get("SHOT_ZONE_AREA", "")
+            area = area.split("(")[0].strip() if "(" in area else area
+            zone_counts[(basic, area)] += 1
 
         def zc(basic, area):
             return float(zone_counts.get((basic, area), 0))
@@ -291,6 +294,12 @@ def collect(player_id: int, season: str) -> PlayerStats:
         stats.three_right_center= zc("Above the Break 3", "Right Side Center")
         stats.three_right       = (zc("Right Corner 3", "Right Side")
                                    + zc("Above the Break 3", "Right Side"))
+
+        print(f"  Shot chart: {len(shots)} shots, {len(zone_counts)} zones")
+        print(f"  3PT zones: L={stats.three_left:.0f} LC={stats.three_left_center:.0f} "
+              f"C={stats.three_center:.0f} RC={stats.three_right_center:.0f} R={stats.three_right:.0f}")
+        print(f"  Mid zones: L={stats.mid_left:.0f} LC={stats.mid_left_center:.0f} "
+              f"C={stats.mid_center:.0f} RC={stats.mid_right_center:.0f} R={stats.mid_right:.0f}")
 
     except Exception as e:
         print(f"  Warning: could not fetch shot chart ({e})")

@@ -27,14 +27,12 @@ function clamp(val) {
   return Math.max(0, Math.min(99, n))
 }
 
-export default function TendencyResults({ result }) {
+// overrides, onOverrideChange, onResetOverride, onResetAll, onRemove are all lifted to parent.
+export default function TendencyResults({ result, overrides, onOverrideChange, onResetOverride, onResetAll, onRemove }) {
   const { player_name, season, season_type, tendencies } = result
   const [collapsed, setCollapsed] = useState({})
   const [editMode, setEditMode] = useState(false)
-  // overrides: { [key]: number } — only keys the user changed
-  const [overrides, setOverrides] = useState({})
 
-  // Effective value for a key: override if set, else original
   const effectiveValue = useCallback((key) => {
     return key in overrides ? overrides[key] : tendencies[key].value
   }, [overrides, tendencies])
@@ -62,48 +60,17 @@ export default function TendencyResults({ result }) {
     setCollapsed(prev => ({ ...prev, [g]: !prev[g] }))
   }
 
-  function handleValueChange(key, raw) {
-    const val = clamp(raw)
-    if (val === tendencies[key].value) {
-      // Matches original — remove override
-      setOverrides(prev => {
-        const next = { ...prev }
-        delete next[key]
-        return next
-      })
-    } else {
-      setOverrides(prev => ({ ...prev, [key]: val }))
-    }
-  }
-
   function handleInputChange(key, raw) {
-    // Allow empty string while typing; commit on blur
-    setOverrides(prev => ({ ...prev, [key]: raw }))
+    onOverrideChange(key, raw)
   }
 
   function handleInputBlur(key, raw) {
     const val = clamp(raw)
     if (val === tendencies[key].value) {
-      setOverrides(prev => {
-        const next = { ...prev }
-        delete next[key]
-        return next
-      })
+      onResetOverride(key)
     } else {
-      setOverrides(prev => ({ ...prev, [key]: val }))
+      onOverrideChange(key, val)
     }
-  }
-
-  function handleReset(key) {
-    setOverrides(prev => {
-      const next = { ...prev }
-      delete next[key]
-      return next
-    })
-  }
-
-  function handleResetAll() {
-    setOverrides({})
   }
 
   function buildPayload() {
@@ -145,7 +112,7 @@ export default function TendencyResults({ result }) {
         <div className={styles.headerActions}>
           <div className={styles.headerButtons}>
             {editMode && hasEdits && (
-              <button className={styles.resetAllBtn} onClick={handleResetAll}>
+              <button className={styles.resetAllBtn} onClick={onResetAll}>
                 Reset all ({editedCount})
               </button>
             )}
@@ -164,6 +131,11 @@ export default function TendencyResults({ result }) {
             <button className={styles.downloadBtn} onClick={handleDownload}>
               Download JSON
             </button>
+            {onRemove && (
+              <button className={styles.removeBtn} onClick={onRemove} title="Remove from roster">
+                ✕
+              </button>
+            )}
           </div>
         </div>
       </div>
@@ -224,7 +196,7 @@ export default function TendencyResults({ result }) {
                             />
                             <button
                               className={`${styles.resetBtn}${isEdited ? ' ' + styles.visible : ''}`}
-                              onClick={() => handleReset(t.key)}
+                              onClick={() => onResetOverride(t.key)}
                               title="Reset to computed value"
                               disabled={!isEdited}
                             >

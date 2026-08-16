@@ -100,11 +100,22 @@ def generate(req: GenerateRequest):
     with open(out_path, "w") as f:
         json.dump(output, f, indent=2)
 
+    # Raw involvement scores for UI-side roster normalization.
+    # These mirror the mapper formulas for Freelance:Touches and Freelance:Shot
+    # but are NOT included in the saved file — the external 2K tool reads output only.
+    _denom = stats.fga + stats.ast + stats.tov
+    _ast_ratio = stats.ast / _denom if _denom > 0 else 0.0
+    touch_raw = round(stats.fga + stats.ast * 1.5, 4)
+    shot_raw = round((stats.fga * 0.6 + stats.pts * 0.4) * max(0.60, 1.0 - _ast_ratio), 4)
+
     return {
         "player_name": req.player_name,
         "season": req.season,
         "season_type": req.season_type,
+        "_player_id": req.player_id,
         **output,
+        "_touch_raw": touch_raw,
+        "_shot_raw": shot_raw,
     }
 
 

@@ -16,6 +16,7 @@ import os
 
 import stats_collector
 import mapper
+import reviewer
 
 
 def parse_args():
@@ -36,6 +37,8 @@ def parse_args():
                    help="Print key stat inputs before computing tendencies")
     p.add_argument("--copy", action="store_true",
                    help="Copy JSON output to clipboard (macOS pbcopy)")
+    p.add_argument("--review", action="store_true",
+                   help="Print annotated tier-label review instead of raw JSON")
     return p.parse_args()
 
 
@@ -199,6 +202,22 @@ def main():
     # Add metadata
     output["_player_id"] = args.player
     output["_season"] = args.season
+
+    # Review mode: print annotated tier labels instead of raw JSON
+    if args.review:
+        title = f"Player {args.player}  |  Season {args.season}"
+        rows = reviewer.review(output["tendencies"])
+        print()
+        print(reviewer.format_review(rows, title=title))
+        print()
+        print(reviewer.format_summary(rows))
+        if args.output:
+            indent = 2 if args.pretty else None
+            json_str = json.dumps(output, indent=indent)
+            with open(args.output, "w") as f:
+                f.write(json_str)
+            print(f"\nJSON also written to {args.output}")
+        return
 
     # Output
     indent = 2 if args.pretty else None
