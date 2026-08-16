@@ -196,8 +196,10 @@ def compute(stats: PlayerStats) -> dict:
     t["Jump Shooting:Spin Jumper"] = _scale(spin_jump_raw, 0, 0.5, 5, 45)
 
     # Transition Pull-Up Three  — cap 45
+    # synergy_transition is always 0 (defunct endpoint). Use PCT_PTS_FB × 3PT share as proxy:
+    # fast-break scoring rate × tendency to shoot 3s = pull-up-3 transition frequency.
     t["Jump Shooting:Transition Pull Up Three"] = _scale(
-        stats.synergy_transition * pct_3, 0, 1.0, 5, 45)
+        stats.pct_pts_fb * pct_3, 0, 0.08, 5, 45)
 
     # Drive Pull Up Mid-Range  — cap 70
     # pullup_2pt_fga from player tracking (2013-14+ only).
@@ -209,7 +211,15 @@ def compute(stats: PlayerStats) -> dict:
     else:
         pu2 = stats.fga_pullup * (1 - pct_3) + stats.fga_uast_2pt_jump
 
-    pu3 = stats.pullup_3pt_fga or (stats.fga_pullup * pct_3)
+    # Drive Pull-Up Three: player-tracking pullup_3pt_fga when available (2013-14+).
+    # Pre-2013 fallback: fg3a × PCT_UAST_3PM = estimated self-created 3PA.
+    # Replaces fga_pullup × pct_3 which mixed 2PT/3PT pull-ups with no 3PT specificity.
+    if stats.pullup_3pt_fga > 0:
+        pu3 = stats.pullup_3pt_fga
+    elif stats.pct_uast_3pm > 0:
+        pu3 = stats.fg3a * stats.pct_uast_3pm
+    else:
+        pu3 = stats.fga_pullup * pct_3
     t["Jump Shooting:Drive Pull Up Mid-Range"] = _scale(pu2, 0, 8, 5, 70)
     # Drive Pull Up Three  — cap 50
     t["Jump Shooting:Drive Pull Up Three"]     = _scale(pu3, 0, 4, 5, 50)
@@ -311,7 +321,8 @@ def compute(stats: PlayerStats) -> dict:
         stats.synergy_spotup * cs_mid_frac * _spot_up_mid_scale * 0.4, 0, 1.5, 5, 70)
 
     # Off-Screen Drive  — cap 60
-    t["Driving:Off Screen Drive"] = _scale(stats.synergy_offscreen * 0.4, 0, 0.6, 5, 60)
+    # Most off-screen reads are shot-first; 0.25 replaces 0.4 (was over-counting drive converts)
+    t["Driving:Off Screen Drive"] = _scale(stats.synergy_offscreen * 0.25, 0, 0.6, 5, 60)
 
     # Drive Right  — neutral 50 (no directional drive data from API)
     t["Driving:Drive Right"] = 50
@@ -401,10 +412,10 @@ def compute(stats: PlayerStats) -> dict:
     # ── PASSING ──────────────────────────────────────────────────────────
 
     # Dish To Open Man  — cap 65
-    # Raw AST underestimates post players who draw help and kick out.
-    # Add post_freq bonus to account for draw-and-kick behavior.
-    dish_raw = stats.ast + post_freq * 0.4
-    t["Passing:Dish To Open Man"] = _scale(dish_raw, 0.5, 14, 10, 65)
+    # AST_PCT is pace/usage-adjusted (better than raw AST for multi-era players).
+    # Retain a reduced post_freq bonus: draw-and-kick passes often don't register as assists.
+    dish_raw = stats.ast_pct * 15 + post_freq * 0.2
+    t["Passing:Dish To Open Man"] = _scale(dish_raw, 0.3, 8.0, 10, 65)
 
     # Flashy Pass  — cap 60
     t["Passing:Flashy Pass"] = _scale(stats.ast, 1, 12, 5, 60)
@@ -453,9 +464,14 @@ def compute(stats: PlayerStats) -> dict:
     t["Freelance:Iso vs. Poor Defender"]    = _scale(iso_score_freq,        0, 4.0, 5, 75)  # cap 75
 
     # Play Discipline  — cap 90
-    # Recalibrated anchors: NBA norm TOV rate ~12-20%; disciplined players rarely exceed 15%.
-    tov_rate = _pct(stats.tov, stats.fga + stats.ast + stats.tov)
-    t["Freelance:Play Discipline"] = _scale(1 - tov_rate, 0.75, 0.97, 20, 90)
+    # Self-creation rate (primary) + usage rate (secondary).
+    # Both measure "takes matters into own hands" vs. "finishes designed plays."
+    # TOV rate alone is ball security, not play adherence — replaced.
+    unassisted_pct = stats.unassisted_fgm / max(stats.fgm, 1.0)
+    # USG_PCT: 0.15=role player, 0.20=avg, 0.30=star, 0.35+=primary engine
+    usg_normalized = min(1.0, max(0.0, (stats.usg_pct - 0.10) / 0.25))
+    freelance_index = unassisted_pct * 0.65 + usg_normalized * 0.35
+    t["Freelance:Play Discipline"] = _scale(1.0 - freelance_index, 0.30, 0.87, 20, 90)
 
     # Shot  — cap 75
     # CSV tiers: 0-5 Non-Scoring, 10-15 Bailout, 20-25 Low-Usage, 30-35 Connector,
@@ -480,8 +496,9 @@ def compute(stats: PlayerStats) -> dict:
     t["Freelance:Touches"] = _scale(stats.fga + stats.ast * 1.5, 2, 25, 10, 75)
 
     # Transition Spot Up
-    t["Freelance:Transition Spot Up"] = _scale(
-        stats.synergy_transition * pct_3, 0, 1.5, 5, 55)
+    # synergy_transition is always 0 (defunct endpoint). PCT_PTS_FB is the only available
+    # proxy for transition involvement; high fast-break scoring → spots up in transition.
+    t["Freelance:Transition Spot Up"] = _scale(stats.pct_pts_fb, 0, 0.25, 5, 55)
 
     # ── POST GAME ─────────────────────────────────────────────────────────
 

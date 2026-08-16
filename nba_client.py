@@ -89,7 +89,7 @@ def parse_result_set(data: dict, name: str) -> list[dict]:
     return []
 
 
-def fetch_shooting_splits(player_id: int, season: str) -> dict:
+def fetch_shooting_splits(player_id: int, season: str, season_type: str = "Regular Season") -> dict:
     """Fetch shooting split data (zones, types, distances)."""
     print(f"Fetching shooting splits for player {player_id} ({season})...")
     time.sleep(REQUEST_DELAY)
@@ -99,12 +99,12 @@ def fetch_shooting_splits(player_id: int, season: str) -> dict:
         "Month": 0, "OpponentTeamID": 0, "Outcome": "", "PORound": 0,
         "PaceAdjust": "N", "PerMode": "PerGame", "Period": 0,
         "PlayerID": player_id, "PlusMinus": "N", "Rank": "N",
-        "Season": season, "SeasonSegment": "", "SeasonType": "Regular Season",
+        "Season": season, "SeasonSegment": "", "SeasonType": season_type,
         "ShotClockRange": "", "VsConference": "", "VsDivision": "",
     })
 
 
-def fetch_general_splits(player_id: int, season: str) -> dict:
+def fetch_general_splits(player_id: int, season: str, season_type: str = "Regular Season") -> dict:
     """Fetch general/traditional stats (PTS, AST, REB, STL, BLK, PF, etc.)."""
     print(f"Fetching general splits for player {player_id} ({season})...")
     time.sleep(REQUEST_DELAY)
@@ -114,17 +114,47 @@ def fetch_general_splits(player_id: int, season: str) -> dict:
         "Month": 0, "OpponentTeamID": 0, "Outcome": "", "PORound": 0,
         "PaceAdjust": "N", "PerMode": "PerGame", "Period": 0,
         "PlayerID": player_id, "PlusMinus": "N", "Rank": "N",
-        "Season": season, "SeasonSegment": "", "SeasonType": "Regular Season",
+        "Season": season, "SeasonSegment": "", "SeasonType": season_type,
         "ShotClockRange": "", "Split": "general", "VsConference": "", "VsDivision": "",
     })
 
 
-def fetch_shot_chart(player_id: int, season: str) -> dict:
+def fetch_scoring_splits(player_id: int, season: str, season_type: str = "Regular Season") -> dict:
+    """Fetch scoring breakdown stats (PCT_UAST_3PM, PCT_PTS_FB, etc.) for the player."""
+    print(f"Fetching scoring splits for player {player_id} ({season})...")
+    time.sleep(REQUEST_DELAY)
+    return fetch("playerdashboardbygeneralsplits", {
+        "DateFrom": "", "DateTo": "", "GameSegment": "", "ISTRound": "",
+        "LastNGames": 0, "LeagueID": "00", "Location": "", "MeasureType": "Scoring",
+        "Month": 0, "OpponentTeamID": 0, "Outcome": "", "PORound": 0,
+        "PaceAdjust": "N", "PerMode": "PerGame", "Period": 0,
+        "PlayerID": player_id, "PlusMinus": "N", "Rank": "N",
+        "Season": season, "SeasonSegment": "", "SeasonType": season_type,
+        "ShotClockRange": "", "Split": "general", "VsConference": "", "VsDivision": "",
+    })
+
+
+def fetch_advanced_splits(player_id: int, season: str, season_type: str = "Regular Season") -> dict:
+    """Fetch advanced stats (USG_PCT, AST_PCT, etc.) for the player."""
+    print(f"Fetching advanced splits for player {player_id} ({season})...")
+    time.sleep(REQUEST_DELAY)
+    return fetch("playerdashboardbygeneralsplits", {
+        "DateFrom": "", "DateTo": "", "GameSegment": "", "ISTRound": "",
+        "LastNGames": 0, "LeagueID": "00", "Location": "", "MeasureType": "Advanced",
+        "Month": 0, "OpponentTeamID": 0, "Outcome": "", "PORound": 0,
+        "PaceAdjust": "N", "PerMode": "PerGame", "Period": 0,
+        "PlayerID": player_id, "PlusMinus": "N", "Rank": "N",
+        "Season": season, "SeasonSegment": "", "SeasonType": season_type,
+        "ShotClockRange": "", "Split": "general", "VsConference": "", "VsDivision": "",
+    })
+
+
+def fetch_shot_chart(player_id: int, season: str, season_type: str = "Regular Season") -> dict:
     """Fetch shot chart detail (individual shots with zone breakdowns)."""
     print(f"Fetching shot chart for player {player_id} ({season})...")
     time.sleep(REQUEST_DELAY)
     return fetch("shotchartdetail", {
-        "LeagueID": "00", "Season": season, "SeasonType": "Regular Season",
+        "LeagueID": "00", "Season": season, "SeasonType": season_type,
         "TeamID": 0, "PlayerID": player_id, "GameID": "",
         "Outcome": "", "Location": "", "Month": 0, "SeasonSegment": "",
         "DateFrom": "", "DateTo": "", "OpponentTeamID": 0,
@@ -175,13 +205,13 @@ def fetch_team_roster(team_id: int, season: str) -> list[dict]:
     return sorted(players, key=lambda p: p["player_name"])
 
 
-def fetch_pullup_shooting(player_id: int, season: str) -> dict:
+def fetch_pullup_shooting(player_id: int, season: str, season_type: str = "Regular Season") -> dict:
     """Fetch pull-up and catch-and-shoot split data."""
     print(f"Fetching pull-up shooting data for player {player_id} ({season})...")
     time.sleep(REQUEST_DELAY)
     return fetch("playerdashptshots", {
         "LeagueID": "00", "PerMode": "PerGame", "Season": season,
-        "SeasonType": "Regular Season", "PlayerID": player_id,
+        "SeasonType": season_type, "PlayerID": player_id,
         "TeamID": 0, "Outcome": "", "Location": "", "Month": 0,
         "SeasonSegment": "", "DateFrom": "", "DateTo": "",
         "OpponentTeamID": 0, "VsConference": "", "VsDivision": "",

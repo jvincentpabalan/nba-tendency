@@ -16,6 +16,10 @@ class PlayerStats:
     # --- Box score (from general splits) ---
     games: int = 0
     minutes: float = 0.0
+    usg_pct: float = 0.0      # usage rate (from advanced splits; 0.20 = league avg)
+    ast_pct: float = 0.0      # % of teammate FGs assisted while on floor (pace/role adjusted)
+    pct_uast_3pm: float = 0.0 # fraction of 3PT makes that were self-created (from scoring splits)
+    pct_pts_fb: float = 0.0   # fraction of points scored in transition / fast break
     pts: float = 0.0
     fgm: float = 0.0
     fga: float = 0.0
@@ -135,13 +139,13 @@ def _sum_field(rows: list, field: str) -> float:
     return sum(float(r.get(field, 0) or 0) for r in rows)
 
 
-def collect(player_id: int, season: str) -> PlayerStats:
+def collect(player_id: int, season: str, season_type: str = "Regular Season") -> PlayerStats:
     """Fetch all data and return a populated PlayerStats."""
     stats = PlayerStats()
 
     # ── 1. General splits (box score) ─────────────────────────────────────
     try:
-        gen = client.fetch_general_splits(player_id, season)
+        gen = client.fetch_general_splits(player_id, season, season_type)
         overall = client.parse_result_set(gen, "OverallPlayerDashboard")
         if overall:
             row = overall[0]
@@ -166,9 +170,29 @@ def collect(player_id: int, season: str) -> PlayerStats:
     except Exception as e:
         print(f"  Warning: could not fetch general splits ({e})")
 
+    # ── 1b. Advanced splits (USG_PCT, AST_PCT) ───────────────────────────
+    try:
+        adv = client.fetch_advanced_splits(player_id, season, season_type)
+        overall_adv = client.parse_result_set(adv, "OverallPlayerDashboard")
+        if overall_adv:
+            stats.usg_pct = float(overall_adv[0].get("USG_PCT", 0) or 0)
+            stats.ast_pct = float(overall_adv[0].get("AST_PCT", 0) or 0)
+    except Exception as e:
+        print(f"  Warning: could not fetch advanced splits ({e})")
+
+    # ── 1c. Scoring splits (PCT_UAST_3PM, PCT_PTS_FB) ────────────────────
+    try:
+        sc = client.fetch_scoring_splits(player_id, season, season_type)
+        overall_sc = client.parse_result_set(sc, "OverallPlayerDashboard")
+        if overall_sc:
+            stats.pct_uast_3pm = float(overall_sc[0].get("PCT_UAST_3PM", 0) or 0)
+            stats.pct_pts_fb   = float(overall_sc[0].get("PCT_PTS_FB",   0) or 0)
+    except Exception as e:
+        print(f"  Warning: could not fetch scoring splits ({e})")
+
     # ── 2. Shooting splits ────────────────────────────────────────────────
     try:
-        sh = client.fetch_shooting_splits(player_id, season)
+        sh = client.fetch_shooting_splits(player_id, season, season_type)
 
         # Shot zones
         areas = client.parse_result_set(sh, "ShotAreaPlayerDashboard")
@@ -255,7 +279,7 @@ def collect(player_id: int, season: str) -> PlayerStats:
 
     # ── 3. Shot chart (directional breakdowns) ────────────────────────────
     try:
-        chart = client.fetch_shot_chart(player_id, season)
+        chart = client.fetch_shot_chart(player_id, season, season_type)
         shots = client.parse_result_set(chart, "Shot_Chart_Detail")
 
         # Aggregate shot attempts by (zone_basic, zone_area).
@@ -344,7 +368,7 @@ def collect(player_id: int, season: str) -> PlayerStats:
     # Values are already PerGame (this endpoint honors PerMode correctly).
     # Only available from 2013-14 onward; older seasons return empty rows.
     try:
-        pu = client.fetch_pullup_shooting(player_id, season)
+        pu = client.fetch_pullup_shooting(player_id, season, season_type)
         general_rows = client.parse_result_set(pu, "GeneralShooting")
         gen_map = {r.get("SHOT_TYPE", ""): r for r in general_rows}
 

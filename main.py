@@ -39,6 +39,8 @@ def parse_args():
                    help="Copy JSON output to clipboard (macOS pbcopy)")
     p.add_argument("--review", action="store_true",
                    help="Print annotated tier-label review instead of raw JSON")
+    p.add_argument("--playoffs", action="store_true",
+                   help="Use Playoffs stats instead of Regular Season")
     return p.parse_args()
 
 
@@ -172,13 +174,17 @@ def main():
     print(f"Generating 2K26 tendencies for player {args.player}, season {args.season}")
     print("=" * 60)
 
+    season_type = "Playoffs" if args.playoffs else "Regular Season"
+    if args.playoffs:
+        print(f"Season type: Playoffs")
+
     if args.mock:
         print("Using mock data (--mock flag set)")
         stats = mock_stats(args.player, args.season)
     else:
         print("Fetching stats from NBA.com (this may take ~30 seconds)...")
         try:
-            stats = stats_collector.collect(args.player, args.season)
+            stats = stats_collector.collect(args.player, args.season, season_type)
         except Exception as e:
             print(f"\nError fetching stats: {e}", file=sys.stderr)
             print("Tip: Try --mock to test with sample data.", file=sys.stderr)
