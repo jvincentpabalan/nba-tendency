@@ -219,7 +219,11 @@ def compute(stats: PlayerStats) -> dict:
     t["Jump Shooting:Use Glass"] = _scale(pct_bank, 0, 0.12, 5, 45)
 
     # Step Through Shot  — cap 50
-    t["Jump Shooting:Step Through Shot"] = _scale(post_freq, 0, 8, 5, 50)
+    # Definition: footwork move from a drive, paint catch, face-up, or post-ADJACENT situation.
+    # Explicitly SEPARATE from post-move tendencies. Proxy: paint access rate
+    # (weighted driving layup + paint non-RA shots) as a proxy for situations where step-through occurs.
+    step_through_rate = (stats.fga_driving_layup * 0.6 + stats.fga_paint_nonra * 0.4) / max(fga, 1.0)
+    t["Jump Shooting:Step Through Shot"] = _scale(step_through_rate, 0, 0.30, 5, 50)
 
     # ── LAYUPS AND DUNKS ─────────────────────────────────────────────────
 
@@ -228,21 +232,35 @@ def compute(stats: PlayerStats) -> dict:
     t["Layups And Dunks:Driving Layup"] = _scale(pct_driv_layup, 0, 0.25, 5, 80)
 
     # Standing Dunk  — cap 85
+    # Definition: selection weight of dunk vs. layup at the rim (stationary/catch/oreb).
+    # Denominator = standing rim attempts only, not total FGA.
+    # fga_dunk (ShotTypeSummary "Dunk") excludes alley-oops; minus driving dunks = standing dunks.
+    # fga_layup (ShotTypeSummary "Layup") minus driving layups = catch/standing layups.
     standing_dunk = max(0.0, stats.fga_dunk - stats.fga_driving_dunk)
-    t["Layups And Dunks:Standing Dunk"] = _scale(_pct(standing_dunk, fga), 0, 0.10, 5, 85)
+    standing_layup = max(0.0, stats.fga_layup - stats.fga_driving_layup)
+    dunk_pref = standing_dunk / max(standing_dunk + standing_layup, 0.01)
+    t["Layups And Dunks:Standing Dunk"] = _scale(dunk_pref, 0, 1.0, 5, 85)
 
     # Driving Dunk  — cap 80
     t["Layups And Dunks:Driving Dunk"] = _scale(_pct(stats.fga_driving_dunk, fga), 0, 0.08, 5, 80)
 
     # Flashy Dunk  — cap 70
-    t["Layups And Dunks:Flashy Dunk"] = _scale(_pct(stats.fga_driving_dunk, fga), 0, 0.08, 5, 70)
+    # Definition: sub-selection AFTER a dunk is chosen — style preference (flashy vs. safe animation).
+    # NOT a measure of dunk volume. Proxy: driving dunk volume × driving-preference ratio.
+    # Players who dunk primarily off drives (vs. standing catches) are more likely to use flashy animations.
+    _driving_dunk_pref = _pct(stats.fga_driving_dunk, max(stats.fga_dunk, 0.01))
+    # rate × preference so Flashy Dunk ≤ Driving Dunk (preference ≤ 1.0 always)
+    t["Layups And Dunks:Flashy Dunk"] = _scale(_pct(stats.fga_driving_dunk, fga) * _driving_dunk_pref, 0, 0.08, 5, 70)
 
     # Alley-Oop  — cap 85
     t["Layups And Dunks:Alley-Oop"] = _scale(_pct(stats.fga_alley_oop, fga), 0, 0.05, 5, 85)
 
     # Putback  — cap 70
-    off_reb = stats.synergy_off_reb or stats.oreb
-    t["Layups And Dunks:Putback"] = _scale(off_reb, 0, 3.5, 5, 70)
+    # Definition: IMMEDIATE scoring decision after securing an offensive rebound (tip/lay-in/dunk vs. reset).
+    # Does NOT control how often the player gets offensive rebounds — oreb frequency is explicitly excluded.
+    # Proxy: putback FGA rate = putback attempts / offensive rebounds obtained.
+    _putback_rate = _pct(stats.fga_putback, max(stats.oreb, 0.1))
+    t["Layups And Dunks:Putback"] = _scale(_putback_rate, 0, 0.80, 5, 70)
 
     # Crash  — cap 65
     # CSV: "conditional frequency that meaningful contact during an attacking finish
@@ -447,15 +465,23 @@ def compute(stats: PlayerStats) -> dict:
     # 8 poss/game ≈ primary post engine ceiling; 5.5 (Dirk) → ~60 (Primary Post Option).
     t["Post Game:Post Up"] = _scale(post_freq, 0, 8, 5, 85)
 
+    # Post orientation signal: fadeaway → face-up player; hook → back-to-basket player.
+    # face_up_pct = 1.0 means pure face-up scorer (Dirk); 0.0 means pure back-to-basket (hook-only center).
+    # Neutral (0.5) when no post shot data exists. Used to differentiate Back Down vs. Face Up.
+    _post_shot_vol = stats.fga_fadeaway + stats.fga_hook
+    face_up_pct = _pct(stats.fga_fadeaway, _post_shot_vol) if _post_shot_vol > 0.05 else 0.5
+    _post_back_pct = 1.0 - face_up_pct * 0.6  # dampens back-down for face-up players
+
     # Post Back Down  — cap 80
-    # CSV: Strong/Heavy 50-65, Dominant 70-75.
-    t["Post Game:Post Back Down"]           = _scale(post_freq, 0, 8, 5, 80)
+    # Back-to-basket orientation × post volume. Face-up scorers get lower Back Down.
+    t["Post Game:Post Back Down"]           = _scale(post_freq * _post_back_pct, 0, 8, 5, 80)
     # Post Aggressive Backdown  — cap 70
-    # CSV: Physical 35-50, Elite Power 55-65. Must stay 10-20 pts below Post Back Down.
-    t["Post Game:Post Aggressive Backdown"] = _scale(post_freq, 0, 9, 5, 70)
+    # More forceful subset. Naturally stays 10-20 pts below Back Down via slower scale (high_raw=12).
+    t["Post Game:Post Aggressive Backdown"] = _scale(post_freq * _post_back_pct, 0, 12, 5, 70)
     # Post Face Up  — cap 60
-    # CSV: Regular 40-50, Frequent Face-Up 50-55.
-    t["Post Game:Post Face Up"]             = _scale(post_freq, 0, 8, 5, 60)
+    # Face-up orientation × post volume. HIGH for Dirk/Durant-type face-up scorers;
+    # LOW for hook-shot bigs. These two tendencies now diverge correctly per guide.
+    t["Post Game:Post Face Up"]             = _scale(post_freq * face_up_pct, 0, 6, 5, 60)
     # Post Spin  — cap 55
     # CSV: Regular 30-35, Advanced 35-45, Signature 50. Keep high_raw=12 so non-spinners stay low.
     t["Post Game:Post Spin"]                = _scale(post_freq, 0, 12, 5, 55)
@@ -483,10 +509,12 @@ def compute(stats: PlayerStats) -> dict:
     t["Post Game:Post Fade Right"] = _scale(fade_per_side, 0, 2.0, 5, 50)
 
     # Post move sub-types
-    t["Post Game:Post Shimmy Shot"]    = _scale(post_freq, 0, 14, 5, 45)   # cap 45
-    t["Post Game:Post Hop Shot"]       = _scale(post_freq, 0, 14, 5, 45)   # cap 45
+    # Shimmy / Hop Shot / Up And Under: guide says "rare move-specific branch — requires recurring
+    # film evidence." No API stat distinguishes these; default to floor (5). Override manually.
+    t["Post Game:Post Shimmy Shot"]    = 5   # cap 45 — film evidence required
+    t["Post Game:Post Hop Shot"]       = 5   # cap 45 — film evidence required
     t["Post Game:Post Step Back Shot"] = _scale(pct_stepback * post_freq, 0, 0.8, 5, 50)  # cap 50
-    t["Post Game:Post Up And Under"]   = _scale(post_freq, 0, 16, 5, 45)   # cap 45
+    t["Post Game:Post Up And Under"]   = 5   # cap 45 — film evidence required
 
     # ── DEFENSE ──────────────────────────────────────────────────────────
 
@@ -508,8 +536,9 @@ def compute(stats: PlayerStats) -> dict:
     # Foul  — cap 95
     t["Defense:Foul"] = _scale(stats.pf, 0.5, 5.0, 15, 95)
 
-    # Hard Foul  — cap 45
-    t["Defense:Hard Foul"] = _scale(stats.pf, 1.0, 5.0, 5, 45)
+    # Hard Foul  — cap 40 (guide cap; PF is the only available proxy though guide says NOT to use
+    # general physicality — acknowledged data gap; PF still the most correlated available stat)
+    t["Defense:Hard Foul"] = _scale(stats.pf, 1.0, 5.0, 5, 40)
 
     return t
 
