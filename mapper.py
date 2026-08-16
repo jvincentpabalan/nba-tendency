@@ -494,13 +494,14 @@ def compute(stats: PlayerStats) -> dict:
     # CSV: NBA Norm 35-45, Featured 45-55, Primary/Hub 60-70, Max Hub 75.
     # FGA measures possession-ending involvement directly, independent of shooting efficiency.
     # pts would reward efficient scorers over high-usage ones — wrong for a touch/involvement signal.
-    # ast×0.5 adds a small playmaking bump without inflating pass-first PGs into Hub territory.
-    # ast×1.5 pulled high-APG PGs (Kidd: 5 fga + 8.7 ast → 18) near Dirk (17.3 fga + 2.7 ast → 18.65),
-    # causing both to normalize to ~60 ("Primary Hub") — incorrect for a distributor role.
-    # Dirk 2010-11 (17.3 fga + 2.7 ast × 0.5 → 18.65) → 68 (Primary Hub). LeBron/Rondo-tier → 75.
-    # Kidd 2010-11 (5.0 fga + 8.7 ast × 0.5 → 9.35) → normalizes to ~34 (Standard Rotation). ✓
-    # Avg starter (~12 fga + 2.5 ast × 0.5 → 13.25) → 48 (Regular Offensive Flow, within NBA norm).
-    t["Freelance:Touches"] = _scale(stats.fga + stats.ast * 0.5, 2, 25, 10, 75)
+    # ast×1.5 captures playmaking presence, but uncapped it pulls high-APG distributors
+    # (Kidd 8.7 APG: 5 + 13.05 = 18.05) near primary scorers (Dirk 17.3 FGA: 17.3 + 4.05 = 21.35),
+    # causing both to normalize to ~60 ("Primary Hub") — incorrect for a pass-first PG.
+    # Cap AST at 4.0/game: above that, extra distribution doesn't mean more scoring-destination touches.
+    # Dirk 2010-11 (17.3 fga + min(2.7,4)×1.5 → 21.35) → 65 (Primary Hub). LeBron → 75.
+    # Kidd 2010-11 (5.0 fga + min(8.7,4)×1.5 → 11.0) → normalizes to ~35 (Standard Rotation). ✓
+    # Avg starter (~12 fga + min(3,4)×1.5 → 16.5) → 51 (Featured Secondary, near NBA norm).
+    t["Freelance:Touches"] = _scale(stats.fga + min(stats.ast, 4.0) * 1.5, 2, 25, 10, 75)
 
     # Transition Spot Up
     # synergy_transition is always 0 (defunct endpoint). PCT_PTS_FB is the only available
