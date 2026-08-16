@@ -324,7 +324,11 @@ def compute(stats: PlayerStats) -> dict:
     # Most off-screen reads are shot-first; 0.25 replaces 0.4 (was over-counting drive converts)
     t["Driving:Off Screen Drive"] = _scale(stats.synergy_offscreen * 0.25, 0, 0.6, 5, 60)
 
-    # Drive Right  — neutral 50 (no directional drive data from API)
+    # Drive Right  — cap 95; scale: 5-25 extreme left, 45 mild left, 50 balanced, 55 mild right, 75-95 extreme right.
+    # Guide: "50 means evidence-backed balance, not unknown or missing research."
+    # "For meaningful drivers (Drive 30+), unresolved direction must not be finalized as 50."
+    # No directional drive data available from NBA.com API — set to 50 as a placeholder.
+    # MUST be researched via tracking data, film, or scouting before finalizing any Drive ≥ 30 player.
     t["Driving:Drive Right"] = 50
 
     # Driving dribble moves — caps per CSV
@@ -490,10 +494,13 @@ def compute(stats: PlayerStats) -> dict:
     # CSV: NBA Norm 35-45, Featured 45-55, Primary/Hub 60-70, Max Hub 75.
     # FGA measures possession-ending involvement directly, independent of shooting efficiency.
     # pts would reward efficient scorers over high-usage ones — wrong for a touch/involvement signal.
-    # ast×1.5 captures playmaking touch (ball handling, distributing) beyond just shot attempts.
-    # Dirk 2010-11 (17.3 fga + 2.7 ast → 21.35) → 65 (Primary Hub). LeBron/Rondo-tier → 75.
-    # Avg starter (~12 fga + 2.5 ast → 15.75) → 49 (Regular Offensive Flow, within NBA norm).
-    t["Freelance:Touches"] = _scale(stats.fga + stats.ast * 1.5, 2, 25, 10, 75)
+    # ast×0.5 adds a small playmaking bump without inflating pass-first PGs into Hub territory.
+    # ast×1.5 pulled high-APG PGs (Kidd: 5 fga + 8.7 ast → 18) near Dirk (17.3 fga + 2.7 ast → 18.65),
+    # causing both to normalize to ~60 ("Primary Hub") — incorrect for a distributor role.
+    # Dirk 2010-11 (17.3 fga + 2.7 ast × 0.5 → 18.65) → 68 (Primary Hub). LeBron/Rondo-tier → 75.
+    # Kidd 2010-11 (5.0 fga + 8.7 ast × 0.5 → 9.35) → normalizes to ~34 (Standard Rotation). ✓
+    # Avg starter (~12 fga + 2.5 ast × 0.5 → 13.25) → 48 (Regular Offensive Flow, within NBA norm).
+    t["Freelance:Touches"] = _scale(stats.fga + stats.ast * 0.5, 2, 25, 10, 75)
 
     # Transition Spot Up
     # synergy_transition is always 0 (defunct endpoint). PCT_PTS_FB is the only available
@@ -536,21 +543,38 @@ def compute(stats: PlayerStats) -> dict:
 
     # Shoot From Post  — cap 75
     # CSV: Scoring-Oriented 40-55, Primary/Elite Post Scorer 60-70.
+    # Guide: "Shoot From Post chooses shot vs pass, hold, reset, or exit" — not just post volume.
     # high_raw=3.5: (fadeaway+hook)×0.5 + post_freq×0.3; 3.5 = elite shot-first post player.
     # Was 4 — too loose; Dirk (2.74 raw) scored 53 and held/bailed in 2K instead of shooting.
     # 3.5 puts Dirk at 60, matching Post Up and triggering the AI shoot decision on-catch.
-    shoot_post_raw = (stats.fga_fadeaway + stats.fga_hook) * 0.5 + post_freq * 0.3
+    #
+    # Passmaking discount: post players who frequently pass out (high AST) select
+    # the shot action less often — guide: "Jokic hub vs Embiid shot-first post scorer."
+    # Threshold at AST > 4: below that, assists mostly come from drive kick-outs / transition,
+    # not post-exit reads — so Dirk (2.7 AST) and Embiid (3 AST) are unaffected.
+    # Jokic (9 AST) → 20% discount; LeBron (8 AST, when posting) → 16% discount.
+    # Only fires when player actually posts (post_freq > 1).
+    _post_pass_discount = min(0.35, max(0.0, stats.ast - 4.0) * 0.04) if post_freq > 1.0 else 0.0
+    shoot_post_raw = ((stats.fga_fadeaway + stats.fga_hook) * 0.5 + post_freq * 0.3) * (1 - _post_pass_discount)
     t["Post Game:Shoot From Post"] = _scale(shoot_post_raw, 0, 3.5, 5, 75)
 
     # Hook left/right  — cap 50
-    hook_per_side = stats.fga_hook / 2
-    t["Post Game:Post Hook Left"]  = _scale(hook_per_side, 0, 1.5, 5, 50)
-    t["Post Game:Post Hook Right"] = _scale(hook_per_side, 0, 1.5, 5, 50)
+    # Guide: "normally only one direction exceeds 40, with the weaker side 10-20 pts lower."
+    # Dominant side uses full hook volume; weak side is dominant minus 15 (floored at 5).
+    # Convention: right = dominant (most players are right-handed). Flip manually for lefties.
+    # No shot-chart directional data available for post moves — verify vs. film/handedness.
+    _hook_dom  = _scale(stats.fga_hook, 0, 3.0, 5, 50)
+    _hook_weak = max(5, _hook_dom - 15)
+    t["Post Game:Post Hook Right"] = _hook_dom
+    t["Post Game:Post Hook Left"]  = _hook_weak
 
     # Fade left/right  — cap 50
-    fade_per_side = stats.fga_fadeaway / 2
-    t["Post Game:Post Fade Left"]  = _scale(fade_per_side, 0, 2.0, 5, 50)
-    t["Post Game:Post Fade Right"] = _scale(fade_per_side, 0, 2.0, 5, 50)
+    # Same directional convention as hooks: right = dominant by default.
+    # Flip manually for left-hand-dominant fade specialists (e.g., left-handed players).
+    _fade_dom  = _scale(stats.fga_fadeaway, 0, 4.0, 5, 50)
+    _fade_weak = max(5, _fade_dom - 15)
+    t["Post Game:Post Fade Right"] = _fade_dom
+    t["Post Game:Post Fade Left"]  = _fade_weak
 
     # Post move sub-types
     # Shimmy / Hop Shot / Up And Under: guide says "rare move-specific branch — requires recurring
@@ -563,10 +587,19 @@ def compute(stats: PlayerStats) -> dict:
     # ── DEFENSE ──────────────────────────────────────────────────────────
 
     # Pass Interception  — cap 85
+    # Guide: "off-ball lane, bad-pass and dig attempts." STL is the primary proxy;
+    # most stolen balls in-game are passing-lane reads for typical NBA players.
     t["Defense:Pass Interception"] = _scale(stats.stl, 0.2, 2.5, 20, 85)
 
     # On-Ball Steal  — cap 85
-    t["Defense:On-Ball Steal"] = _scale(stats.stl, 0.2, 2.5, 15, 85)
+    # Guide: "direct reach, strip, swipe and ball-pressure attempts" — distinct from lane reads.
+    # Without deflection/POA data, use PF/STL ratio as a style proxy:
+    # High PF relative to STL → on-ball defender (fouls from pressure = more strip attempts).
+    # Low PF + high STL → lane lurker (steals without contact = mostly interceptions).
+    # Pivot at PF/STL ≈ 2 (typical NBA player); range 0.75–1.15.
+    _foul_stl_ratio = _pct(stats.pf, max(stats.stl, 0.1))
+    _onball_mod = min(1.15, max(0.75, _foul_stl_ratio / 2.0))
+    t["Defense:On-Ball Steal"] = _scale(stats.stl * _onball_mod, 0.2, 2.5, 10, 85)
 
     # Block Shot  — cap 85
     t["Defense:Block Shot"] = _scale(stats.blk, 0.1, 3.0, 10, 85)
