@@ -356,7 +356,12 @@ def compute(stats: PlayerStats) -> dict:
     rim_finish_vol = stats.fga_driving_layup + stats.fga_driving_dunk + stats.fga_euro_step + stats.fga_floater
     # pullup_2pt_fga = player tracking (2013-14+); fga_pullup = shot-type detail (all seasons,
     # includes "Driving Jump shot" — mid-range pull-ups off a drive that stop short of the rim).
-    pullup_vol = stats.pullup_2pt_fga or stats.fga_pullup
+    # For pre-2013, NBA labeled pull-ups as generic "Jump Shot" → fga_pullup ≈ 0.
+    # Add fga_uast_2pt_jump (unassisted portion of generic "Jump Shot" 2PT) to capture them.
+    if stats.pullup_2pt_fga > 0:
+        pullup_vol = stats.pullup_2pt_fga
+    else:
+        pullup_vol = stats.fga_pullup + stats.fga_uast_2pt_jump
     total_drive_vol = max(rim_finish_vol + pullup_vol, 1.0)
     rim_commit_ratio = _pct(rim_finish_vol, total_drive_vol)
     t["Driving:Attack Strong On Drive"] = _scale(rim_commit_ratio, 0.15, 0.90, 20, 90)
