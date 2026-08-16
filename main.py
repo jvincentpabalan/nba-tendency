@@ -66,6 +66,7 @@ def mock_stats(player_id: int, season: str) -> stats_collector.PlayerStats:
     s.dreb = 6.8
     s.reb  = 8.1
     s.ast  = 2.7
+    s.usg_pct = 0.314   # Basketball-Reference 2010-11
     s.stl  = 0.9
     s.blk  = 0.6
     s.tov  = 2.1

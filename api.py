@@ -105,7 +105,7 @@ def generate(req: GenerateRequest):
     # but are NOT included in the saved file — the external 2K tool reads output only.
     _denom = stats.fga + stats.ast + stats.tov
     _ast_ratio = stats.ast / _denom if _denom > 0 else 0.0
-    touch_raw = round(stats.fga + min(stats.ast, 4.0) * 1.5, 4)
+    touch_raw = round(stats.usg_pct, 4)
     shot_raw = round((stats.fga * 0.6 + stats.pts * 0.4) * max(0.60, 1.0 - _ast_ratio), 4)
 
     return {
