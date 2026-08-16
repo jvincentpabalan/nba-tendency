@@ -4,6 +4,10 @@ from dataclasses import dataclass, field
 from typing import Optional
 import nba_client as client
 
+# synergyplaytypes is defunct server-side (HTTP 500 for all seasons/play types).
+# Set to True only if the endpoint ever comes back.
+FETCH_SYNERGY = False
+
 
 @dataclass
 class PlayerStats:
@@ -292,34 +296,37 @@ def collect(player_id: int, season: str) -> PlayerStats:
         print(f"  Warning: could not fetch shot chart ({e})")
 
     # ── 4. Synergy play types ─────────────────────────────────────────────
-    synergy_map = {
-        "Isolation": ("synergy_iso", "synergy_iso_ppp"),
-        "Postup": ("synergy_post", "synergy_post_ppp"),
-        "Spotup": ("synergy_spotup", None),
-        "OffScreen": ("synergy_offscreen", None),
-        "Transition": ("synergy_transition", None),
-        "Cut": ("synergy_cut", None),
-        "PRBallHandler": ("synergy_pr_ball", None),
-        "PRRollman": ("synergy_pr_roll", None),
-        "OffRebound": ("synergy_off_reb", None),
-    }
+    # FETCH_SYNERGY=False: endpoint is defunct server-side (HTTP 500 all seasons).
+    # Skip calls entirely and go straight to fallbacks.
+    if FETCH_SYNERGY:
+        synergy_map = {
+            "Isolation": ("synergy_iso", "synergy_iso_ppp"),
+            "Postup": ("synergy_post", "synergy_post_ppp"),
+            "Spotup": ("synergy_spotup", None),
+            "OffScreen": ("synergy_offscreen", None),
+            "Transition": ("synergy_transition", None),
+            "Cut": ("synergy_cut", None),
+            "PRBallHandler": ("synergy_pr_ball", None),
+            "PRRollman": ("synergy_pr_roll", None),
+            "OffRebound": ("synergy_off_reb", None),
+        }
 
-    for play_type, (poss_attr, ppp_attr) in synergy_map.items():
-        try:
-            data = client.fetch_synergy_play_type(play_type, season)
-            rows = client.parse_result_set(data, "SynergyPlayType")
-            # Find this player's row
-            player_row = next(
-                (r for r in rows if str(r.get("PLAYER_ID", "")) == str(player_id)),
-                None
-            )
-            if player_row:
-                poss = float(player_row.get("POSS", 0) or 0)
-                setattr(stats, poss_attr, poss)
-                if ppp_attr:
-                    setattr(stats, ppp_attr, float(player_row.get("PPP", 0) or 0))
-        except Exception as e:
-            print(f"  Warning: could not fetch synergy {play_type} ({e})")
+        for play_type, (poss_attr, ppp_attr) in synergy_map.items():
+            try:
+                data = client.fetch_synergy_play_type(play_type, season)
+                rows = client.parse_result_set(data, "SynergyPlayType")
+                # Find this player's row
+                player_row = next(
+                    (r for r in rows if str(r.get("PLAYER_ID", "")) == str(player_id)),
+                    None
+                )
+                if player_row:
+                    poss = float(player_row.get("POSS", 0) or 0)
+                    setattr(stats, poss_attr, poss)
+                    if ppp_attr:
+                        setattr(stats, ppp_attr, float(player_row.get("PPP", 0) or 0))
+            except Exception as e:
+                print(f"  Warning: could not fetch synergy {play_type} ({e})")
 
     # ── 5. Pull-up shooting ───────────────────────────────────────────────
     # playerdashptshots / GeneralShooting result set has:
@@ -341,14 +348,14 @@ def collect(player_id: int, season: str) -> PlayerStats:
     except Exception as e:
         print(f"  Warning: could not fetch pull-up shooting ({e})")
 
-    # ── 6. Log synergy attempt status ────────────────────────────────────────
-    synergy_all_zero = all([
+    # ── 6. Synergy fallback check ─────────────────────────────────────────────
+    synergy_all_zero = not FETCH_SYNERGY or all([
         stats.synergy_iso == 0, stats.synergy_post == 0,
         stats.synergy_spotup == 0, stats.synergy_offscreen == 0,
         stats.synergy_transition == 0, stats.synergy_cut == 0,
         stats.synergy_pr_ball == 0, stats.synergy_pr_roll == 0,
     ])
-    if synergy_all_zero:
+    if synergy_all_zero and FETCH_SYNERGY:
         print("  Note: synergyplaytypes endpoint unavailable — will use shot-type fallbacks.")
 
     # ── Normalize shooting-split counts to per-game ───────────────────────
