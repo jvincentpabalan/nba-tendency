@@ -570,6 +570,8 @@ def compute(stats: PlayerStats) -> dict:
     t["Post Game:Post Hook Left"]  = _hook_weak
 
     # Fade left/right  — cap 50
+    # fga_fadeaway (all fadeaways) covers both turnaround and face-up post fades.
+    # Using fga_turnaround_fadeaway alone missed face-up faders like Dirk (1.4 face-up fades/game).
     # Same directional convention as hooks: right = dominant by default.
     # Flip manually for left-hand-dominant fade specialists (e.g., left-handed players).
     _fade_dom  = _scale(stats.fga_fadeaway, 0, 4.0, 5, 50)
@@ -578,12 +580,18 @@ def compute(stats: PlayerStats) -> dict:
     t["Post Game:Post Fade Left"]  = _fade_weak
 
     # Post move sub-types
-    # Shimmy / Hop Shot / Up And Under: guide says "rare move-specific branch — requires recurring
-    # film evidence." No API stat distinguishes these; default to floor (5). Override manually.
-    t["Post Game:Post Shimmy Shot"]    = 5   # cap 45 — film evidence required
-    t["Post Game:Post Hop Shot"]       = 5   # cap 45 — film evidence required
-    t["Post Game:Post Step Back Shot"] = _scale(pct_stepback * post_freq, 0, 0.8, 5, 50)  # cap 50
-    t["Post Game:Post Up And Under"]   = 5   # cap 45 — film evidence required
+    # Shimmy: straight-up turnaround jumpers (fga_turnaround minus the fadeaway subset).
+    # Player pivots, fakes with the shoulder, shoots straight up — distinct from fade (which drifts).
+    # Non-fadeaway turnarounds are the clearest API proxy for this move.
+    # high_raw=1.5: elite shimmy user ceiling; 0.5/game → ~20 (occasional), 1.5/game → 45 (signature).
+    _shimmy_raw = max(0.0, stats.fga_turnaround - stats.fga_turnaround_fadeaway)
+    t["Post Game:Post Shimmy Shot"]    = _scale(_shimmy_raw, 0, 1.5, 5, 45)
+    t["Post Game:Post Hop Shot"]       = 5   # cap 45 — no API proxy; film evidence required
+    # Post Step Back: raw fga_step_back volume (per-game). pct_stepback × post_freq underscaled
+    # because the percentage is tiny (~3%) even for active step-back users.
+    # 0.5/game → ~20 (regular move), 1.5/game → 50 (signature).
+    t["Post Game:Post Step Back Shot"] = _scale(stats.fga_step_back, 0, 1.5, 5, 50)  # cap 50
+    t["Post Game:Post Up And Under"]   = 5   # cap 45 — no API proxy; film evidence required
 
     # ── DEFENSE ──────────────────────────────────────────────────────────
 
