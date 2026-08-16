@@ -81,8 +81,11 @@ def compute(stats: PlayerStats) -> dict:
     pct_turnaround = _pct(stats.fga_turnaround,  fga)
     iso_freq  = stats.synergy_iso
     post_freq = stats.synergy_post
-    # Face-up ISO: remove post-up overlap to avoid inflating dribble moves
-    faceup_iso = max(0.0, iso_freq - post_freq * 0.3)
+    # Face-up ISO: remove post-up overlap to avoid inflating dribble moves.
+    # Post-heavy bigs (post_freq > 3.5) have more of their unassisted FGM pool
+    # coming from post self-creation, so use a higher subtraction coefficient.
+    post_overlap_coef = 0.50 if post_freq > 3.5 else 0.30
+    faceup_iso = max(0.0, iso_freq - post_freq * post_overlap_coef)
 
     # PnR ball-handler discount for ISO vs. defender tiers.
     # Pass-first guards accumulate unassisted FGM from PnR drives, not true isolation.
@@ -417,9 +420,14 @@ def compute(stats: PlayerStats) -> dict:
         # roll signal (post finishes also land here, so weight less).
         # 3PT shots are the strongest pop signal: only stretch bigs pop for threes.
         # Mid-range is a mild pop signal (face-up scorers, pull-up bigs).
-        # Previous formula penalized post_freq as pop, which wrongly suppressed roll
-        # values for post-up centers who also roll hard (e.g. Bynum).
-        roll_weight = pct_ra * 2.5 + pct_close * 0.5
+        #
+        # Post finishes (drop steps, hook-and-lays, face-up drives) land in RA but
+        # are NOT roll-to-rim plays. Discount RA's roll signal proportionally to
+        # post frequency: at post_freq≥4, RA contribution is cut by ~90%, so
+        # post-first bigs (Bosh, Aldridge) read as pop screeners rather than rollers.
+        # Pure roll men (low post_freq) retain the full RA signal.
+        post_ra_discount = min(post_freq / 4.0, 0.90)
+        roll_weight = pct_ra * 2.5 * (1.0 - post_ra_discount) + pct_close * 0.5
         pop_weight  = pct_3  * 2.5 + pct_mid  * 1.0
         roll_frac   = roll_weight / max(roll_weight + pop_weight, 0.01)
     t["Freelance:Roll vs. Pop"] = _scale(roll_frac, 0, 1, 5, 85)
