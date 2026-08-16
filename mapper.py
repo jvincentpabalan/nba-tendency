@@ -149,11 +149,7 @@ def compute(stats: PlayerStats) -> dict:
     cs_mid_frac = pct_mid / max(pct_mid + pct_3, 0.01)
     cs_3_frac   = 1.0 - cs_mid_frac
 
-    # Pre-2013 discount for spot-up mid: the 3PT-anchored synergy_spotup proxy
-    # over-estimates mid-range spot-ups for ISO players whose mid-range is self-created.
-    # assisted_rate (AssitedShotPlayerDashboard) ≈ C&S fraction of FGM; multiplying by it
-    # prevents inflating Spot Up Mid / Spot Up Drive for players like Melo or Kobe.
-    # For 2013+, catch_shoot_fga is the real measured value — no adjustment needed.
+    # Assisted rate — used by Spot Up Drive (pre-2013 only)
     _fgm_tracked = stats.assisted_fgm + stats.unassisted_fgm
     _spot_up_mid_scale = (
         stats.assisted_fgm / _fgm_tracked
@@ -161,7 +157,22 @@ def compute(stats: PlayerStats) -> dict:
         else 1.0
     )
 
-    t["Jump Shooting:Spot Up Shot Mid-Range"]    = _scale(cs_approx * cs_mid_frac * _spot_up_mid_scale, 0, 3.0, 5, 55)  # cap 55
+    # Spot Up Mid-Range — cap 55
+    # 2013-14+: catch_shoot_fga is directly measured; split by cs_mid_frac.
+    # Pre-2013: use PCT_UAST_2PM to derive assisted 2PT makes, then weight by mid-range share
+    # of 2PT attempts. This is more direct than the old 3PT-anchored synergy_spotup proxy,
+    # which under-estimated catch-mid for heavy mid-range shooters like Dirk. Scale ceiling
+    # is higher (4.5 vs 3.0) because assisted_2pm × mid_share produces larger raw values.
+    if stats.catch_shoot_fga > 0:
+        _spot_up_mid_raw = stats.catch_shoot_fga * cs_mid_frac
+        t["Jump Shooting:Spot Up Shot Mid-Range"] = _scale(_spot_up_mid_raw, 0, 3.0, 5, 55)
+    else:
+        _two_pt_fgm      = max(stats.fgm - stats.fg3m, 0.0)
+        _assisted_2pm    = _two_pt_fgm * (1.0 - stats.pct_uast_2pm)
+        _total_2pt_fga   = max(fga - three_fga, 1.0)
+        _mid_2pt_share   = stats.fga_mid / _total_2pt_fga
+        _spot_up_mid_raw = _assisted_2pm * _mid_2pt_share
+        t["Jump Shooting:Spot Up Shot Mid-Range"] = _scale(_spot_up_mid_raw, 0, 4.5, 5, 55)
     t["Jump Shooting:Off Screen Shot Mid-Range"] = _scale(stats.synergy_offscreen * cs_mid_frac, 0, 1.5, 5, 50)  # cap 50
     # Spot Up Three — cap 75
     # 2013-14+: catch_shoot_fga is directly measured; split by cs_3_frac to isolate 3PT portion.

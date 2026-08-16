@@ -19,6 +19,7 @@ class PlayerStats:
     usg_pct: float = 0.0      # usage rate (from advanced splits; 0.20 = league avg)
     ast_pct: float = 0.0      # % of teammate FGs assisted while on floor (pace/role adjusted)
     pct_uast_3pm: float = 0.0 # fraction of 3PT makes that were self-created (from scoring splits)
+    pct_uast_2pm: float = 0.0 # fraction of 2PT makes that were self-created (from scoring splits)
     pct_pts_fb: float = 0.0   # fraction of points scored in transition / fast break
     pts: float = 0.0
     fgm: float = 0.0
@@ -187,6 +188,7 @@ def collect(player_id: int, season: str, season_type: str = "Regular Season") ->
         overall_sc = client.parse_result_set(sc, "OverallPlayerDashboard")
         if overall_sc:
             stats.pct_uast_3pm = float(overall_sc[0].get("PCT_UAST_3PM", 0) or 0)
+            stats.pct_uast_2pm = float(overall_sc[0].get("PCT_UAST_2PM", 0) or 0)
             stats.pct_pts_fb   = float(overall_sc[0].get("PCT_PTS_FB",   0) or 0)
     except Exception as e:
         print(f"  Warning: could not fetch scoring splits ({e})")
