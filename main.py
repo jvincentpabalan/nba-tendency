@@ -66,7 +66,7 @@ def mock_stats(player_id: int, season: str) -> stats_collector.PlayerStats:
     s.dreb = 6.8
     s.reb  = 8.1
     s.ast  = 2.7
-    s.usg_pct = 0.314   # Basketball-Reference 2010-11
+    s.usg_pct = 0.272   # Basketball-Reference 2010-11 (27.2%)
     s.stl  = 0.9
     s.blk  = 0.6
     s.tov  = 2.1
@@ -106,7 +106,8 @@ def mock_stats(player_id: int, season: str) -> stats_collector.PlayerStats:
     s.fga_putback      = 0.07  # 5/73
     s.fga_pullup       = 0.11  # 8/73
     s.fga_floater      = 0.01  # 1/73
-    s.fga_turnaround   = 0.77  # 56/73
+    s.fga_turnaround          = 0.77  # 56/73 — all turnaround variants
+    s.fga_turnaround_fadeaway = 0.22  # ~16/73 — back-to-basket fade subset
 
     # Shot chart directional — per-game (Dirk: center-heavy mid, ATB3 dominant)
     s.mid_left         = s.fga_mid * 0.18

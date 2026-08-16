@@ -72,7 +72,8 @@ class PlayerStats:
     fga_pullup: float = 0.0       # Explicitly labeled: Pullup Jump, Driving Jump, Running Jump
     fga_running_layup: float = 0.0
     fga_floater: float = 0.0      # Floating Jump shot
-    fga_turnaround: float = 0.0   # Turnaround shots
+    fga_turnaround: float = 0.0            # All turnaround variants (superset)
+    fga_turnaround_fadeaway: float = 0.0  # Turnaround Fadeaway subset (post-specific fade)
     # Unassisted 2PT generic "Jump Shot" attempts — the NBA's unlabeled pull-up bucket.
     # For pre-2013, many pull-up mid-range shots land here instead of "Pullup Jump Shot".
     # Computed as: FG2A × PCT_UAST_2PM from the "Jump Shot" row in ShotTypePlayerDashboard.
@@ -249,7 +250,8 @@ def collect(player_id: int, season: str, season_type: str = "Regular Season") ->
         # Include alongside traditional pull-ups for Attack Strong denominator.
         stats.fga_pullup       = detail_sum("Pullup Jump", "Pullup Bank", "Driving Jump", "Running Jump")
         stats.fga_floater      = detail_sum("Floating Jump", "Running Hook")
-        stats.fga_turnaround   = detail_sum("Turnaround")
+        stats.fga_turnaround          = detail_sum("Turnaround")
+        stats.fga_turnaround_fadeaway = detail_sum("Turnaround Fadeaway")
 
         # Unassisted 2PT generic "Jump Shot" — pull-ups not caught by the labeled subtypes.
         # For pre-2013, the NBA labels many pull-up mid-range shots as plain "Jump Shot"
@@ -406,7 +408,7 @@ def collect(player_id: int, season: str, season_type: str = "Regular Season") ->
         "fga_alley_oop", "fga_bank_shot", "fga_dunk", "fga_fadeaway",
         "fga_finger_roll", "fga_hook", "fga_jump_shot", "fga_layup", "fga_tip",
         "fga_step_back", "fga_driving_layup", "fga_driving_dunk", "fga_euro_step",
-        "fga_putback", "fga_pullup", "fga_floater", "fga_turnaround",
+        "fga_putback", "fga_pullup", "fga_floater", "fga_turnaround", "fga_turnaround_fadeaway",
         "fga_uast_2pt_jump",
         "unassisted_fgm", "assisted_fgm",
         "mid_left", "mid_left_center", "mid_center", "mid_right_center", "mid_right",
