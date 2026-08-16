@@ -242,7 +242,7 @@ def compute(stats: PlayerStats) -> dict:
     t["Layups And Dunks:Standing Dunk"] = _scale(dunk_pref, 0, 1.0, 5, 85)
 
     # Driving Dunk  — cap 80
-    t["Layups And Dunks:Driving Dunk"] = _scale(_pct(stats.fga_driving_dunk, fga), 0, 0.08, 5, 80)
+    t["Layups And Dunks:Driving Dunk"] = _scale(_pct(stats.fga_driving_dunk, fga), 0, 0.15, 5, 80)
 
     # Flashy Dunk  — cap 70
     # Definition: sub-selection AFTER a dunk is chosen — style preference (flashy vs. safe animation).
@@ -411,8 +411,17 @@ def compute(stats: PlayerStats) -> dict:
     if pr_total > 0.5:
         roll_frac = stats.synergy_pr_roll / pr_total
     else:
-        # Infer: high 3PT profile + high post = pop tendency
-        roll_frac = max(0.0, 1.0 - pct_3 / 0.25 - post_freq / 10) * 0.6
+        # Infer from shot-location distribution.
+        # RA shots are the strongest roll signal: lob catches, roll-to-rim finishes,
+        # and cut dunks all land in the restricted area. Close-paint shots are a mild
+        # roll signal (post finishes also land here, so weight less).
+        # 3PT shots are the strongest pop signal: only stretch bigs pop for threes.
+        # Mid-range is a mild pop signal (face-up scorers, pull-up bigs).
+        # Previous formula penalized post_freq as pop, which wrongly suppressed roll
+        # values for post-up centers who also roll hard (e.g. Bynum).
+        roll_weight = pct_ra * 2.5 + pct_close * 0.5
+        pop_weight  = pct_3  * 2.5 + pct_mid  * 1.0
+        roll_frac   = roll_weight / max(roll_weight + pop_weight, 0.01)
     t["Freelance:Roll vs. Pop"] = _scale(roll_frac, 0, 1, 5, 85)
 
     # Spot vs Cut  — cap 85; high = spots up, low = cuts
@@ -450,9 +459,12 @@ def compute(stats: PlayerStats) -> dict:
 
     # Touches  — cap 75
     # CSV: NBA Norm 35-45, Featured 45-55, Primary/Hub 60-70, Max Hub 75.
-    # ast×1.5 weights playmaking contribution; ast drives touch involvement beyond scoring.
-    # Dirk (23 pts + 2.7 ast → 27.05) → ~68 (Primary Destination). LeBron-tier (28+8 ast) → 75.
-    t["Freelance:Touches"] = _scale(stats.pts + stats.ast * 1.5, 3, 30, 10, 75)
+    # FGA measures possession-ending involvement directly, independent of shooting efficiency.
+    # pts would reward efficient scorers over high-usage ones — wrong for a touch/involvement signal.
+    # ast×1.5 captures playmaking touch (ball handling, distributing) beyond just shot attempts.
+    # Dirk 2010-11 (17.3 fga + 2.7 ast → 21.35) → 65 (Primary Hub). LeBron/Rondo-tier → 75.
+    # Avg starter (~12 fga + 2.5 ast → 15.75) → 49 (Regular Offensive Flow, within NBA norm).
+    t["Freelance:Touches"] = _scale(stats.fga + stats.ast * 1.5, 2, 25, 10, 75)
 
     # Transition Spot Up
     t["Freelance:Transition Spot Up"] = _scale(
