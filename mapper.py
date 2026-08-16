@@ -519,9 +519,11 @@ def compute(stats: PlayerStats) -> dict:
 
     # Shoot From Post  — cap 75
     # CSV: Scoring-Oriented 40-55, Primary/Elite Post Scorer 60-70.
-    # Tighten high_raw to 4: (fadeaway+hook)×0.5 + post_freq×0.3; 4 = elite shot-first post player.
+    # high_raw=3.5: (fadeaway+hook)×0.5 + post_freq×0.3; 3.5 = elite shot-first post player.
+    # Was 4 — too loose; Dirk (2.74 raw) scored 53 and held/bailed in 2K instead of shooting.
+    # 3.5 puts Dirk at 60, matching Post Up and triggering the AI shoot decision on-catch.
     shoot_post_raw = (stats.fga_fadeaway + stats.fga_hook) * 0.5 + post_freq * 0.3
-    t["Post Game:Shoot From Post"] = _scale(shoot_post_raw, 0, 4, 5, 75)
+    t["Post Game:Shoot From Post"] = _scale(shoot_post_raw, 0, 3.5, 5, 75)
 
     # Hook left/right  — cap 50
     hook_per_side = stats.fga_hook / 2
