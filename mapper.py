@@ -535,11 +535,20 @@ def compute(stats: PlayerStats) -> dict:
     # 8 poss/game ≈ primary post engine ceiling; 5.5 (Dirk) → ~60 (Primary Post Option).
     t["Post Game:Post Up"] = _scale(post_freq, 0, 8, 5, 85)
 
-    # Post orientation signal: fadeaway → face-up player; hook → back-to-basket player.
-    # face_up_pct = 1.0 means pure face-up scorer (Dirk); 0.0 means pure back-to-basket (hook-only center).
-    # Neutral (0.5) when no post shot data exists. Used to differentiate Back Down vs. Face Up.
-    _post_shot_vol = stats.fga_fadeaway + stats.fga_hook
-    face_up_pct = _pct(stats.fga_fadeaway, _post_shot_vol) if _post_shot_vol > 0.05 else 0.5
+    # Post orientation signal.
+    # Back-to-basket: hook shots + turnaround shots (both start with back to defender).
+    # Face-up: fadeaways (catch facing up, then fade) + unassisted 2PT jumpers weighted by
+    #   post_affinity (a post player's unassisted mid-range = caught facing up, self-created shot).
+    #   post_affinity = how post-heavy vs perimeter-ISO this player is; scales down the
+    #   uast_2pt_jump contribution for perimeter creators who happen to hit mid-range pull-ups.
+    # face_up_pct is a CONDITIONAL PREFERENCE: given a post catch, how often does the player face up?
+    # Neutral (0.5) when no post shot data exists.
+    _btb_vol = stats.fga_hook + stats.fga_turnaround
+    _pullup_vol = max(stats.pullup_2pt_fga, stats.fga_pullup, 0.01)
+    _post_affinity = min(1.0, _btb_vol / max(0.5, _pullup_vol))
+    _faceup_vol = stats.fga_fadeaway + stats.fga_uast_2pt_jump * _post_affinity
+    _post_orientation_vol = _faceup_vol + _btb_vol
+    face_up_pct = _pct(_faceup_vol, _post_orientation_vol) if _post_orientation_vol > 0.05 else 0.5
     _post_back_pct = 1.0 - face_up_pct * 0.6  # dampens back-down for face-up players
 
     # Post Back Down  — cap 80
@@ -549,9 +558,10 @@ def compute(stats: PlayerStats) -> dict:
     # More forceful subset. Naturally stays 10-20 pts below Back Down via slower scale (high_raw=12).
     t["Post Game:Post Aggressive Backdown"] = _scale(post_freq * _post_back_pct, 0, 12, 5, 70)
     # Post Face Up  — cap 60
-    # Face-up orientation × post volume. HIGH for Dirk/Durant-type face-up scorers;
-    # LOW for hook-shot bigs. These two tendencies now diverge correctly per guide.
-    t["Post Game:Post Face Up"]             = _scale(post_freq * face_up_pct, 0, 6, 5, 60)
+    # Conditional preference: given a post catch, how often does the player initiate facing up?
+    # Scaled from face_up_pct directly (not × post_freq) — it's orientation, not volume.
+    # 0.85 ceiling: a player with ~85%+ face-up orientation hits cap (60).
+    t["Post Game:Post Face Up"]             = _scale(face_up_pct, 0, 0.85, 5, 60)
     # Post Spin  — cap 55
     # CSV: Regular 30-35, Advanced 35-45, Signature 50. Keep high_raw=12 so non-spinners stay low.
     t["Post Game:Post Spin"]                = _scale(post_freq, 0, 12, 5, 55)
