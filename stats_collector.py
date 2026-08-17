@@ -472,12 +472,21 @@ def _compute_synergy_fallbacks(stats: PlayerStats) -> None:
                 stats.synergy_iso = (pullup_est + stats.fga_step_back * 0.5) * 1.35
 
     # ── Post (POSS/game) ──────────────────────────────────────────────────
-    # Post shots: hook shots + turnarounds + ~40% of fadeaways (rest are mid-range iso).
+    # Back-to-basket indicators: hook shots + turnarounds (exclusive post moves).
+    # Non-turnaround fades (face-up fadeaways) are intentionally excluded from the
+    # possession count — they are used as an orientation signal (face_up_pct) in mapper.py
+    # but blur the line between post and perimeter ISO when counted as possessions.
+    #
+    # Face-up post proxy: unassisted generic jump shots (fga_uast_2pt_jump) contain
+    # both pull-up ISOs and face-up post catches. post_affinity scales the allocation:
+    #   - High btb_vol relative to pullup → player works from the post → more uast_jump = post
+    #   - High pullup relative to btb_vol → perimeter ISO guard → uast_jump stays in ISO pool
     # FGA-to-possession multiplier ~1/0.55 (many post poss end in FT draw or TOV, not FGA).
     if stats.synergy_post == 0:
-        post_shot_vol = (stats.fga_hook
-                        + stats.fga_turnaround
-                        + stats.fga_fadeaway * 0.40)
+        btb_vol = stats.fga_hook + stats.fga_turnaround
+        post_affinity = min(1.0, btb_vol / max(0.5, stats.fga_pullup))
+        fu_uast = stats.fga_uast_2pt_jump * 0.45 * post_affinity
+        post_shot_vol = btb_vol + fu_uast
         if post_shot_vol > 0.05:
             stats.synergy_post = post_shot_vol / 0.55
 

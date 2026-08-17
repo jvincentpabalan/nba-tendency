@@ -120,7 +120,7 @@ From `ShotTypePlayerDashboard` in shooting splits (available all seasons, season
 | Field | Fallback logic |
 |---|---|
 | `synergy_iso` | **Primary**: `unassisted_fgm / 0.48` → subtract post shot volume → × 1.10. **Fallback**: `(pullup_2pt_fga or fga_pullup + fga_step_back × 0.5) × 1.35` |
-| `synergy_post` | `(fga_hook + fga_turnaround + fga_fadeaway × 0.40) / 0.55` |
+| `synergy_post` | `(btb_vol + fu_uast) / 0.55` where `btb_vol = fga_hook + fga_turnaround`; `post_affinity = min(1, btb_vol / max(0.5, fga_pullup))`; `fu_uast = fga_uast_2pt_jump × 0.45 × post_affinity`. Non-turnaround fades excluded from possession count (used only as face-up orientation signal in mapper). |
 | `synergy_spotup` | **2013-14+**: `catch_shoot_fga × 1.20`. **Pre-2013**: `total_3pt_fga × 0.80 × 1.20` |
 | `synergy_offscreen` | `catch_shoot_fga × 3PT_fraction × 0.25` |
 | `synergy_cut` | `(fga_putback + fga_alley_oop + fga_finger_roll × 0.5) × 1.40` |
