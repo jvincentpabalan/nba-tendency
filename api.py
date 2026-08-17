@@ -8,6 +8,7 @@ from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
+from typing import Optional
 from pydantic import BaseModel
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
@@ -77,26 +78,80 @@ def roster(team_id: int, season: str = "2024-25"):
 class GenerateRequest(BaseModel):
     player_id: int
     player_name: str
-    season: str = "2024-25"
-    season_type: str = "Regular Season"
+    seasons: list  # list of season strings, e.g. ["2024-25"] or ["2010-11", "2011-12"]
+    season_type: str = "Regular Season"  # used when blend_pct is None
+    blend_pct: Optional[int] = None  # RS weight 0-100; None = no RS/PO blend
 
 
 @app.post("/api/generate")
 def generate(req: GenerateRequest):
-    try:
-        stats = stats_collector.collect(req.player_id, req.season)
-    except Exception as e:
-        raise HTTPException(status_code=503, detail=f"NBA API unavailable — {e}")
+    if not req.seasons:
+        raise HTTPException(status_code=422, detail="seasons must be a non-empty list")
+
+    rs_weight = req.blend_pct / 100.0 if req.blend_pct is not None else None
+    po_weight = 1.0 - rs_weight if rs_weight is not None else None
+
+    season_stats_list = []
+    season_game_counts = []
+
+    for season in req.seasons:
+        if req.blend_pct is not None:
+            try:
+                rs = stats_collector.collect(req.player_id, season, "Regular Season")
+                po = stats_collector.collect(req.player_id, season, "Playoffs")
+            except Exception as e:
+                raise HTTPException(status_code=503, detail=f"NBA API unavailable — {e}")
+
+            if po.games == 0:
+                season_stats_list.append(rs)
+            else:
+                blended = stats_collector.blend_stats([rs, po], [rs_weight, po_weight])
+                blended.games = rs.games
+                season_stats_list.append(blended)
+            season_game_counts.append(rs.games if rs.games > 0 else 1)
+        else:
+            try:
+                s = stats_collector.collect(req.player_id, season, req.season_type)
+            except Exception as e:
+                raise HTTPException(status_code=503, detail=f"NBA API unavailable — {e}")
+            season_stats_list.append(s)
+            season_game_counts.append(s.games if s.games > 0 else 1)
+
+    if len(season_stats_list) > 1:
+        stats = stats_collector.blend_stats(
+            season_stats_list, [float(g) for g in season_game_counts]
+        )
+        stats.games = sum(season_game_counts)
+    else:
+        stats = season_stats_list[0]
 
     tendencies = mapper.compute(stats)
     output = mapper.to_2k26_json(tendencies)
+
+    # Metadata
+    output["_seasons"] = req.seasons
+    if req.blend_pct is not None:
+        output["_blend"] = {
+            "regular_season_pct": req.blend_pct,
+            "playoffs_pct": 100 - req.blend_pct,
+        }
 
     # Save to output/ directory
     out_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "output")
     os.makedirs(out_dir, exist_ok=True)
     slug = re.sub(r"[^a-z0-9]+", "_", req.player_name.lower()).strip("_")
-    st_slug = re.sub(r"[^a-z0-9]+", "_", req.season_type.lower()).strip("_")
-    out_path = os.path.join(out_dir, f"{slug}_{req.season}_{st_slug}.json")
+
+    if len(req.seasons) == 1:
+        season_label = req.seasons[0]
+    else:
+        season_label = f"{req.seasons[0]}_to_{req.seasons[-1]}"
+
+    if req.blend_pct is not None:
+        qualifier = f"blended_{req.blend_pct}_{100 - req.blend_pct}"
+    else:
+        qualifier = re.sub(r"[^a-z0-9]+", "_", req.season_type.lower()).strip("_")
+
+    out_path = os.path.join(out_dir, f"{slug}_{season_label}_{qualifier}.json")
     with open(out_path, "w") as f:
         json.dump(output, f, indent=2)
 
@@ -110,7 +165,7 @@ def generate(req: GenerateRequest):
 
     return {
         "player_name": req.player_name,
-        "season": req.season,
+        "seasons": req.seasons,
         "season_type": req.season_type,
         "_player_id": req.player_id,
         **output,

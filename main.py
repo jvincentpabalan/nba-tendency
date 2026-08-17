@@ -26,7 +26,8 @@ def parse_args():
     p.add_argument("--player", type=int, required=True,
                    help="NBA.com player ID (e.g. 1717 for Dirk Nowitzki)")
     p.add_argument("--season", type=str, required=True,
-                   help="Season in YYYY-YY format (e.g. 2010-11)")
+                   help="Season(s) in YYYY-YY format. Comma-separated for multi-season blend "
+                        "(e.g. 2010-11,2011-12,2012-13). Seasons are games-weighted.")
     p.add_argument("--output", type=str, default=None,
                    help="Output JSON file path (default: stdout)")
     p.add_argument("--mock", action="store_true",
@@ -40,7 +41,12 @@ def parse_args():
     p.add_argument("--review", action="store_true",
                    help="Print annotated tier-label review instead of raw JSON")
     p.add_argument("--playoffs", action="store_true",
-                   help="Use Playoffs stats instead of Regular Season")
+                   help="Use Playoffs stats instead of Regular Season (single season only)")
+    p.add_argument("--blend", nargs="?", const=70, type=int, metavar="RS_WEIGHT",
+                   help="Blend Regular Season with Playoffs per season. "
+                        "Optionally specify RS weight as integer percent (default: 70). "
+                        "Example: --blend or --blend 60 (60%% RS / 40%% PO). "
+                        "Cannot be combined with --playoffs.")
     return p.parse_args()
 
 
@@ -170,27 +176,111 @@ def _copy_to_clipboard(text: str) -> None:
         print(f"\nError copying to clipboard: {e}", file=sys.stderr)
 
 
+def _collect_one(player_id, season, season_type, mock):
+    """Fetch a single season/type, with mock fallback."""
+    if mock:
+        return mock_stats(player_id, season)
+    return stats_collector.collect(player_id, season, season_type)
+
+
+def _describe_blend(seasons: list, blend_pct, playoffs: bool) -> str:
+    """Human-readable description of what was blended."""
+    if len(seasons) == 1:
+        season_str = seasons[0]
+    elif len(seasons) == 2:
+        season_str = f"{seasons[0]} / {seasons[1]}"
+    else:
+        season_str = f"{seasons[0]} – {seasons[-1]} ({len(seasons)} seasons)"
+
+    if blend_pct is not None:
+        po_pct = 100 - blend_pct
+        return f"{season_str}  [{blend_pct}% RS / {po_pct}% PO blended]"
+    if playoffs:
+        return f"{season_str}  [Playoffs]"
+    return f"{season_str}  [Regular Season]"
+
+
 def main():
     args = parse_args()
 
-    print(f"Generating 2K26 tendencies for player {args.player}, season {args.season}")
+    if args.playoffs and args.blend is not None:
+        print("Error: --playoffs and --blend are mutually exclusive.", file=sys.stderr)
+        sys.exit(1)
+
+    seasons = [s.strip() for s in args.season.split(",")]
+    multi_season = len(seasons) > 1
+
+    blend_pct = args.blend  # int (e.g. 70) or None
+    rs_weight = blend_pct / 100.0 if blend_pct is not None else None
+    po_weight = 1.0 - rs_weight if rs_weight is not None else None
+
+    desc = _describe_blend(seasons, blend_pct, args.playoffs)
+    print(f"Generating 2K26 tendencies for player {args.player}")
+    print(f"  {desc}")
     print("=" * 60)
 
-    season_type = "Playoffs" if args.playoffs else "Regular Season"
-    if args.playoffs:
-        print(f"Season type: Playoffs")
+    if args.mock and multi_season:
+        print("Note: --mock with multiple seasons repeats the same mock data per season.")
 
-    if args.mock:
-        print("Using mock data (--mock flag set)")
-        stats = mock_stats(args.player, args.season)
+    # ── Collect stats (one or more seasons, optionally RS+PO blended) ────────
+    season_stats_list = []  # list of PlayerStats
+    season_game_counts = []  # RS game counts for multi-season weighting
+
+    for season in seasons:
+        if blend_pct is not None:
+            # RS + PO blend
+            print(f"\n[{season}] Fetching Regular Season...")
+            try:
+                rs = _collect_one(args.player, season, "Regular Season", args.mock)
+            except Exception as e:
+                print(f"  Error: {e}", file=sys.stderr)
+                sys.exit(1)
+
+            print(f"[{season}] Fetching Playoffs...")
+            try:
+                po = _collect_one(args.player, season, "Playoffs", args.mock)
+            except Exception as e:
+                print(f"  Error: {e}", file=sys.stderr)
+                sys.exit(1)
+
+            if po.games == 0:
+                print(f"  Warning: no Playoffs data found for {season} — using Regular Season only.")
+                season_stats_list.append(rs)
+            else:
+                print(f"  Blending {rs.games} RS games ({blend_pct}%) + "
+                      f"{po.games} PO games ({100 - blend_pct}%)")
+                blended = stats_collector.blend_stats([rs, po], [rs_weight, po_weight])
+                blended.games = rs.games  # keep RS games as the multi-season weight anchor
+                season_stats_list.append(blended)
+
+            season_game_counts.append(rs.games if rs.games > 0 else 1)
+
+        else:
+            season_type = "Playoffs" if args.playoffs else "Regular Season"
+            prefix = f"\n[{season}] " if multi_season else ""
+            if args.mock:
+                print(f"{prefix}Using mock data (--mock flag set)")
+            else:
+                print(f"{prefix}Fetching stats from NBA.com (this may take ~30 seconds)...")
+            try:
+                s = _collect_one(args.player, season, season_type, args.mock)
+            except Exception as e:
+                print(f"\nError fetching stats: {e}", file=sys.stderr)
+                print("Tip: Try --mock to test with sample data.", file=sys.stderr)
+                sys.exit(1)
+            season_stats_list.append(s)
+            season_game_counts.append(s.games if s.games > 0 else 1)
+
+    # ── Merge across seasons (games-weighted) ────────────────────────────────
+    if multi_season:
+        print(f"\nBlending {len(seasons)} seasons (games-weighted: "
+              + ", ".join(f"{s}={g}g" for s, g in zip(seasons, season_game_counts))
+              + ")...")
+        stats = stats_collector.blend_stats(season_stats_list,
+                                            [float(g) for g in season_game_counts])
+        stats.games = sum(season_game_counts)
     else:
-        print("Fetching stats from NBA.com (this may take ~30 seconds)...")
-        try:
-            stats = stats_collector.collect(args.player, args.season, season_type)
-        except Exception as e:
-            print(f"\nError fetching stats: {e}", file=sys.stderr)
-            print("Tip: Try --mock to test with sample data.", file=sys.stderr)
-            sys.exit(1)
+        stats = season_stats_list[0]
 
     if args.debug:
         print("\n--- Key stat inputs ---")
@@ -209,11 +299,14 @@ def main():
 
     # Add metadata
     output["_player_id"] = args.player
-    output["_season"] = args.season
+    output["_season"] = args.season        # original CLI input (backward compat)
+    output["_seasons"] = seasons           # list of all seasons included
+    if blend_pct is not None:
+        output["_blend"] = {"regular_season_pct": blend_pct, "playoffs_pct": 100 - blend_pct}
 
     # Review mode: print annotated tier labels instead of raw JSON
     if args.review:
-        title = f"Player {args.player}  |  Season {args.season}"
+        title = f"Player {args.player}  |  {desc}"
         rows = reviewer.review(output["tendencies"])
         print()
         print(reviewer.format_review(rows, title=title))

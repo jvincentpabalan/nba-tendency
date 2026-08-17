@@ -1,5 +1,6 @@
 """Collect and normalize stats from multiple NBA.com endpoints into a flat dict."""
 
+import dataclasses
 from dataclasses import dataclass, field
 from typing import Optional
 import nba_client as client
@@ -543,3 +544,49 @@ def _compute_synergy_fallbacks(stats: PlayerStats) -> None:
 
     # synergy_pr_ball / synergy_pr_roll: mapper.py already infers from 3PT profile.
     # synergy_off_reb: mapper.py already falls back to stats.oreb.
+
+
+def blend_stats(stats_list: list, weights: list = None) -> PlayerStats:
+    """
+    Return a weighted average of multiple PlayerStats objects.
+
+    weights: explicit per-entry weights (floats). If None, uses each stats.games
+             as the weight (games-weighted average for multi-season blending).
+
+    All per-game fields are blended by weighted average.
+    The `games` field is left untouched — callers should set it to the
+    appropriate total (e.g. sum of games) after calling blend_stats().
+
+    Typical usage patterns:
+      # RS + Playoffs blend (explicit 70/30 weights)
+      blended = blend_stats([rs, po], [0.70, 0.30])
+      blended.games = rs.games
+
+      # Multi-season blend (games-weighted)
+      blended = blend_stats([s1, s2, s3])
+      blended.games = s1.games + s2.games + s3.games
+    """
+    if not stats_list:
+        return PlayerStats()
+    if len(stats_list) == 1:
+        return stats_list[0]
+
+    if weights is None:
+        weights = [float(s.games) for s in stats_list]
+
+    total_w = sum(weights)
+    if total_w == 0:
+        return stats_list[0]
+
+    blended = PlayerStats()
+    for f in dataclasses.fields(PlayerStats):
+        fname = f.name
+        vals = [getattr(s, fname) for s in stats_list]
+        blended_val = sum(v * w for v, w in zip(vals, weights)) / total_w
+        orig = getattr(blended, fname)
+        if isinstance(orig, int):
+            setattr(blended, fname, int(round(blended_val)))
+        else:
+            setattr(blended, fname, blended_val)
+
+    return blended

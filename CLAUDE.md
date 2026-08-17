@@ -9,6 +9,28 @@ python3 main.py --player 1717 --season 2010-11             # Dirk Nowitzki (live
 python3 main.py --player 2544 --season 2023-24             # LeBron James
 python3 main.py --player 1717 --season 2010-11 --mock      # Dirk mock data (no API calls)
 python3 main.py --player 2544 --season 2023-24 --output lebron.json
+python3 main.py --player 1717 --season 2010-11 --review    # tier-label review report
+python3 main.py --player 2544 --season 2023-24 --playoffs  # use Playoffs stats
+python3 main.py --player 1717 --season 2010-11 --debug     # print key stat inputs
+python3 main.py --player 2544 --season 2023-24 --copy      # copy JSON to clipboard (macOS)
+
+# Multi-season blend (games-weighted average across seasons)
+python3 main.py --player 1717 --season 2010-11,2011-12,2012-13
+python3 main.py --player 2544 --season 2011-12,2012-13,2013-14 --review
+
+# RS + Playoffs blend per season (default 70% RS / 30% PO; cannot combine with --playoffs)
+python3 main.py --player 1717 --season 2010-11 --blend        # 70/30 default
+python3 main.py --player 2544 --season 2023-24 --blend 60     # 60% RS / 40% PO
+
+# Combined: multi-season + RS/PO blend per season
+python3 main.py --player 1717 --season 2010-11,2011-12 --blend
+
+python3 reviewer.py output/dirk_nowitzki_2010-11_regular_season.json  # review saved output
+
+python3 api.py                                              # start FastAPI server (port 8000)
+
+python3 scripts/parse_atd_csv.py ~/Downloads/atd.csv \
+    -o ui/src/data/tendency_guide.json                     # regenerate tendency guide JSON
 ```
 
 Player IDs are from NBA.com (e.g. `1717` = Dirk Nowitzki, `2544` = LeBron James).
@@ -18,15 +40,20 @@ Season format: `YYYY-YY` (e.g. `2010-11`).
 
 | File | Purpose |
 |------|---------|
-| `nba_client.py` | HTTP layer — curl subprocess with NBA.com headers, retry/bail logic |
+| `nba_client.py` | HTTP layer — curl subprocess with NBA.com headers, retry/bail logic; also `fetch_team_roster()` |
 | `stats_collector.py` | Fetches all endpoints, normalizes to per-game, returns `PlayerStats`; synergy fallbacks |
 | `mapper.py` | Maps `PlayerStats` → 83 tendency values in 8 groups |
-| `main.py` | CLI entrypoint, `mock_stats()` for offline testing |
+| `main.py` | CLI entrypoint, `mock_stats()` for offline testing; `--review`, `--playoffs`, `--debug`, `--copy` flags |
+| `reviewer.py` | Maps computed tendency values → guide tier labels; library + CLI |
+| `api.py` | FastAPI backend: `/api/teams`, `/api/roster`, `/api/generate`; serves built React SPA |
+| `scripts/parse_atd_csv.py` | Parses ATD Committee CSV → `ui/src/data/tendency_guide.json` |
+| `ui/` | React + Vite frontend (components: `TendencyResults`, `TendencyTooltip`) |
+| `output/` | Generated tendency JSON files, named `{player_slug}_{season}_{season_type_slug}.json` |
 
 ## Architecture
 
 ```
-main.py
+main.py  (CLI)
   └─ stats_collector.collect(player_id, season) → PlayerStats
        ├─ nba_client.fetch_general_splits()        # box score (PTS/AST/REB/STL/BLK/PF/FTA)
        ├─ nba_client.fetch_shooting_splits()       # shot zones + shot types + assisted split
@@ -36,6 +63,23 @@ main.py
        └─ _compute_synergy_fallbacks(stats)        # fills synergy fields from shot-type proxies
   └─ mapper.compute(stats) → dict[label, value]
   └─ mapper.to_2k26_json(tendencies) → JSON output
+  └─ reviewer.review(tendencies) → annotated rows  (only with --review)
+
+api.py  (FastAPI server — python3 api.py → port 8000)
+  ├─ GET  /api/teams          → hardcoded list of 30 NBA teams
+  ├─ GET  /api/roster         → nba_client.fetch_team_roster(team_id, season)
+  ├─ POST /api/generate       → stats_collector → mapper → saves to output/ → returns JSON
+  │        also returns _touch_raw, _shot_raw for UI-side roster normalization (not in file)
+  └─ /*   (SPA fallback)      → serves ui/dist/index.html when built
+
+reviewer.py  (library + CLI)
+  ├─ review(tendencies, guide) → list of annotated row dicts
+  ├─ format_review(rows, title) → formatted text report grouped by tendency group
+  └─ format_summary(rows) → bulleted summary (at cap, above/below norm, no guide entry)
+  Guide data: ui/src/data/tendency_guide.json
+
+scripts/parse_atd_csv.py  (one-shot CSV → JSON)
+  └─ Reads ATD Committee Master Tendency Scale CSV → ui/src/data/tendency_guide.json
 ```
 
 ---
@@ -70,6 +114,7 @@ When a request returns rc=0 but empty stdout (server returned HTTP 500 with empt
 | `playerdashboardbyshootingsplits` | `ShotAreaPlayerDashboard`, `ShotTypeSummaryPlayerDashboard`, `ShotTypePlayerDashboard`, `AssitedShotPlayerDashboard` |
 | `shotchartdetail` | `Shot_Chart_Detail` |
 | `playerdashptshots` | `GeneralShooting` |
+| `commonteamroster` | `CommonTeamRoster` (used by API server for roster lookups) |
 
 ### Dead endpoints (HTTP 500 / empty body — do not retry)
 - `synergyplaytypes` — completely defunct server-side for all seasons and all play types
@@ -261,3 +306,87 @@ Key mock values and what they should produce:
 5. **`Drive Pull Up Mid-Range`** — for pre-2013, uses `fga_pullup` (ShotTypePlayerDashboard) which is a narrower definition than player tracking's `pullup_2pt_fga`. Values will be lower than reality.
 
 6. **`mock_stats()` is not updated** — `pullup_2pt_fga` in mock is set to 3.0 (direct player tracking value) but the live path for 2010-11 gets 0 (no tracking data) and falls back to `fga_pullup`. The mock produces different tendency values than the live API for the same season — document this when comparing.
+
+---
+
+## Web UI / API Server
+
+The project includes a React + Vite frontend served by a FastAPI backend.
+
+### Starting the server
+```bash
+python3 api.py          # FastAPI + uvicorn on http://localhost:8000
+cd ui && npm run dev    # Vite dev server on http://localhost:5173 (proxies API calls)
+cd ui && npm run build  # Build to ui/dist/ (served statically by api.py)
+```
+
+### API endpoints
+| Method | Path | Description |
+|--------|------|-------------|
+| `GET` | `/api/teams` | All 30 NBA teams (hardcoded) |
+| `GET` | `/api/roster?team_id=&season=` | Team roster via `commonteamroster` |
+| `POST` | `/api/generate` | Generate tendencies; body: `{player_id, player_name, season, season_type}` |
+
+The `POST /api/generate` response includes everything in the `to_2k26_json()` output, plus `_touch_raw` and `_shot_raw` (raw involvement scores for UI-side roster normalization). These are **not** saved to the output file.
+
+### Output file naming
+Saved to `output/{player_slug}_{season}_{season_type_slug}.json`.
+Example: `output/lebron_james_2023-24_regular_season.json`.
+
+---
+
+## Reviewer
+
+`reviewer.py` annotates computed tendencies with tier labels, NBA norm comparison, and cap status from `ui/src/data/tendency_guide.json`.
+
+### Library usage
+```python
+from reviewer import review, format_review, format_summary
+rows = review(output["tendencies"])   # output["tendencies"] = the dict from to_2k26_json()
+print(format_review(rows, title="Dirk 2010-11"))
+print(format_summary(rows))
+```
+
+### CLI usage
+```bash
+python3 reviewer.py output/dirk_nowitzki_2010-11_regular_season.json
+```
+
+### Tier gap behavior
+Tiers have explicit ranges that may not be contiguous (e.g., `[0-5]`, `[10-15]` with nothing at 6–9). Values in a gap return the **lower adjacent tier's label** — the value hasn't reached the next tier yet. Values below all tiers return the lowest tier; values above all tiers return the highest.
+
+### `at_cap` flag
+Only set when `cap` is the **upper bound** of the scale (not a minimum floor like Drive Right's `cap=30`). Guard: `cap >= tiers[-1]["range"][1]` must hold.
+
+---
+
+## Tendency Guide JSON (`ui/src/data/tendency_guide.json`)
+
+Parsed from the ATD Committee Master Tendency Scale CSV by `scripts/parse_atd_csv.py`. Used by `reviewer.py` and the UI tooltip component.
+
+### Regenerating
+```bash
+python3 scripts/parse_atd_csv.py \
+    "~/Downloads/ATD Committee Official Master Tendency - ATD Committe Master Tendency Scale (1).csv" \
+    -o ui/src/data/tendency_guide.json
+```
+
+### CSV row mapping
+| Row | Content |
+|-----|---------|
+| 1 | Column headers (CSV tendency names) |
+| 2 | Definitions |
+| 3 | Anti-default notes (skipped) |
+| 4 | Scale tier header labels (skipped) |
+| 5–15 | 11 value scale tiers |
+| 16 | NBA norms (partial: Alley-Oop, Putback, Crash, Drive Right) |
+| 17 | NBA norms (main row) |
+| 18 | Featured ranges (skipped) |
+| 19 | Primary/Star ranges (skipped) |
+| 20 | Absolute caps |
+| 21+ | Additional caps (skipped) |
+
+Norm resolution: row 17 preferred; falls back to row 16 for the four tendencies listed there.
+
+### Directional splits
+Directional tendency keys (e.g. `Jump Shooting:Shot Mid Left`) share the parent tendency's guide entry. Defined in `PARENT_KEY` dict in `scripts/parse_atd_csv.py`.
