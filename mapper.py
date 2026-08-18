@@ -399,7 +399,21 @@ def compute(stats: PlayerStats) -> dict:
         pullup_vol = stats.fga_pullup + stats.fga_uast_2pt_jump
     total_drive_vol = max(rim_finish_vol + pullup_vol, 1.0)
     rim_commit_ratio = _pct(rim_finish_vol, total_drive_vol)
-    t["Driving:Attack Strong On Drive"] = _scale(rim_commit_ratio, 0.15, 0.90, 20, 90)
+    # Pull-up intensity discount: non-drivers who shoot many mid-range shots tend to
+    # stop and rise rather than continue downhill. pct_mid is the era-independent signal
+    # (always from shot zones; never sparse). Coefficient 0.20.
+    #
+    # CRITICAL: the discount must fade to zero for genuine high-Drive players.
+    # Elite slashers (Rose Drive=75) both drive aggressively AND pull up — their pull-up
+    # game is additive, not a substitute for rim attacks. Applying a full pct_mid discount
+    # to them would wrongly penalize their Attack Strong.
+    # drive_inverse = max(0, 1 - Drive/75). Non-drivers (Dirk Drive=19) → 0.747 weight,
+    # so discount fires at full strength. Elite drivers (Rose Drive=75) → 0.0 weight,
+    # so discount is suppressed entirely and rim_commit_ratio maps without modification.
+    _drive_inverse = max(0.0, 1.0 - t["Driving:Drive"] / 75.0)
+    pullup_disc = pct_mid * 0.20 * _drive_inverse
+    attack_adj = max(0.0, rim_commit_ratio - pullup_disc)
+    t["Driving:Attack Strong On Drive"] = _scale(attack_adj, 0.15, 0.90, 20, 90)
 
     # ── DRIVE SETUP ───────────────────────────────────────────────────────
 
@@ -412,15 +426,30 @@ def compute(stats: PlayerStats) -> dict:
     t["Drive Setup:Triple Threat Shoot"]     = _scale(tt_shoot_raw, 0.25, 0.75, 15, 55)
 
     # Triple Threat Pump Fake  — cap 55
-    t["Drive Setup:Triple Threat Pump Fake"] = _scale(stats.fta, 1, 9, 10, 55)
+    # Good perimeter shooters (mid + 3PT) draw defenders out and exploit pump fakes more.
+    # FTA adds a contact-seeker supplement (bigs who pump fake to draw fouls).
+    # high_raw=14: Dirk (pct_sum≈0.68 × 17.3 FGA × 0.7 + 7 FTA × 0.4 ≈ 11) → ~44.
+    _pump_shooting_threat = (pct_mid + pct_3) * fga
+    _pump_raw = _pump_shooting_threat * 0.7 + stats.fta * 0.4
+    t["Drive Setup:Triple Threat Pump Fake"] = _scale(_pump_raw, 0, 14, 5, 55)
 
     # Triple Threat Jab Step  — cap 55
-    t["Drive Setup:Triple Threat Jab Step"]  = _scale(faceup_iso * 0.5, 0, 4.5, 5, 55)
+    # Jab step is used both to initiate drives (faceup_iso) AND to create space for
+    # mid-range shots (mid-range shooters jab to put the defender on their heels before rising).
+    # pct_mid × fga = absolute mid-range shot volume (direct proxy for jab-into-mid-range).
+    _jab_raw = faceup_iso * 0.4 + pct_mid * fga * 0.3
+    t["Drive Setup:Triple Threat Jab Step"]  = _scale(_jab_raw, 0, 5.0, 5, 55)
 
     # Triple Threat Idle  — cap 65
-    # usage_proxy zeros out post players unfairly. Post players do idle in the post;
-    # add a post_freq bonus so high-post players get a moderate idle tendency.
-    idle_raw = max(0.0, 0.5 - usage_proxy) + post_freq * 0.04
+    # Decisiveness on catch: elite mid-range shooters act immediately (low idle);
+    # non-shooters and distributors deliberate longer (high idle).
+    # pct_mid is the strongest signal — mid-range players always have a clear action plan.
+    # pct_3 contributes less (3PT spot-ups still involve some hold time).
+    # usg_pct: high-usage scorers are decisive regardless of shot profile.
+    # pass_hold: distributors scan for reads → higher idle.
+    _shot_decisiveness = pct_mid * 3.0 + pct_3 * 0.5 + stats.usg_pct * 0.5
+    _pass_hold = max(0.0, (ast_ratio - 0.25) * 0.15)
+    idle_raw = max(0.03, 0.38 - _shot_decisiveness * 0.18 + _pass_hold)
     t["Drive Setup:Triple Threat Idle"]      = _scale(idle_raw, 0, 0.45, 5, 65)
 
     # Setup With Sizeup  — cap 55
@@ -549,7 +578,10 @@ def compute(stats: PlayerStats) -> dict:
     _faceup_vol = stats.fga_fadeaway + stats.fga_uast_2pt_jump * _post_affinity
     _post_orientation_vol = _faceup_vol + _btb_vol
     face_up_pct = _pct(_faceup_vol, _post_orientation_vol) if _post_orientation_vol > 0.05 else 0.5
-    _post_back_pct = 1.0 - face_up_pct * 0.6  # dampens back-down for face-up players
+    # Mid-range and face-up players still back down to gain post position before facing up;
+    # back-down and face-up are not mutually exclusive. Reduce dampening coefficient from
+    # 0.6 to 0.3 so mid-range-oriented players (Dirk) still show meaningful back-down usage.
+    _post_back_pct = 1.0 - face_up_pct * 0.3  # dampens back-down for extreme face-up players
 
     # Post Back Down  — cap 80
     # Back-to-basket orientation × post volume. Face-up scorers get lower Back Down.
@@ -563,8 +595,12 @@ def compute(stats: PlayerStats) -> dict:
     # 0.85 ceiling: a player with ~85%+ face-up orientation hits cap (60).
     t["Post Game:Post Face Up"]             = _scale(face_up_pct, 0, 0.85, 5, 60)
     # Post Spin  — cap 55
-    # CSV: Regular 30-35, Advanced 35-45, Signature 50. Keep high_raw=12 so non-spinners stay low.
-    t["Post Game:Post Spin"]                = _scale(post_freq, 0, 12, 5, 55)
+    # CSV: Regular 30-35, Advanced 40-45, Signature 50. Elite post players with high turnaround
+    # volume (spinning into shots) register here. fga_turnaround is the strongest direct signal;
+    # post_freq supplies a frequency floor so medium-post players get modest spin values.
+    # high_raw=6.0: at 6.0 → cap. Dirk (turnaround≈0.77 × 1.5 + 5.5 × 0.5 ≈ 3.9) → ~38.
+    _spin_raw = stats.fga_turnaround * 1.5 + post_freq * 0.5
+    t["Post Game:Post Spin"]                = _scale(_spin_raw, 0, 6.0, 5, 55)
     # Post Drive  — cap 55
     # CSV: Face-Up Driver 30-45, Primary Post-Drive 50.
     t["Post Game:Post Drive"]               = _scale(post_freq, 0, 11, 5, 55)
@@ -602,12 +638,19 @@ def compute(stats: PlayerStats) -> dict:
     # Fade left/right  — cap 50
     # fga_fadeaway (all fadeaways) covers both turnaround and face-up post fades.
     # Using fga_turnaround_fadeaway alone missed face-up faders like Dirk (1.4 face-up fades/game).
-    # Same directional convention as hooks: right = dominant by default.
-    # Flip manually for left-hand-dominant fade specialists (e.g., left-handed players).
-    _fade_dom  = _scale(stats.fga_fadeaway, 0, 4.0, 5, 50)
-    _fade_weak = max(5, _fade_dom - 15)
-    t["Post Game:Post Fade Right"] = _fade_dom
-    t["Post Game:Post Fade Left"]  = _fade_weak
+    #
+    # Directional convention: RIGHT-handed players fade LEFT (away from their dominant hand,
+    # creating separation from the defender). Left = dominant for most NBA players.
+    # Flip labels manually for left-handed players.
+    #
+    # Scaling: high_raw=2.5 (lower than prior 4.0) so genuine fadeaway artists like Dirk
+    # (≈2.05/game) reach signature tier (40-45) on their dominant side. An outlier with
+    # 4+ fadeaways/game hits the cap (50).
+    # Weak side = 40% of dominant value (produces ~10-20 range for typical dominant 40-45 values).
+    _fade_dom  = _scale(stats.fga_fadeaway, 0, 2.5, 10, 50)
+    _fade_weak = max(5, int(_fade_dom * 0.40))
+    t["Post Game:Post Fade Left"]  = _fade_dom   # dominant for right-handed players
+    t["Post Game:Post Fade Right"] = _fade_weak  # weak side for right-handed players
 
     # Post move sub-types
     # Shimmy: straight-up turnaround jumpers (fga_turnaround minus the fadeaway subset).
@@ -616,12 +659,26 @@ def compute(stats: PlayerStats) -> dict:
     # high_raw=1.5: elite shimmy user ceiling; 0.5/game → ~20 (occasional), 1.5/game → 45 (signature).
     _shimmy_raw = max(0.0, stats.fga_turnaround - stats.fga_turnaround_fadeaway)
     t["Post Game:Post Shimmy Shot"]    = _scale(_shimmy_raw, 0, 1.5, 5, 45)
-    t["Post Game:Post Hop Shot"]       = 5   # cap 45 — no API proxy; film evidence required
-    # Post Step Back: raw fga_step_back volume (per-game). pct_stepback × post_freq underscaled
-    # because the percentage is tiny (~3%) even for active step-back users.
-    # 0.5/game → ~20 (regular move), 1.5/game → 50 (signature).
-    t["Post Game:Post Step Back Shot"] = _scale(stats.fga_step_back, 0, 1.5, 5, 50)  # cap 50
-    t["Post Game:Post Up And Under"]   = 5   # cap 45 — no API proxy; film evidence required
+
+    # Post Hop Shot  — cap 45
+    # No direct API proxy exists. Post mastery heuristic: high-volume post players develop
+    # a broader counter repertoire. post_mastery = min(1.0, post_freq / 7.0) where 7 = elite
+    # post volume (8 poss/game ≈ primary engine). Dirk (5.5) → mastery 0.786 → ~25.
+    # Verify with film: hop shot users should be confirmed before finalizing.
+    _post_mastery = min(1.0, post_freq / 7.0)
+    t["Post Game:Post Hop Shot"]       = _scale(_post_mastery * 0.65, 0, 1.0, 5, 45)
+
+    # Post Step Back Shot  — cap 50
+    # CSV: Signature 40-45. high_raw lowered to 0.60 so 0.49/game (Dirk) maps to ~42
+    # (Signature Post Stepback tier). Prior high_raw=1.5 mapped Dirk to ~20 (Occasional),
+    # understating his signature move. 1.0+/game → cap (50 = Extreme).
+    t["Post Game:Post Step Back Shot"] = _scale(stats.fga_step_back, 0, 0.60, 5, 50)
+
+    # Post Up And Under  — cap 45
+    # No direct API proxy. Post mastery heuristic: elite post players use more counters.
+    # Scaled slightly below Hop Shot (0.55 vs 0.65) — up-and-under requires more footwork
+    # mastery, so only the most post-capable players reach signature territory.
+    t["Post Game:Post Up And Under"]   = _scale(_post_mastery * 0.55, 0, 1.0, 5, 45)
 
     # ── DEFENSE ──────────────────────────────────────────────────────────
 
@@ -655,6 +712,19 @@ def compute(stats: PlayerStats) -> dict:
     # Hard Foul  — cap 40 (guide cap; PF is the only available proxy though guide says NOT to use
     # general physicality — acknowledged data gap; PF still the most correlated available stat)
     t["Defense:Hard Foul"] = _scale(stats.pf, 1.0, 5.0, 5, 40)
+
+    # ── CROSS-GROUP CAPS ──────────────────────────────────────────────────────
+    # Shot Three cap: players with a low overall shot role (Freelance:Shot) cannot be
+    # "Primary Three-Point Scorers" in-game even if their 3PT attempt rate is high.
+    # Distributors like Kidd or Stevenson have low Shot but high pct_3 → raw Shot Three = 60-75.
+    # Cap = Freelance:Shot + 25, floored at 35. Role players (Shot=15) → cap 40 (Regular).
+    # Primary scorers (Shot=50+) → cap 75 (no effective restriction).
+    _shot_role = t["Freelance:Shot"]
+    _shot_three_cap = max(35, min(75, _shot_role + 25))
+    t["Jump Shooting:Shot Three"] = min(t["Jump Shooting:Shot Three"], _shot_three_cap)
+    for _dir in ["Shot Three Left", "Shot Three Left-Center", "Shot Three Center",
+                 "Shot Three Right-Center", "Shot Three Right"]:
+        t[f"Jump Shooting:{_dir}"] = min(t[f"Jump Shooting:{_dir}"], _shot_three_cap)
 
     return t
 
