@@ -72,10 +72,10 @@ def compute(stats: PlayerStats) -> dict:
     pct_ra         = _pct(stats.fga_restricted,  fga)
     pct_close      = _pct(stats.fga_paint_nonra, fga)
     pct_mid        = _pct(stats.fga_mid,         fga)
-    # Use the higher of zone-sum and box-score 3PT FGA. Zone data occasionally
-    # undercounts for older seasons (some shots fall outside categorized zones);
-    # fg3a from general splits is authoritative. Taking the max recovers both.
-    three_fga = max(stats.total_3pt_fga, stats.fg3a) if stats.total_3pt_fga > 0 else stats.fg3a
+    # fg3a from general splits is authoritative. Zone data can both undercount (shots
+    # fall outside categorized zones) AND overcount (miscategorized near-3PT mid-range
+    # shots). Use fg3a as primary; fall back to zone sum only when fg3a is unavailable.
+    three_fga = stats.fg3a if stats.fg3a > 0 else stats.total_3pt_fga
     pct_3          = _pct(three_fga,   fga)
     pct_stepback   = _pct(stats.fga_step_back,   fga)
     pct_turnaround = _pct(stats.fga_turnaround,  fga)
@@ -191,7 +191,11 @@ def compute(stats: PlayerStats) -> dict:
     # (Ray Allen 5+/game) approach the cap.
     _spot_3_hrw = 3.0 if stats.catch_shoot_fga > 0 else 4.5
     t["Jump Shooting:Spot Up Shot Three"]        = _scale(_spot_3_vol, 0, _spot_3_hrw, 5, 75)   # cap 75
-    t["Jump Shooting:Off Screen Shot Three"]     = _scale(stats.synergy_offscreen * cs_3_frac, 0, 1.5, 5, 65)  # cap 65
+    # high_raw raised to 2.5 (was 1.5): the pre-2013 synergy_offscreen proxy (assisted 3PT makes
+    # × 0.30 / 0.55) inflates for high-volume 3PT shooters who catch and shoot but don't
+    # actually run many off-screen actions. A true curl/flare specialist hits cap at ~2.5;
+    # ball-handlers and spot-up players land in Selective (20-35) range.
+    t["Jump Shooting:Off Screen Shot Three"]     = _scale(stats.synergy_offscreen * cs_3_frac, 0, 2.5, 5, 65)  # cap 65
 
     # ── Contested jumpers — cap 55 ────────────────────────────────────────
     # Contested Jumper is a subset of base shooting tendency — must never exceed it.
@@ -263,26 +267,32 @@ def compute(stats: PlayerStats) -> dict:
     pct_driv_layup = _pct(stats.fga_driving_layup + stats.fga_finger_roll, fga)
     t["Layups And Dunks:Driving Layup"] = _scale(pct_driv_layup, 0, 0.25, 5, 80)
 
+    # Dunk distribution: estimate how many of a player's dunks are driving vs. standing.
+    # Pre-2013: ShotTypePlayerDashboard detail ("Driving Dunk"/"Driving Slam Dunk") is sparse;
+    # some driving dunks appear only in the ShotTypeSummary "Dunk" total. For perimeter players
+    # (low post_freq), almost all dunks are off drives — use fga_dunk as a floor, discounted
+    # proportionally to post orientation so post bigs aren't over-credited with driving dunks.
+    _post_dunk_frac = min(0.65, post_freq / 8.0)  # 0 for guards, 0.65 for heavy post bigs
+    _driving_dunk_est = max(stats.fga_driving_dunk, stats.fga_dunk * (1.0 - _post_dunk_frac))
+
     # Standing Dunk  — cap 85
     # Definition: selection weight of dunk vs. layup at the rim (stationary/catch/oreb).
-    # Denominator = standing rim attempts only, not total FGA.
-    # fga_dunk (ShotTypeSummary "Dunk") excludes alley-oops; minus driving dunks = standing dunks.
-    # fga_layup (ShotTypeSummary "Layup") minus driving layups = catch/standing layups.
-    standing_dunk = max(0.0, stats.fga_dunk - stats.fga_driving_dunk)
+    # Uses _driving_dunk_est so standing dunk isn't inflated when driving dunk detail is sparse.
+    standing_dunk = max(0.0, stats.fga_dunk - _driving_dunk_est)
     standing_layup = max(0.0, stats.fga_layup - stats.fga_driving_layup)
     dunk_pref = standing_dunk / max(standing_dunk + standing_layup, 0.01)
     t["Layups And Dunks:Standing Dunk"] = _scale(dunk_pref, 0, 1.0, 5, 85)
 
     # Driving Dunk  — cap 80
-    t["Layups And Dunks:Driving Dunk"] = _scale(_pct(stats.fga_driving_dunk, fga), 0, 0.15, 5, 80)
+    t["Layups And Dunks:Driving Dunk"] = _scale(_pct(_driving_dunk_est, fga), 0, 0.15, 5, 80)
 
     # Flashy Dunk  — cap 70
-    # Definition: sub-selection AFTER a dunk is chosen — style preference (flashy vs. safe animation).
-    # NOT a measure of dunk volume. Proxy: driving dunk volume × driving-preference ratio.
-    # Players who dunk primarily off drives (vs. standing catches) are more likely to use flashy animations.
-    _driving_dunk_pref = _pct(stats.fga_driving_dunk, max(stats.fga_dunk, 0.01))
-    # rate × preference so Flashy Dunk ≤ Driving Dunk (preference ≤ 1.0 always)
-    t["Layups And Dunks:Flashy Dunk"] = _scale(_pct(stats.fga_driving_dunk, fga) * _driving_dunk_pref, 0, 0.08, 5, 70)
+    # Sub-selection preference after choosing to dunk (flashy vs. safe animation).
+    # Proxy: driving dunk rate × drive-preference ratio (driving dunks / all dunks).
+    # Uses _driving_dunk_est so pre-2013 data gaps don't suppress athletic slashers.
+    # high_raw lowered to 0.05 (was 0.08): elite in-traffic dunkers approach cap sooner.
+    _driving_dunk_pref = _pct(_driving_dunk_est, max(stats.fga_dunk, 0.01))
+    t["Layups And Dunks:Flashy Dunk"] = _scale(_pct(_driving_dunk_est, fga) * _driving_dunk_pref, 0, 0.05, 5, 70)
 
     # Alley-Oop  — cap 85
     t["Layups And Dunks:Alley-Oop"] = _scale(_pct(stats.fga_alley_oop, fga), 0, 0.05, 5, 85)
@@ -383,6 +393,21 @@ def compute(stats: PlayerStats) -> dict:
     #              faceup_iso ≈ 10 → 10 (out_low, almost always adds a move).
     no_move_raw = max(0.0, 1.0 - faceup_iso / 10.0)
     t["Driving:No Driving Dribble Move"] = _scale(no_move_raw, 0, 1.0, 10, 90)
+
+    # Dribble-move suppression: when No Driving Dribble Move is high (≥70), the player
+    # almost never adds a counter move mid-drive. Cap all individual move tendencies at 5
+    # so the game doesn't trigger animations that never happened in real life (e.g. Dirk
+    # doing a behind-the-back crossover). Threshold 70 matches faceup_iso ≈ 3 or below —
+    # players who are clearly straight-line drivers, not creative ball-handlers.
+    _no_move_val = t["Driving:No Driving Dribble Move"]
+    if _no_move_val >= 70:
+        for _move_key in [
+            "Driving:Driving Crossover", "Driving:Driving Spin",
+            "Driving:Driving Half Spin", "Driving:Driving Double Crossover",
+            "Driving:Driving Behind The Back", "Driving:Driving Dribble Hesitation",
+            "Driving:Driving In And Out",
+        ]:
+            t[_move_key] = 5
 
     # Attack Strong On Drive  — cap 90
     # CSV: "controls willingness to CONTINUE the downhill attack toward the basket once
@@ -575,20 +600,29 @@ def compute(stats: PlayerStats) -> dict:
     _btb_vol = stats.fga_hook + stats.fga_turnaround
     _pullup_vol = max(stats.pullup_2pt_fga, stats.fga_pullup, 0.01)
     _post_affinity = min(1.0, _btb_vol / max(0.5, _pullup_vol))
-    _faceup_vol = stats.fga_fadeaway + stats.fga_uast_2pt_jump * _post_affinity
+    # Exclude turnaround fadeaways from the face-up pool: a turnaround fadeaway starts
+    # back-to-basket (the player pivots, puts the defender behind them, then fades).
+    # These shots already appear in fga_turnaround (btb_vol); counting them again in
+    # fga_fadeaway double-credits faceup orientation and understates back-down tendency
+    # for players like Dirk whose signature move IS the turnaround fade.
+    _pure_faceup_fades = max(0.0, stats.fga_fadeaway - stats.fga_turnaround_fadeaway)
+    _faceup_vol = _pure_faceup_fades + stats.fga_uast_2pt_jump * _post_affinity
     _post_orientation_vol = _faceup_vol + _btb_vol
     face_up_pct = _pct(_faceup_vol, _post_orientation_vol) if _post_orientation_vol > 0.05 else 0.5
-    # Mid-range and face-up players still back down to gain post position before facing up;
-    # back-down and face-up are not mutually exclusive. Reduce dampening coefficient from
-    # 0.6 to 0.3 so mid-range-oriented players (Dirk) still show meaningful back-down usage.
-    _post_back_pct = 1.0 - face_up_pct * 0.3  # dampens back-down for extreme face-up players
+    # Dampening coefficient reduced to 0.15 (was 0.3): back-down and face-up orientation
+    # are not mutually exclusive — a player can back down to gain position and then fade.
+    # The lower coefficient lets conditional back-down score reflect actual backing-down
+    # frequency rather than being excessively suppressed by the face-up fade volume.
+    _post_back_pct = 1.0 - face_up_pct * 0.15  # mild dampening for extreme face-up players
 
     # Post Back Down  — cap 80
-    # Back-to-basket orientation × post volume. Face-up scorers get lower Back Down.
-    t["Post Game:Post Back Down"]           = _scale(post_freq * _post_back_pct, 0, 8, 5, 80)
+    # Conditional preference (given a post catch, how often does player back down?) × volume.
+    # high_raw lowered to 6.5 (was 8) so back-down-oriented players exceed their Post Up score
+    # when they consistently back down even if total post volume is moderate.
+    t["Post Game:Post Back Down"]           = _scale(post_freq * _post_back_pct, 0, 6.5, 5, 80)
     # Post Aggressive Backdown  — cap 70
-    # More forceful subset. Naturally stays 10-20 pts below Back Down via slower scale (high_raw=12).
-    t["Post Game:Post Aggressive Backdown"] = _scale(post_freq * _post_back_pct, 0, 12, 5, 70)
+    # More forceful subset; stays 10-20 pts below Back Down via slower scale (high_raw=10).
+    t["Post Game:Post Aggressive Backdown"] = _scale(post_freq * _post_back_pct, 0, 10, 5, 70)
     # Post Face Up  — cap 60
     # Conditional preference: given a post catch, how often does the player initiate facing up?
     # Scaled from face_up_pct directly (not × post_freq) — it's orientation, not volume.
@@ -716,7 +750,6 @@ def compute(stats: PlayerStats) -> dict:
     # ── CROSS-GROUP CAPS ──────────────────────────────────────────────────────
     # Shot Three cap: players with a low overall shot role (Freelance:Shot) cannot be
     # "Primary Three-Point Scorers" in-game even if their 3PT attempt rate is high.
-    # Distributors like Kidd or Stevenson have low Shot but high pct_3 → raw Shot Three = 60-75.
     # Cap = Freelance:Shot + 25, floored at 35. Role players (Shot=15) → cap 40 (Regular).
     # Primary scorers (Shot=50+) → cap 75 (no effective restriction).
     _shot_role = t["Freelance:Shot"]
