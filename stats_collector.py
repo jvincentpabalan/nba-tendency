@@ -3,11 +3,43 @@
 import dataclasses
 from dataclasses import dataclass, field
 from typing import Optional
+import json
+import os
 import nba_client as client
 
 # synergyplaytypes is defunct server-side (HTTP 500 for all seasons/play types).
 # Set to True only if the endpoint ever comes back.
 FETCH_SYNERGY = False
+
+# ── Stats cache ───────────────────────────────────────────────────────────────
+# Caches the fully-normalized PlayerStats (post-fallback) as JSON so repeated
+# runs for the same player/season skip all API calls. Keyed by
+# {player_id}_{season}_{season_type_slug}.json inside cache/.
+CACHE_DIR = os.path.join(os.path.dirname(__file__), "cache")
+
+
+def _cache_path(player_id: int, season: str, season_type: str) -> str:
+    slug = season_type.lower().replace(" ", "_")
+    return os.path.join(CACHE_DIR, f"{player_id}_{season}_{slug}.json")
+
+
+def _load_cache(player_id: int, season: str, season_type: str) -> Optional["PlayerStats"]:
+    path = _cache_path(player_id, season, season_type)
+    if not os.path.exists(path):
+        return None
+    try:
+        with open(path) as f:
+            data = json.load(f)
+        return PlayerStats(**data)
+    except Exception:
+        return None
+
+
+def _save_cache(stats: "PlayerStats", player_id: int, season: str, season_type: str) -> None:
+    os.makedirs(CACHE_DIR, exist_ok=True)
+    path = _cache_path(player_id, season, season_type)
+    with open(path, "w") as f:
+        json.dump(dataclasses.asdict(stats), f, indent=2)
 
 
 @dataclass
@@ -142,8 +174,20 @@ def _sum_field(rows: list, field: str) -> float:
     return sum(float(r.get(field, 0) or 0) for r in rows)
 
 
-def collect(player_id: int, season: str, season_type: str = "Regular Season") -> PlayerStats:
-    """Fetch all data and return a populated PlayerStats."""
+def collect(player_id: int, season: str, season_type: str = "Regular Season",
+            use_cache: bool = True) -> PlayerStats:
+    """Fetch all data and return a populated PlayerStats.
+
+    Results are cached to cache/{player_id}_{season}_{type}.json so repeated
+    runs skip all API calls. Pass use_cache=False (or --no-cache on the CLI)
+    to force a fresh fetch and overwrite the cached entry.
+    """
+    if use_cache:
+        cached = _load_cache(player_id, season, season_type)
+        if cached is not None:
+            print(f"  Loaded from cache (pass --no-cache to refresh)")
+            return cached
+
     stats = PlayerStats()
 
     # ── 1. General splits (box score) ─────────────────────────────────────
@@ -440,6 +484,9 @@ def collect(player_id: int, season: str, season_type: str = "Regular Season") ->
     # ── Synergy fallbacks (shot-type proxies) ─────────────────────────────
     if synergy_all_zero:
         _compute_synergy_fallbacks(stats)
+
+    if use_cache:
+        _save_cache(stats, player_id, season, season_type)
 
     return stats
 

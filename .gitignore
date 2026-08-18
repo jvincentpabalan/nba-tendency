@@ -10,6 +10,9 @@ dist/
 # Output files (generated)
 output/
 
+# Stats cache (NBA.com API responses — local only, not committed)
+cache/
+
 # Node / Vite
 ui/node_modules/
 ui/dist/

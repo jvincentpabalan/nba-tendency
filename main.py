@@ -32,6 +32,8 @@ def parse_args():
                    help="Output JSON file path (default: stdout)")
     p.add_argument("--mock", action="store_true",
                    help="Use mock data for testing without hitting the NBA API")
+    p.add_argument("--no-cache", action="store_true",
+                   help="Force a fresh API fetch and overwrite any cached stats")
     p.add_argument("--pretty", action="store_true", default=True,
                    help="Pretty-print JSON output (default: true)")
     p.add_argument("--debug", action="store_true",
@@ -176,11 +178,11 @@ def _copy_to_clipboard(text: str) -> None:
         print(f"\nError copying to clipboard: {e}", file=sys.stderr)
 
 
-def _collect_one(player_id, season, season_type, mock):
+def _collect_one(player_id, season, season_type, mock, use_cache=True):
     """Fetch a single season/type, with mock fallback."""
     if mock:
         return mock_stats(player_id, season)
-    return stats_collector.collect(player_id, season, season_type)
+    return stats_collector.collect(player_id, season, season_type, use_cache=use_cache)
 
 
 def _describe_blend(seasons: list, blend_pct, playoffs: bool) -> str:
@@ -226,19 +228,21 @@ def main():
     season_stats_list = []  # list of PlayerStats
     season_game_counts = []  # RS game counts for multi-season weighting
 
+    use_cache = not args.no_cache
+
     for season in seasons:
         if blend_pct is not None:
             # RS + PO blend
             print(f"\n[{season}] Fetching Regular Season...")
             try:
-                rs = _collect_one(args.player, season, "Regular Season", args.mock)
+                rs = _collect_one(args.player, season, "Regular Season", args.mock, use_cache)
             except Exception as e:
                 print(f"  Error: {e}", file=sys.stderr)
                 sys.exit(1)
 
             print(f"[{season}] Fetching Playoffs...")
             try:
-                po = _collect_one(args.player, season, "Playoffs", args.mock)
+                po = _collect_one(args.player, season, "Playoffs", args.mock, use_cache)
             except Exception as e:
                 print(f"  Error: {e}", file=sys.stderr)
                 sys.exit(1)
@@ -261,9 +265,11 @@ def main():
             if args.mock:
                 print(f"{prefix}Using mock data (--mock flag set)")
             else:
-                print(f"{prefix}Fetching stats from NBA.com (this may take ~30 seconds)...")
+                print(f"{prefix}Fetching stats from NBA.com (this may take ~30 seconds)..."
+                      if not use_cache else
+                      f"{prefix}Fetching stats from NBA.com (cached after first run)...")
             try:
-                s = _collect_one(args.player, season, season_type, args.mock)
+                s = _collect_one(args.player, season, season_type, args.mock, use_cache)
             except Exception as e:
                 print(f"\nError fetching stats: {e}", file=sys.stderr)
                 print("Tip: Try --mock to test with sample data.", file=sys.stderr)
