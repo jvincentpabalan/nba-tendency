@@ -42,6 +42,9 @@ def parse_args():
                    help="Copy JSON output to clipboard (macOS pbcopy)")
     p.add_argument("--review", action="store_true",
                    help="Print annotated tier-label review instead of raw JSON")
+    p.add_argument("--trace", type=str, default=None, metavar="TENDENCY",
+                   help="Print intermediate formula values for a tendency (e.g. 'Shot Three', "
+                        "'Post Hook Right'). Comma-separated for multiple.")
     p.add_argument("--playoffs", action="store_true",
                    help="Use Playoffs stats instead of Regular Season (single season only)")
     p.add_argument("--blend", nargs="?", const=70, type=int, metavar="RS_WEIGHT",
@@ -299,8 +302,9 @@ def main():
         print(f"  unassisted_fgm={stats.unassisted_fgm:.2f}  assisted_fgm={stats.assisted_fgm:.2f}")
         print("-" * 40)
 
+    trace_keys = [k.strip() for k in args.trace.split(",")] if args.trace else None
     print("\nComputing tendencies...")
-    tendencies = mapper.compute(stats)
+    tendencies = mapper.compute(stats, trace=trace_keys)
     output = mapper.to_2k26_json(tendencies)
 
     # Add metadata

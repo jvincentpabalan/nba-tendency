@@ -62,8 +62,24 @@ def _dir_split(left: float, lc: float, center: float, rc: float, right: float,
 # Main mapper
 # ──────────────────────────────────────────────────────────────────────────────
 
-def compute(stats: PlayerStats) -> dict:
-    """Return a flat dict of tendency_label → value."""
+def compute(stats: PlayerStats, trace: list[str] | None = None) -> dict:
+    """Return a flat dict of tendency_label → value.
+
+    trace: list of short tendency names (e.g. ["Shot Three", "Post Hook Right"]).
+           When provided, prints intermediate formula values for those tendencies.
+    """
+    _trace = {k.lower() for k in (trace or [])}
+
+    def _emit(label: str, **vals):
+        """Print intermediate formula values when tracing a tendency."""
+        if not _trace:
+            return
+        short = label.split(":", 1)[-1].lower() if ":" in label else label.lower()
+        if short in _trace:
+            print(f"\n  [trace] {label}")
+            for k, v in vals.items():
+                print(f"    {k} = {v}")
+
     t = {}
     # Use box-score FGA as primary denominator — zone-derived total_fga can be
     # undercounted for older seasons if some zones return 0 (inflates pct_3 to ~1.0).
@@ -111,7 +127,24 @@ def compute(stats: PlayerStats) -> dict:
     t["Jump Shooting:Shot Mid-Range"] = _scale(pct_mid, 0, 0.60, 5, 45)
 
     # Shot Three  — cap 75
-    t["Jump Shooting:Shot Three"] = _scale(pct_3, 0, 0.50, 5, 75)
+    # Two-factor intent discount — both reduce "would shoot a three" frequency:
+    # (1) Rim-attacker (rim_vol): drive-first players accumulate threes situationally
+    #     when the defense concedes them, not by actively seeking the arc.
+    #     Rose (rim_vol≈34%) → ~17% discount; Allen (rim_vol≈10%) → ~5% discount.
+    # (2) Distributor (_pass_discount): pass-first players scan for kickout reads
+    #     rather than pulling the trigger. Kidd (ast_ratio≈0.75) → ~18% discount;
+    #     scorers (Kobe, ast_ratio≈0.30) → no discount.
+    _rim_vol    = stats.fga_restricted / max(fga, 1.0)
+    _ast_ratio  = stats.ast / max(stats.ast + stats.fgm, 0.01)
+    _pass_discount = max(0.0, (_ast_ratio - 0.40) * 0.5)
+    _three_intent = pct_3 * (1.0 - _rim_vol * 0.5) * (1.0 - _pass_discount)
+    _emit("Jump Shooting:Shot Three",
+          pct_3=f"{pct_3:.3f}", fg3a=f"{stats.fg3a:.2f}", fga=f"{fga:.2f}",
+          rim_vol=f"{_rim_vol:.3f}", rim_discount=f"{_rim_vol*0.5:.3f}",
+          ast_ratio=f"{_ast_ratio:.3f}", pass_discount=f"{_pass_discount:.3f}",
+          three_intent=f"{_three_intent:.3f}",
+          result=_scale(_three_intent, 0, 0.50, 5, 75))
+    t["Jump Shooting:Shot Three"] = _scale(_three_intent, 0, 0.50, 5, 75)
 
     # ── Directional Mid (cap 45) ──────────────────────────────────────────
     mid_base = t["Jump Shooting:Shot Mid-Range"]
@@ -185,11 +218,16 @@ def compute(stats: PlayerStats) -> dict:
     _spot_3_vol = (stats.catch_shoot_fga * cs_3_frac
                    if stats.catch_shoot_fga > 0
                    else stats.synergy_spotup)
-    # Pre-2013 proxy (total_3pt_fga × 0.96) inflates because it can't separate
-    # pull-up 3s from catch-and-shoot. Raise high_raw to 4.5 so moderate-volume
-    # shooters (Carmelo ~3.1/game) land in 50–55; only dedicated C&S specialists
-    # (Ray Allen 5+/game) approach the cap.
-    _spot_3_hrw = 3.0 if stats.catch_shoot_fga > 0 else 4.5
+    # Pre-2013: synergy_spotup proxy uses pct_uast_3pm to filter pull-ups, but high-volume
+    # C&S shooters (Deng 2010-11: 4.04 3PA/game, 97% catch-and-shoot) were capping at 75
+    # despite not being true specialists. Raise high_raw to 8.0 so only Ray Allen / Korver
+    # level volume (7+ C&S 3PA/game equivalent) reaches the cap; Deng-type players land ~45.
+    _spot_3_hrw = 3.0 if stats.catch_shoot_fga > 0 else 8.0
+    _emit("Jump Shooting:Spot Up Shot Three",
+          catch_shoot_fga=f"{stats.catch_shoot_fga:.2f}",
+          synergy_spotup=f"{stats.synergy_spotup:.3f}", cs_3_frac=f"{cs_3_frac:.3f}",
+          spot_3_vol=f"{_spot_3_vol:.3f}", high_raw=_spot_3_hrw,
+          result=_scale(_spot_3_vol, 0, _spot_3_hrw, 5, 75))
     t["Jump Shooting:Spot Up Shot Three"]        = _scale(_spot_3_vol, 0, _spot_3_hrw, 5, 75)   # cap 75
     # high_raw raised to 2.5 (was 1.5): the pre-2013 synergy_offscreen proxy (assisted 3PT makes
     # × 0.30 / 0.55) inflates for high-volume 3PT shooters who catch and shoot but don't
@@ -664,8 +702,14 @@ def compute(stats: PlayerStats) -> dict:
     # Dominant side uses full hook volume; weak side is dominant minus 15 (floored at 5).
     # Convention: right = dominant (most players are right-handed). Flip manually for lefties.
     # No shot-chart directional data available for post moves — verify vs. film/handedness.
-    _hook_dom  = _scale(stats.fga_hook, 0, 3.0, 5, 50)
+    # high_raw = 1.5: a player taking 1.5 hook shots/game hits the cap — that's a dedicated
+    # hook specialist. The old high_raw of 3.0 was too generous (3/game is unrealistic for
+    # modern bigs), deflating moderate hook users like Boozer (0.76/game → was 16, now 28).
+    _hook_dom  = _scale(stats.fga_hook, 0, 1.5, 5, 50)
     _hook_weak = max(5, _hook_dom - 15)
+    _emit("Post Game:Post Hook Right",
+          fga_hook=f"{stats.fga_hook:.3f}", high_raw=1.5,
+          hook_dom=_hook_dom, hook_weak=_hook_weak)
     t["Post Game:Post Hook Right"] = _hook_dom
     t["Post Game:Post Hook Left"]  = _hook_weak
 
@@ -750,10 +794,16 @@ def compute(stats: PlayerStats) -> dict:
     # ── CROSS-GROUP CAPS ──────────────────────────────────────────────────────
     # Shot Three cap: players with a low overall shot role (Freelance:Shot) cannot be
     # "Primary Three-Point Scorers" in-game even if their 3PT attempt rate is high.
-    # Cap = Freelance:Shot + 25, floored at 35. Role players (Shot=15) → cap 40 (Regular).
-    # Primary scorers (Shot=50+) → cap 75 (no effective restriction).
-    _shot_role = t["Freelance:Shot"]
-    _shot_three_cap = max(35, min(75, _shot_role + 25))
+    # Base: Freelance:Shot + 25, floored at 35. Role players (Shot=15) → cap 40; scorers → 75.
+    # Distributor adjustment (_ast_ratio reused from Shot Three section above):
+    #   pure distributors (Kidd, ast_ratio≈0.75) get a lower floor AND smaller addend,
+    #   because their shot-seeking role is genuinely lower than their shot-selection implies.
+    #   Kidd: floor→30, addend→16 → cap = max(30, 19+16) = 35.
+    _shot_role  = t["Freelance:Shot"]
+    _pass_adj   = max(0.0, (_ast_ratio - 0.40) * 1.0)   # _ast_ratio computed in Shot Three section
+    _three_floor = int(35 * (1.0 - _pass_adj * 0.4))     # 35 → ~30 for Kidd-level distributor
+    _three_add   = int(25 * (1.0 - _pass_adj))           # 25 → ~16 for Kidd-level distributor
+    _shot_three_cap = max(_three_floor, min(75, _shot_role + _three_add))
     t["Jump Shooting:Shot Three"] = min(t["Jump Shooting:Shot Three"], _shot_three_cap)
     for _dir in ["Shot Three Left", "Shot Three Left-Center", "Shot Three Center",
                  "Shot Three Right-Center", "Shot Three Right"]:

@@ -31,6 +31,12 @@ python3 api.py                                              # start FastAPI serv
 
 python3 scripts/parse_atd_csv.py ~/Downloads/atd.csv \
     -o ui/src/data/tendency_guide.json                     # regenerate tendency guide JSON
+
+# Mapper iteration workflow (use these instead of running full --review to save time)
+python3 scripts/regression.py                              # 17-check pass/fail table, all from cache (~3s)
+python3 scripts/regression.py rose kidd                    # filter by label keyword
+python3 main.py --player 201565 --season 2010-11 --trace "Shot Three"          # show formula internals
+python3 main.py --player 467 --season 2010-11 --trace "Shot Three,Post Hook Right"  # multiple traces
 ```
 
 Player IDs are from NBA.com (e.g. `1717` = Dirk Nowitzki, `2544` = LeBron James).
@@ -47,8 +53,29 @@ Season format: `YYYY-YY` (e.g. `2010-11`).
 | `reviewer.py` | Maps computed tendency values → guide tier labels; library + CLI |
 | `api.py` | FastAPI backend: `/api/teams`, `/api/roster`, `/api/generate`; serves built React SPA |
 | `scripts/parse_atd_csv.py` | Parses ATD Committee CSV → `ui/src/data/tendency_guide.json` |
+| `scripts/regression.py` | 17-check pass/fail regression table for canonical players (Rose, Kidd, Boozer, Deng, Dirk); run after any mapper change |
 | `ui/` | React + Vite frontend (components: `TendencyResults`, `TendencyTooltip`) |
 | `output/` | Generated tendency JSON files, named `{player_slug}_{season}_{season_type_slug}.json` |
+
+## Mapper Iteration Workflow
+
+### When to use which tool
+
+| Situation | Tool |
+|-----------|------|
+| "Is this tendency value correct for player X?" (one specific value) | `--trace` + regression |
+| "Why does player X get value Y for tendency Z?" (formula debug) | `--trace` + regression |
+| "Show me the full output for player X and flag anything suspicious" | `/review-tendencies` skill |
+| "Do a complete analysis of player X's tendencies" | `/review-tendencies` skill |
+
+**Do not invoke `/review-tendencies` (the skill) for formula iteration.** The skill runs `--review` which prints all 83 tendencies and generates a full analysis — useful for holistic player evaluation but wasteful when you only need to debug one formula.
+
+### Formula iteration steps
+
+1. **Check the formula trace first** — run `--trace "Tendency Name"` to see every intermediate value (raw stat, discount factors, scale inputs) without reading the code. Comma-separate for multiple.
+2. **Adjust `mapper.py`** — formulas are in `compute()`. Each tendency has a comment explaining the design intent and the cap source (ATD CSV row 20).
+3. **Run regression** — `python3 scripts/regression.py` checks 17 validated values across 5 canonical players in ~3 seconds (pure cache, no API). All must stay green.
+4. **Add a regression case** when you've validated a new player — add a row to `CASES` in `scripts/regression.py` with the tendency keys and expected ranges that represent correct behavior.
 
 ## Architecture
 
