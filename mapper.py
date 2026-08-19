@@ -130,10 +130,17 @@ def compute(stats: PlayerStats, trace: list[str] | None = None) -> dict:
     t["Jump Shooting:Shot Close"] = _scale(pct_close, 0, 0.35, 5, 60)
 
     # Shot Mid-Range  — cap 45
+    # Volume supplement: players who take 4+ mid-range attempts/game seek mid-range
+    # deliberately; players whose pct_mid is high only because they avoid 3s should not
+    # score the same as genuine mid-range hunters. Bounded at +0.06 to preserve the
+    # primacy of shot selection rate (pct_mid). Threshold 3/game = typical floor.
+    _mid_vol_supplement = min(0.06, max(0.0, (stats.fga_mid - 3.0) * 0.020))
+    _mid_intent = pct_mid + _mid_vol_supplement
     _emit("Jump Shooting:Shot Mid-Range",
           fga_mid=f"{stats.fga_mid:.2f}", fga=f"{fga:.2f}",
-          pct_mid=f"{pct_mid:.3f}", result=_scale(pct_mid, 0, 0.60, 5, 45))
-    t["Jump Shooting:Shot Mid-Range"] = _scale(pct_mid, 0, 0.60, 5, 45)
+          pct_mid=f"{pct_mid:.3f}", mid_vol_supplement=f"{_mid_vol_supplement:.3f}",
+          mid_intent=f"{_mid_intent:.3f}", result=_scale(_mid_intent, 0, 0.60, 5, 45))
+    t["Jump Shooting:Shot Mid-Range"] = _scale(_mid_intent, 0, 0.60, 5, 45)
 
     # Shot Three  — cap 75
     # Two-factor intent discount — both reduce "would shoot a three" frequency:
@@ -859,7 +866,12 @@ def compute(stats: PlayerStats, trace: list[str] | None = None) -> dict:
     # face_up_pct is a CONDITIONAL PREFERENCE: given a post catch, how often does the player face up?
     # Neutral (0.5) when no post shot data exists.
     _btb_vol = stats.fga_hook + stats.fga_turnaround
-    _pullup_vol = max(stats.pullup_2pt_fga, stats.fga_pullup, 0.01)
+    # fga_uast_2pt_jump * 0.4 floors the pullup proxy: pre-2013 shot-type classification
+    # labels many driving mid-range pull-ups as generic "Jump Shot" rather than "Pullup Jump",
+    # so fga_pullup alone severely undercounts perimeter self-creation for drive-first players
+    # (e.g. LeBron fga_pullup=0.70 vs fga_uast_2pt_jump=5.25 → post_affinity nearly 1.0
+    # without this floor, misclassifying all his perimeter pull-ups as post face-up shots).
+    _pullup_vol = max(stats.pullup_2pt_fga, stats.fga_pullup, stats.fga_uast_2pt_jump * 0.4, 0.01)
     _post_affinity = min(1.0, _btb_vol / max(0.5, _pullup_vol))
     # Exclude turnaround fadeaways from the face-up pool: a turnaround fadeaway starts
     # back-to-basket (the player pivots, puts the defender behind them, then fades).
@@ -897,7 +909,8 @@ def compute(stats: PlayerStats, trace: list[str] | None = None) -> dict:
     # Scaled from face_up_pct directly (not × post_freq) — it's orientation, not volume.
     # 0.85 ceiling: a player with ~85%+ face-up orientation hits cap (60).
     _emit("Post Game:Post Face Up",
-          btb_vol=f"{_btb_vol:.3f}", faceup_vol=f"{_faceup_vol:.3f}",
+          btb_vol=f"{_btb_vol:.3f}", pullup_vol=f"{_pullup_vol:.3f}",
+          post_affinity=f"{_post_affinity:.3f}", faceup_vol=f"{_faceup_vol:.3f}",
           face_up_pct=f"{face_up_pct:.3f}", result=_scale(face_up_pct, 0, 0.85, 5, 60))
     t["Post Game:Post Face Up"]             = _scale(face_up_pct, 0, 0.85, 5, 60)
     # Post Spin  — cap 55
