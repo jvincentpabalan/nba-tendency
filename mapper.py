@@ -707,11 +707,18 @@ def compute(stats: PlayerStats, trace: list[str] | None = None) -> dict:
 
     # Dish To Open Man  — cap 65
     # AST_PCT is pace/usage-adjusted (better than raw AST for multi-era players).
-    # Retain a reduced post_freq bonus: draw-and-kick passes often don't register as assists.
-    dish_raw = stats.ast_pct * 15 + post_freq * 0.2
+    # Small post_freq bonus: draw-and-kick passes from the post often don't register as assists.
+    # Capped at 0.10/poss (was 0.20) so high-volume post scorers (Kobe 7.5 poss) don't inflate.
+    # Scoring-volume discount: high-FGA players are finish-first when driving; they don't
+    # kick out as readily as lower-volume distributors. Mirrors the ast_ratio discount in
+    # Freelance:Shot but inverted — 0 discount at 12 FGA, 30% discount at 24+ FGA.
+    dish_raw = stats.ast_pct * 15 + post_freq * 0.10
+    _fga_vol = max(0.0, min(1.0, (stats.fga - 12.0) / 12.0))
+    dish_raw *= (1.0 - _fga_vol * 0.55)
     _emit("Passing:Dish To Open Man",
           ast_pct=f"{stats.ast_pct:.3f}", post_freq=f"{post_freq:.3f}",
-          dish_raw=f"{dish_raw:.3f}", result=_scale(dish_raw, 0.3, 8.0, 10, 65))
+          fga_vol=f"{_fga_vol:.3f}", dish_raw=f"{dish_raw:.3f}",
+          result=_scale(dish_raw, 0.3, 8.0, 10, 65))
     t["Passing:Dish To Open Man"] = _scale(dish_raw, 0.3, 8.0, 10, 65)
 
     # Flashy Pass  — cap 60
