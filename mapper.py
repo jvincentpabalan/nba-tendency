@@ -185,13 +185,6 @@ def compute(stats: PlayerStats, trace: list[str] | None = None) -> dict:
     cs_mid_frac = pct_mid / max(pct_mid + pct_3, 0.01)
     cs_3_frac   = 1.0 - cs_mid_frac
 
-    # Assisted rate — used by Spot Up Drive (pre-2013 only)
-    _fgm_tracked = stats.assisted_fgm + stats.unassisted_fgm
-    _spot_up_mid_scale = (
-        stats.assisted_fgm / _fgm_tracked
-        if stats.catch_shoot_fga == 0 and _fgm_tracked > 0
-        else 1.0
-    )
 
     # Spot Up Mid-Range — cap 55
     # 2013-14+: catch_shoot_fga is directly measured; split by cs_mid_frac.
@@ -384,8 +377,11 @@ def compute(stats: PlayerStats, trace: list[str] | None = None) -> dict:
     t["Driving:Drive"] = _scale(drive_pct, 0, 0.35, 5, 75)
 
     # Spot-Up Drive  — cap 70
-    t["Driving:Spot Up Drive"] = _scale(
-        stats.synergy_spotup * cs_mid_frac * _spot_up_mid_scale * 0.4, 0, 1.5, 5, 70)
+    # Proxy: faceup_iso (drive-first identity). Drive-first players attack from any catch
+    # position including spot-up; C&S specialists rarely convert a spot-up to a drive.
+    # The old formula used cs_mid_frac × assisted_rate, which penalised unassisted
+    # creators (exactly who drives out of spot-ups) and was wrong for guards like Rose.
+    t["Driving:Spot Up Drive"] = _scale(faceup_iso, 0, 11, 5, 70)
 
     # Off-Screen Drive  — cap 60
     # Most off-screen reads are shot-first; 0.25 replaces 0.4 (was over-counting drive converts)
@@ -399,21 +395,24 @@ def compute(stats: PlayerStats, trace: list[str] | None = None) -> dict:
     t["Driving:Drive Right"] = 50
 
     # Driving dribble moves — caps per CSV.
-    # high_raws calibrated so a realistic elite ISO ceiling (faceup_iso ≈ 10–11)
-    # approaches cap. The unassisted_fgm fallback produces faceup_iso ≈ 8–10 for
-    # heavy scorers (inflated vs. true Synergy ISO); raising high_raws absorbs
-    # that inflation without flattening the relative ordering across players.
-    # Crossover is the primary ISO move → lowest multiplier discount; secondary
-    # moves (Half Spin, Double Crossover, BtB) get wider ranges → they only cap
-    # for genuine signature-move users.
-    t["Driving:Driving Crossover"]          = _scale(faceup_iso,        0, 12,  5, 60)  # cap 60; cap at faceup_iso≈12
-    t["Driving:Driving Spin"]               = _scale(faceup_iso * 0.3,  0, 3.5, 5, 50)  # cap 50
+    # Design constraint: for an elite attacker (Rose-level, faceup_iso ≈ 14), at most
+    # 2-3 moves should reach 40+; the rest should land around 15-20. The old high_raws
+    # were too tight — every move capped for any high-ISO player, making all attackers
+    # look like they use every move equally.
+    #
+    # Primary moves (Crossover, Hesitation): calibrated so elite ISO (≈14) caps,
+    #   moderate ISO (≈7, LeBron-level) lands 40-50.
+    # Secondary move (Spin): elite ISO ≈42 (3rd move for best handles), moderate ≈27.
+    # Tertiary moves (Half Spin, Double Crossover, BtB, In And Out): wide high_raws
+    #   so even Rose lands ≈15-20 — not signature moves for most players.
+    t["Driving:Driving Crossover"]          = _scale(faceup_iso,        0, 10,  5, 60)  # cap 60; primary
+    t["Driving:Driving Spin"]               = _scale(faceup_iso * 0.3,  0, 5.0, 5, 50)  # cap 50; secondary — Rose≈42
     t["Driving:Driving Step Back"]          = _scale(pct_stepback, 0, 0.06, 5, 55)      # cap 55 (unchanged)
-    t["Driving:Driving Half Spin"]          = _scale(faceup_iso * 0.2,  0, 2.5, 5, 45)  # cap 45
-    t["Driving:Driving Double Crossover"]   = _scale(faceup_iso * 0.15, 0, 2.0, 5, 40)  # cap 40
-    t["Driving:Driving Behind The Back"]    = _scale(faceup_iso * 0.15, 0, 2.0, 5, 50)  # cap 50
-    t["Driving:Driving Dribble Hesitation"] = _scale(faceup_iso * 0.25, 0, 2.8, 5, 65)  # cap 65
-    t["Driving:Driving In And Out"]         = _scale(faceup_iso * 0.15, 0, 2.0, 5, 65)  # cap 65
+    t["Driving:Driving Half Spin"]          = _scale(faceup_iso * 0.2,  0, 7.5, 5, 45)  # cap 45; tertiary — Rose≈20
+    t["Driving:Driving Double Crossover"]   = _scale(faceup_iso * 0.15, 0, 6.0, 5, 40)  # cap 40; tertiary — Rose≈17
+    t["Driving:Driving Behind The Back"]    = _scale(faceup_iso * 0.15, 0, 8.0, 5, 50)  # cap 50; tertiary — Rose≈17
+    t["Driving:Driving Dribble Hesitation"] = _scale(faceup_iso * 0.25, 0, 2.8, 5, 65)  # cap 65; primary — sits alongside crossover
+    t["Driving:Driving In And Out"]         = _scale(faceup_iso * 0.15, 0, 10.0, 5, 65)  # cap 65; tertiary — Rose≈18
 
     # No Driving Dribble Move  — cap 90
     # Definition: frequency that player attacks straight-line without adding a mid-drive
