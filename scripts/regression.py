@@ -58,9 +58,10 @@ CASES = [
         "Deng 2010-11",
         2736, "2010-11", "Regular Season",
         {
-            "Shot Three":         (35, 44),   # above-avg but not specialist; rim_vol discount
-            "Spot Up Shot Three": (40, 52),   # high C&S rate but not at cap (high_raw=8.0)
-            "Drive":              (35, 48),   # versatile wing
+            "Shot Three":           (35, 44),   # above-avg but not specialist; rim_vol discount
+            "Spot Up Shot Three":   (40, 52),   # high C&S rate but not at cap (high_raw=8.0)
+            "Drive":                (35, 48),   # versatile wing
+            "Spot Up Shot Mid-Range": (28, 42), # receives mid-range passes; 76% of mid makes assisted
         },
     ),
     (

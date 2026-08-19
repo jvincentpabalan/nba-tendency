@@ -12,9 +12,11 @@ import nba_client as client
 FETCH_SYNERGY = False
 
 # ── Stats cache ───────────────────────────────────────────────────────────────
-# Caches the fully-normalized PlayerStats (post-fallback) as JSON so repeated
-# runs for the same player/season skip all API calls. Keyed by
-# {player_id}_{season}_{season_type_slug}.json inside cache/.
+# Caches raw API responses as JSON so repeated runs skip all network calls.
+# Processing (normalization + synergy fallbacks) always runs fresh from the raw
+# data — formula/fallback changes take effect without clearing the cache.
+# Keyed by {player_id}_{season}_{season_type_slug}.json inside cache/.
+CACHE_VERSION = 2
 CACHE_DIR = os.path.join(os.path.dirname(__file__), "cache")
 
 
@@ -23,23 +25,25 @@ def _cache_path(player_id: int, season: str, season_type: str) -> str:
     return os.path.join(CACHE_DIR, f"{player_id}_{season}_{slug}.json")
 
 
-def _load_cache(player_id: int, season: str, season_type: str) -> Optional["PlayerStats"]:
+def _load_cache(player_id: int, season: str, season_type: str) -> Optional[dict]:
     path = _cache_path(player_id, season, season_type)
     if not os.path.exists(path):
         return None
     try:
         with open(path) as f:
             data = json.load(f)
-        return PlayerStats(**data)
+        if data.get("_cache_version") != CACHE_VERSION:
+            return None  # stale format — will be overwritten on next fetch
+        return data
     except Exception:
         return None
 
 
-def _save_cache(stats: "PlayerStats", player_id: int, season: str, season_type: str) -> None:
+def _save_cache(raw: dict, player_id: int, season: str, season_type: str) -> None:
     os.makedirs(CACHE_DIR, exist_ok=True)
     path = _cache_path(player_id, season, season_type)
     with open(path, "w") as f:
-        json.dump(dataclasses.asdict(stats), f, indent=2)
+        json.dump({**raw, "_cache_version": CACHE_VERSION}, f, indent=2)
 
 
 @dataclass
@@ -82,6 +86,7 @@ class PlayerStats:
     fgm_restricted: float = 0.0
     fgm_paint_nonra: float = 0.0
     fgm_mid: float = 0.0
+    pct_uast_mid: float = 0.0   # mid-range specific unassisted rate (from ShotAreaPlayerDashboard)
     fgm_lc3: float = 0.0
     fgm_rc3: float = 0.0
     fgm_atb3: float = 0.0
@@ -174,241 +179,249 @@ def _sum_field(rows: list, field: str) -> float:
     return sum(float(r.get(field, 0) or 0) for r in rows)
 
 
-def collect(player_id: int, season: str, season_type: str = "Regular Season",
-            use_cache: bool = True) -> PlayerStats:
-    """Fetch all data and return a populated PlayerStats.
+def _fetch_raw(player_id: int, season: str, season_type: str) -> dict:
+    """Call all NBA.com API endpoints and return raw responses keyed by endpoint name."""
+    raw: dict = {}
 
-    Results are cached to cache/{player_id}_{season}_{type}.json so repeated
-    runs skip all API calls. Pass use_cache=False (or --no-cache on the CLI)
-    to force a fresh fetch and overwrite the cached entry.
-    """
-    if use_cache:
-        cached = _load_cache(player_id, season, season_type)
-        if cached is not None:
-            print(f"  Loaded from cache (pass --no-cache to refresh)")
-            return cached
-
-    stats = PlayerStats()
-
-    # ── 1. General splits (box score) ─────────────────────────────────────
     try:
-        gen = client.fetch_general_splits(player_id, season, season_type)
-        overall = client.parse_result_set(gen, "OverallPlayerDashboard")
-        if overall:
-            row = overall[0]
-            stats.games   = int(row.get("GP", 0) or 0)
-            stats.minutes = float(row.get("MIN", 0) or 0)
-            stats.pts     = float(row.get("PTS", 0) or 0)
-            stats.fgm     = float(row.get("FGM", 0) or 0)
-            stats.fga     = float(row.get("FGA", 0) or 0)
-            stats.fg3m    = float(row.get("FG3M", 0) or 0)
-            stats.fg3a    = float(row.get("FG3A", 0) or 0)
-            stats.ftm     = float(row.get("FTM", 0) or 0)
-            stats.fta     = float(row.get("FTA", 0) or 0)
-            stats.oreb    = float(row.get("OREB", 0) or 0)
-            stats.dreb    = float(row.get("DREB", 0) or 0)
-            stats.reb     = float(row.get("REB", 0) or 0)
-            stats.ast     = float(row.get("AST", 0) or 0)
-            stats.stl     = float(row.get("STL", 0) or 0)
-            stats.blk     = float(row.get("BLK", 0) or 0)
-            stats.tov     = float(row.get("TOV", 0) or 0)
-            stats.pf      = float(row.get("PF", 0) or 0)
-            stats.pfd     = float(row.get("PFD", 0) or 0)
+        raw["general_splits"] = client.fetch_general_splits(player_id, season, season_type)
     except Exception as e:
         print(f"  Warning: could not fetch general splits ({e})")
 
-    # ── 1b. Advanced splits (USG_PCT, AST_PCT) ───────────────────────────
     try:
-        adv = client.fetch_advanced_splits(player_id, season, season_type)
-        overall_adv = client.parse_result_set(adv, "OverallPlayerDashboard")
-        if overall_adv:
-            stats.usg_pct = float(overall_adv[0].get("USG_PCT", 0) or 0)
-            stats.ast_pct = float(overall_adv[0].get("AST_PCT", 0) or 0)
+        raw["advanced_splits"] = client.fetch_advanced_splits(player_id, season, season_type)
     except Exception as e:
         print(f"  Warning: could not fetch advanced splits ({e})")
 
-    # ── 1c. Scoring splits (PCT_UAST_3PM, PCT_PTS_FB) ────────────────────
     try:
-        sc = client.fetch_scoring_splits(player_id, season, season_type)
-        overall_sc = client.parse_result_set(sc, "OverallPlayerDashboard")
-        if overall_sc:
-            stats.pct_uast_3pm = float(overall_sc[0].get("PCT_UAST_3PM", 0) or 0)
-            stats.pct_uast_2pm = float(overall_sc[0].get("PCT_UAST_2PM", 0) or 0)
-            stats.pct_pts_fb   = float(overall_sc[0].get("PCT_PTS_FB",   0) or 0)
+        raw["scoring_splits"] = client.fetch_scoring_splits(player_id, season, season_type)
     except Exception as e:
         print(f"  Warning: could not fetch scoring splits ({e})")
 
-    # ── 2. Shooting splits ────────────────────────────────────────────────
     try:
-        sh = client.fetch_shooting_splits(player_id, season, season_type)
-
-        # Shot zones
-        areas = client.parse_result_set(sh, "ShotAreaPlayerDashboard")
-        zone_map = {r["GROUP_VALUE"]: r for r in areas}
-
-        def zone(name, field):
-            return float((zone_map.get(name) or {}).get(field, 0) or 0)
-
-        stats.fga_restricted  = zone("Restricted Area", "FGA")
-        stats.fgm_restricted  = zone("Restricted Area", "FGM")
-        stats.fga_paint_nonra = zone("In The Paint (Non-RA)", "FGA")
-        stats.fgm_paint_nonra = zone("In The Paint (Non-RA)", "FGM")
-        stats.fga_mid         = zone("Mid-Range", "FGA")
-        stats.fgm_mid         = zone("Mid-Range", "FGM")
-        stats.fga_lc3         = zone("Left Corner 3", "FGA")
-        stats.fgm_lc3         = zone("Left Corner 3", "FGM")
-        stats.fga_rc3         = zone("Right Corner 3", "FGA")
-        stats.fgm_rc3         = zone("Right Corner 3", "FGM")
-        stats.fga_atb3        = zone("Above the Break 3", "FGA")
-        stats.fgm_atb3        = zone("Above the Break 3", "FGM")
-
-        # Shot types summary
-        shot_types = client.parse_result_set(sh, "ShotTypeSummaryPlayerDashboard")
-        type_map = {r["GROUP_VALUE"]: r for r in shot_types}
-
-        def stype(name, field):
-            return float((type_map.get(name) or {}).get(field, 0) or 0)
-
-        stats.fga_alley_oop  = stype("Alley Oop", "FGA")
-        stats.fga_bank_shot  = stype("Bank Shot", "FGA")
-        stats.fga_dunk       = stype("Dunk", "FGA")
-        stats.fga_fadeaway   = stype("Fadeaway", "FGA")
-        stats.fga_finger_roll= stype("Finger Roll", "FGA")
-        stats.fga_hook       = stype("Hook Shot", "FGA")
-        stats.fga_jump_shot  = stype("Jump Shot", "FGA")
-        stats.fga_layup      = stype("Layup", "FGA")
-        stats.fga_tip        = stype("Tip Shot", "FGA")
-
-        # Shot type detail
-        detail = client.parse_result_set(sh, "ShotTypePlayerDashboard")
-        def detail_sum(*names):
-            total = 0.0
-            for r in detail:
-                if any(n.lower() in r.get("GROUP_VALUE", "").lower() for n in names):
-                    total += float(r.get("FGA", 0) or 0)
-            return total
-
-        stats.fga_step_back    = detail_sum("Step Back")
-        stats.fga_driving_layup= detail_sum("Driving Layup", "Driving Finger Roll", "Driving Reverse Layup", "Running Layup", "Running Reverse Layup")
-        stats.fga_driving_dunk = detail_sum("Driving Dunk", "Driving Slam Dunk")
-        stats.fga_euro_step    = detail_sum("Euro Step")  # rare in older data
-        stats.fga_putback      = detail_sum("Putback", "Tip Shot")
-        # "Driving Jump shot" = mid-range pull-up off a drive (stops short of rim).
-        # Include alongside traditional pull-ups for Attack Strong denominator.
-        stats.fga_pullup       = detail_sum("Pullup Jump", "Pullup Bank", "Driving Jump", "Running Jump")
-        stats.fga_floater      = detail_sum("Floating Jump", "Running Hook")
-        stats.fga_turnaround          = detail_sum("Turnaround")
-        stats.fga_turnaround_fadeaway = detail_sum("Turnaround Fadeaway")
-
-        # Unassisted 2PT generic "Jump Shot" — pull-ups not caught by the labeled subtypes.
-        # For pre-2013, the NBA labels many pull-up mid-range shots as plain "Jump Shot"
-        # rather than "Pullup Jump Shot". FG2A × PCT_UAST_2PM extracts the self-created portion.
-        # Use exact GROUP_VALUE match to avoid capturing labeled subtypes (Pullup, Driving, etc.).
-        jump_row = next((r for r in detail if r.get("GROUP_VALUE") == "Jump Shot"), None)
-        if jump_row:
-            js_fga  = float(jump_row.get("FGA", 0) or 0)
-            js_fg3a = float(jump_row.get("FG3A", 0) or 0)
-            js_fg2a = max(0.0, js_fga - js_fg3a)
-            js_pct_uast = float(jump_row.get("PCT_UAST_2PM", 0) or 0)
-            stats.fga_uast_2pt_jump = js_fg2a * js_pct_uast  # season total; normalized below
-
-        # Assisted / Unassisted split — available for all seasons.
-        # Note: NBA API has a typo in the result set name ("Assited").
-        # FGA column = FGM (only makes are tracked here, not attempts).
-        assisted_rows = client.parse_result_set(sh, "AssitedShotPlayerDashboard")
-        for row in assisted_rows:
-            gv = row.get("GROUP_VALUE", "")
-            if gv == "Assisted":
-                stats.assisted_fgm = float(row.get("FGM", 0) or 0)
-            elif gv == "Unassisted":
-                stats.unassisted_fgm = float(row.get("FGM", 0) or 0)
-
+        raw["shooting_splits"] = client.fetch_shooting_splits(player_id, season, season_type)
     except Exception as e:
         print(f"  Warning: could not fetch shooting splits ({e})")
 
-    # ── 3. Shot chart (directional breakdowns) ────────────────────────────
     try:
-        chart = client.fetch_shot_chart(player_id, season, season_type)
-        shots = client.parse_result_set(chart, "Shot_Chart_Detail")
-
-        # Aggregate shot attempts by (zone_basic, zone_area).
-        # API returns area with abbreviation suffix e.g. "Left Side(L)" — strip it.
-        from collections import defaultdict
-        zone_counts = defaultdict(int)
-        for s in shots:
-            basic = s.get("SHOT_ZONE_BASIC", "")
-            area = s.get("SHOT_ZONE_AREA", "")
-            area = area.split("(")[0].strip() if "(" in area else area
-            zone_counts[(basic, area)] += 1
-
-        def zc(basic, area):
-            return float(zone_counts.get((basic, area), 0))
-
-        # Mid-range directional
-        stats.mid_left        = zc("Mid-Range", "Left Side")
-        stats.mid_left_center = zc("Mid-Range", "Left Side Center")
-        stats.mid_center      = zc("Mid-Range", "Center")
-        stats.mid_right_center= zc("Mid-Range", "Right Side Center")
-        stats.mid_right       = zc("Mid-Range", "Right Side")
-
-        # Close shots (Restricted Area + Paint Non-RA) directional
-        stats.close_left   = (zc("Restricted Area", "Left Side")
-                              + zc("In The Paint (Non-RA)", "Left Side"))
-        stats.close_center = (zc("Restricted Area", "Center")
-                              + zc("In The Paint (Non-RA)", "Center"))
-        stats.close_right  = (zc("Restricted Area", "Right Side")
-                              + zc("In The Paint (Non-RA)", "Right Side"))
-
-        # 3PT directional (corners go to Left/Right, above-break zones to LCenter/Center/RCenter)
-        stats.three_left        = (zc("Left Corner 3", "Left Side")
-                                   + zc("Above the Break 3", "Left Side"))
-        stats.three_left_center = zc("Above the Break 3", "Left Side Center")
-        stats.three_center      = zc("Above the Break 3", "Center")
-        stats.three_right_center= zc("Above the Break 3", "Right Side Center")
-        stats.three_right       = (zc("Right Corner 3", "Right Side")
-                                   + zc("Above the Break 3", "Right Side"))
-
-        print(f"  Shot chart: {len(shots)} shots, {len(zone_counts)} zones")
-        print(f"  3PT zones: L={stats.three_left:.0f} LC={stats.three_left_center:.0f} "
-              f"C={stats.three_center:.0f} RC={stats.three_right_center:.0f} R={stats.three_right:.0f}")
-        print(f"  Mid zones: L={stats.mid_left:.0f} LC={stats.mid_left_center:.0f} "
-              f"C={stats.mid_center:.0f} RC={stats.mid_right_center:.0f} R={stats.mid_right:.0f}")
-
+        raw["shot_chart"] = client.fetch_shot_chart(player_id, season, season_type)
     except Exception as e:
         print(f"  Warning: could not fetch shot chart ({e})")
+
+    try:
+        raw["pullup_shooting"] = client.fetch_pullup_shooting(player_id, season, season_type)
+    except Exception as e:
+        print(f"  Warning: could not fetch pull-up shooting ({e})")
+
+    return raw
+
+
+def _process_raw(raw: dict) -> PlayerStats:
+    """Parse raw API responses into a normalized PlayerStats object.
+
+    Runs fresh every time (even on cache hit) so that formula/fallback changes
+    in stats_collector.py take effect without clearing the cache.
+    """
+    stats = PlayerStats()
+
+    # ── 1. General splits (box score) ─────────────────────────────────────
+    gen = raw.get("general_splits")
+    if gen:
+        try:
+            overall = client.parse_result_set(gen, "OverallPlayerDashboard")
+            if overall:
+                row = overall[0]
+                stats.games   = int(row.get("GP", 0) or 0)
+                stats.minutes = float(row.get("MIN", 0) or 0)
+                stats.pts     = float(row.get("PTS", 0) or 0)
+                stats.fgm     = float(row.get("FGM", 0) or 0)
+                stats.fga     = float(row.get("FGA", 0) or 0)
+                stats.fg3m    = float(row.get("FG3M", 0) or 0)
+                stats.fg3a    = float(row.get("FG3A", 0) or 0)
+                stats.ftm     = float(row.get("FTM", 0) or 0)
+                stats.fta     = float(row.get("FTA", 0) or 0)
+                stats.oreb    = float(row.get("OREB", 0) or 0)
+                stats.dreb    = float(row.get("DREB", 0) or 0)
+                stats.reb     = float(row.get("REB", 0) or 0)
+                stats.ast     = float(row.get("AST", 0) or 0)
+                stats.stl     = float(row.get("STL", 0) or 0)
+                stats.blk     = float(row.get("BLK", 0) or 0)
+                stats.tov     = float(row.get("TOV", 0) or 0)
+                stats.pf      = float(row.get("PF", 0) or 0)
+                stats.pfd     = float(row.get("PFD", 0) or 0)
+        except Exception as e:
+            print(f"  Warning: could not parse general splits ({e})")
+
+    # ── 1b. Advanced splits (USG_PCT, AST_PCT) ───────────────────────────
+    adv = raw.get("advanced_splits")
+    if adv:
+        try:
+            overall_adv = client.parse_result_set(adv, "OverallPlayerDashboard")
+            if overall_adv:
+                stats.usg_pct = float(overall_adv[0].get("USG_PCT", 0) or 0)
+                stats.ast_pct = float(overall_adv[0].get("AST_PCT", 0) or 0)
+        except Exception as e:
+            print(f"  Warning: could not parse advanced splits ({e})")
+
+    # ── 1c. Scoring splits (PCT_UAST_3PM, PCT_PTS_FB) ────────────────────
+    sc = raw.get("scoring_splits")
+    if sc:
+        try:
+            overall_sc = client.parse_result_set(sc, "OverallPlayerDashboard")
+            if overall_sc:
+                stats.pct_uast_3pm = float(overall_sc[0].get("PCT_UAST_3PM", 0) or 0)
+                stats.pct_uast_2pm = float(overall_sc[0].get("PCT_UAST_2PM", 0) or 0)
+                stats.pct_pts_fb   = float(overall_sc[0].get("PCT_PTS_FB",   0) or 0)
+        except Exception as e:
+            print(f"  Warning: could not parse scoring splits ({e})")
+
+    # ── 2. Shooting splits ────────────────────────────────────────────────
+    sh = raw.get("shooting_splits")
+    if sh:
+        try:
+            # Shot zones
+            areas = client.parse_result_set(sh, "ShotAreaPlayerDashboard")
+            zone_map = {r["GROUP_VALUE"]: r for r in areas}
+
+            def zone(name, field):
+                return float((zone_map.get(name) or {}).get(field, 0) or 0)
+
+            stats.fga_restricted  = zone("Restricted Area", "FGA")
+            stats.fgm_restricted  = zone("Restricted Area", "FGM")
+            stats.fga_paint_nonra = zone("In The Paint (Non-RA)", "FGA")
+            stats.fgm_paint_nonra = zone("In The Paint (Non-RA)", "FGM")
+            stats.fga_mid         = zone("Mid-Range", "FGA")
+            stats.fgm_mid         = zone("Mid-Range", "FGM")
+            stats.pct_uast_mid    = zone("Mid-Range", "PCT_UAST_2PM")
+            stats.fga_lc3         = zone("Left Corner 3", "FGA")
+            stats.fgm_lc3         = zone("Left Corner 3", "FGM")
+            stats.fga_rc3         = zone("Right Corner 3", "FGA")
+            stats.fgm_rc3         = zone("Right Corner 3", "FGM")
+            stats.fga_atb3        = zone("Above the Break 3", "FGA")
+            stats.fgm_atb3        = zone("Above the Break 3", "FGM")
+
+            # Shot types summary
+            shot_types = client.parse_result_set(sh, "ShotTypeSummaryPlayerDashboard")
+            type_map = {r["GROUP_VALUE"]: r for r in shot_types}
+
+            def stype(name, field):
+                return float((type_map.get(name) or {}).get(field, 0) or 0)
+
+            stats.fga_alley_oop  = stype("Alley Oop", "FGA")
+            stats.fga_bank_shot  = stype("Bank Shot", "FGA")
+            stats.fga_dunk       = stype("Dunk", "FGA")
+            stats.fga_fadeaway   = stype("Fadeaway", "FGA")
+            stats.fga_finger_roll= stype("Finger Roll", "FGA")
+            stats.fga_hook       = stype("Hook Shot", "FGA")
+            stats.fga_jump_shot  = stype("Jump Shot", "FGA")
+            stats.fga_layup      = stype("Layup", "FGA")
+            stats.fga_tip        = stype("Tip Shot", "FGA")
+
+            # Shot type detail
+            detail = client.parse_result_set(sh, "ShotTypePlayerDashboard")
+
+            def detail_sum(*names):
+                total = 0.0
+                for r in detail:
+                    if any(n.lower() in r.get("GROUP_VALUE", "").lower() for n in names):
+                        total += float(r.get("FGA", 0) or 0)
+                return total
+
+            stats.fga_step_back    = detail_sum("Step Back")
+            stats.fga_driving_layup= detail_sum("Driving Layup", "Driving Finger Roll", "Driving Reverse Layup", "Running Layup", "Running Reverse Layup")
+            stats.fga_driving_dunk = detail_sum("Driving Dunk", "Driving Slam Dunk")
+            stats.fga_euro_step    = detail_sum("Euro Step")  # rare in older data
+            stats.fga_putback      = detail_sum("Putback", "Tip Shot")
+            # "Driving Jump shot" = mid-range pull-up off a drive (stops short of rim).
+            # Include alongside traditional pull-ups for Attack Strong denominator.
+            stats.fga_pullup       = detail_sum("Pullup Jump", "Pullup Bank", "Driving Jump", "Running Jump")
+            stats.fga_floater      = detail_sum("Floating Jump", "Running Hook")
+            stats.fga_turnaround          = detail_sum("Turnaround")
+            stats.fga_turnaround_fadeaway = detail_sum("Turnaround Fadeaway")
+
+            # Unassisted 2PT generic "Jump Shot" — pull-ups not caught by the labeled subtypes.
+            # For pre-2013, the NBA labels many pull-up mid-range shots as plain "Jump Shot"
+            # rather than "Pullup Jump Shot". FG2A × PCT_UAST_2PM extracts the self-created portion.
+            # Use exact GROUP_VALUE match to avoid capturing labeled subtypes (Pullup, Driving, etc.).
+            jump_row = next((r for r in detail if r.get("GROUP_VALUE") == "Jump Shot"), None)
+            if jump_row:
+                js_fga  = float(jump_row.get("FGA", 0) or 0)
+                js_fg3a = float(jump_row.get("FG3A", 0) or 0)
+                js_fg2a = max(0.0, js_fga - js_fg3a)
+                js_pct_uast = float(jump_row.get("PCT_UAST_2PM", 0) or 0)
+                stats.fga_uast_2pt_jump = js_fg2a * js_pct_uast  # season total; normalized below
+
+            # Assisted / Unassisted split — available for all seasons.
+            # Note: NBA API has a typo in the result set name ("Assited").
+            # FGA column = FGM (only makes are tracked here, not attempts).
+            assisted_rows = client.parse_result_set(sh, "AssitedShotPlayerDashboard")
+            for row in assisted_rows:
+                gv = row.get("GROUP_VALUE", "")
+                if gv == "Assisted":
+                    stats.assisted_fgm = float(row.get("FGM", 0) or 0)
+                elif gv == "Unassisted":
+                    stats.unassisted_fgm = float(row.get("FGM", 0) or 0)
+
+        except Exception as e:
+            print(f"  Warning: could not parse shooting splits ({e})")
+
+    # ── 3. Shot chart (directional breakdowns) ────────────────────────────
+    chart = raw.get("shot_chart")
+    if chart:
+        try:
+            shots = client.parse_result_set(chart, "Shot_Chart_Detail")
+
+            # Aggregate shot attempts by (zone_basic, zone_area).
+            # API returns area with abbreviation suffix e.g. "Left Side(L)" — strip it.
+            from collections import defaultdict
+            zone_counts = defaultdict(int)
+            for s in shots:
+                basic = s.get("SHOT_ZONE_BASIC", "")
+                area = s.get("SHOT_ZONE_AREA", "")
+                area = area.split("(")[0].strip() if "(" in area else area
+                zone_counts[(basic, area)] += 1
+
+            def zc(basic, area):
+                return float(zone_counts.get((basic, area), 0))
+
+            # Mid-range directional
+            stats.mid_left        = zc("Mid-Range", "Left Side")
+            stats.mid_left_center = zc("Mid-Range", "Left Side Center")
+            stats.mid_center      = zc("Mid-Range", "Center")
+            stats.mid_right_center= zc("Mid-Range", "Right Side Center")
+            stats.mid_right       = zc("Mid-Range", "Right Side")
+
+            # Close shots (Restricted Area + Paint Non-RA) directional
+            stats.close_left   = (zc("Restricted Area", "Left Side")
+                                  + zc("In The Paint (Non-RA)", "Left Side"))
+            stats.close_center = (zc("Restricted Area", "Center")
+                                  + zc("In The Paint (Non-RA)", "Center"))
+            stats.close_right  = (zc("Restricted Area", "Right Side")
+                                  + zc("In The Paint (Non-RA)", "Right Side"))
+
+            # 3PT directional (corners go to Left/Right, above-break zones to LCenter/Center/RCenter)
+            stats.three_left        = (zc("Left Corner 3", "Left Side")
+                                       + zc("Above the Break 3", "Left Side"))
+            stats.three_left_center = zc("Above the Break 3", "Left Side Center")
+            stats.three_center      = zc("Above the Break 3", "Center")
+            stats.three_right_center= zc("Above the Break 3", "Right Side Center")
+            stats.three_right       = (zc("Right Corner 3", "Right Side")
+                                       + zc("Above the Break 3", "Right Side"))
+
+            print(f"  Shot chart: {len(shots)} shots, {len(zone_counts)} zones")
+            print(f"  3PT zones: L={stats.three_left:.0f} LC={stats.three_left_center:.0f} "
+                  f"C={stats.three_center:.0f} RC={stats.three_right_center:.0f} R={stats.three_right:.0f}")
+            print(f"  Mid zones: L={stats.mid_left:.0f} LC={stats.mid_left_center:.0f} "
+                  f"C={stats.mid_center:.0f} RC={stats.mid_right_center:.0f} R={stats.mid_right:.0f}")
+
+        except Exception as e:
+            print(f"  Warning: could not parse shot chart ({e})")
 
     # ── 4. Synergy play types ─────────────────────────────────────────────
     # FETCH_SYNERGY=False: endpoint is defunct server-side (HTTP 500 all seasons).
     # Skip calls entirely and go straight to fallbacks.
-    if FETCH_SYNERGY:
-        synergy_map = {
-            "Isolation": ("synergy_iso", "synergy_iso_ppp"),
-            "Postup": ("synergy_post", "synergy_post_ppp"),
-            "Spotup": ("synergy_spotup", None),
-            "OffScreen": ("synergy_offscreen", None),
-            "Transition": ("synergy_transition", None),
-            "Cut": ("synergy_cut", None),
-            "PRBallHandler": ("synergy_pr_ball", None),
-            "PRRollman": ("synergy_pr_roll", None),
-            "OffRebound": ("synergy_off_reb", None),
-        }
-
-        for play_type, (poss_attr, ppp_attr) in synergy_map.items():
-            try:
-                data = client.fetch_synergy_play_type(play_type, season)
-                rows = client.parse_result_set(data, "SynergyPlayType")
-                # Find this player's row
-                player_row = next(
-                    (r for r in rows if str(r.get("PLAYER_ID", "")) == str(player_id)),
-                    None
-                )
-                if player_row:
-                    poss = float(player_row.get("POSS", 0) or 0)
-                    setattr(stats, poss_attr, poss)
-                    if ppp_attr:
-                        setattr(stats, ppp_attr, float(player_row.get("PPP", 0) or 0))
-            except Exception as e:
-                print(f"  Warning: could not fetch synergy {play_type} ({e})")
+    # (If synergy data is ever restored, populate raw["synergy"] in _fetch_raw
+    # and parse it here before the fallback check below.)
 
     # ── 5. Pull-up shooting ───────────────────────────────────────────────
     # playerdashptshots / GeneralShooting result set has:
@@ -416,19 +429,20 @@ def collect(player_id: int, season: str, season_type: str = "Regular Season",
     #   SHOT_TYPE="Catch and Shoot"→ FGA (all catch-and-shoot attempts)
     # Values are already PerGame (this endpoint honors PerMode correctly).
     # Only available from 2013-14 onward; older seasons return empty rows.
-    try:
-        pu = client.fetch_pullup_shooting(player_id, season, season_type)
-        general_rows = client.parse_result_set(pu, "GeneralShooting")
-        gen_map = {r.get("SHOT_TYPE", ""): r for r in general_rows}
+    pu = raw.get("pullup_shooting")
+    if pu:
+        try:
+            general_rows = client.parse_result_set(pu, "GeneralShooting")
+            gen_map = {r.get("SHOT_TYPE", ""): r for r in general_rows}
 
-        def g_field(shot_type, field):
-            return float((gen_map.get(shot_type) or {}).get(field, 0) or 0)
+            def g_field(shot_type, field):
+                return float((gen_map.get(shot_type) or {}).get(field, 0) or 0)
 
-        stats.pullup_2pt_fga  = g_field("Pull Ups", "FG2A")
-        stats.pullup_3pt_fga  = g_field("Pull Ups", "FG3A")
-        stats.catch_shoot_fga = g_field("Catch and Shoot", "FGA")
-    except Exception as e:
-        print(f"  Warning: could not fetch pull-up shooting ({e})")
+            stats.pullup_2pt_fga  = g_field("Pull Ups", "FG2A")
+            stats.pullup_3pt_fga  = g_field("Pull Ups", "FG3A")
+            stats.catch_shoot_fga = g_field("Catch and Shoot", "FGA")
+        except Exception as e:
+            print(f"  Warning: could not parse pull-up shooting ({e})")
 
     # ── 6. Synergy fallback check ─────────────────────────────────────────────
     synergy_all_zero = not FETCH_SYNERGY or all([
@@ -485,10 +499,31 @@ def collect(player_id: int, season: str, season_type: str = "Regular Season",
     if synergy_all_zero:
         _compute_synergy_fallbacks(stats)
 
-    if use_cache:
-        _save_cache(stats, player_id, season, season_type)
-
     return stats
+
+
+def collect(player_id: int, season: str, season_type: str = "Regular Season",
+            use_cache: bool = True) -> PlayerStats:
+    """Fetch all data and return a populated PlayerStats.
+
+    Raw API responses are cached to cache/{player_id}_{season}_{type}.json so
+    repeated runs skip all network calls. Processing (normalization + synergy
+    fallbacks) always runs fresh — formula changes take effect without clearing
+    the cache. Pass use_cache=False (or --no-cache on the CLI) to force a fresh
+    API fetch and overwrite the cached entry.
+    """
+    if use_cache:
+        raw = _load_cache(player_id, season, season_type)
+        if raw is not None:
+            print(f"  Loaded from cache (pass --no-cache to refresh)")
+            return _process_raw(raw)
+
+    raw = _fetch_raw(player_id, season, season_type)
+
+    if use_cache:
+        _save_cache(raw, player_id, season, season_type)
+
+    return _process_raw(raw)
 
 
 def _compute_synergy_fallbacks(stats: PlayerStats) -> None:
@@ -532,7 +567,7 @@ def _compute_synergy_fallbacks(stats: PlayerStats) -> None:
     # FGA-to-possession multiplier ~1/0.55 (many post poss end in FT draw or TOV, not FGA).
     if stats.synergy_post == 0:
         btb_vol = stats.fga_hook + stats.fga_turnaround
-        post_affinity = min(1.0, btb_vol / max(0.5, stats.fga_pullup))
+        post_affinity = min(1.0, btb_vol / max(1.5, stats.fga_pullup))
         fu_uast = stats.fga_uast_2pt_jump * 0.45 * post_affinity
         post_shot_vol = btb_vol + fu_uast
         if post_shot_vol > 0.05:

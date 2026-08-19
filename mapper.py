@@ -204,10 +204,12 @@ def compute(stats: PlayerStats, trace: list[str] | None = None) -> dict:
 
     # Spot Up Mid-Range — cap 55
     # 2013-14+: catch_shoot_fga is directly measured; split by cs_mid_frac.
-    # Pre-2013: use PCT_UAST_2PM to derive assisted 2PT makes, then weight by mid-range share
-    # of 2PT attempts. This is more direct than the old 3PT-anchored synergy_spotup proxy,
-    # which under-estimated catch-mid for heavy mid-range shooters like Dirk. Scale ceiling
-    # is higher (4.5 vs 3.0) because assisted_2pm × mid_share produces larger raw values.
+    # Pre-2013: use the mid-range zone-specific PCT_UAST_2PM from ShotAreaPlayerDashboard.
+    # This is more accurate than the overall PCT_UAST_2PM, which conflates close-shot
+    # self-creation (drives/layups) with mid-range creation and understates catch-and-shoot
+    # mid-range for wings who both attack the rim and receive mid-range passes.
+    # Raw = fgm_mid × (1 - pct_uast_mid) = mid-range makes that came off assists. Ceiling 2.0
+    # (makes, not FGA) is calibrated so ~2 assisted mid makes/game → cap.
     if stats.catch_shoot_fga > 0:
         _spot_up_mid_raw = stats.catch_shoot_fga * cs_mid_frac
         _emit("Jump Shooting:Spot Up Shot Mid-Range",
@@ -216,17 +218,13 @@ def compute(stats: PlayerStats, trace: list[str] | None = None) -> dict:
               result=_scale(_spot_up_mid_raw, 0, 3.0, 5, 55))
         t["Jump Shooting:Spot Up Shot Mid-Range"] = _scale(_spot_up_mid_raw, 0, 3.0, 5, 55)
     else:
-        _two_pt_fgm      = max(stats.fgm - stats.fg3m, 0.0)
-        _assisted_2pm    = _two_pt_fgm * (1.0 - stats.pct_uast_2pm)
-        _total_2pt_fga   = max(fga - three_fga, 1.0)
-        _mid_2pt_share   = stats.fga_mid / _total_2pt_fga
-        _spot_up_mid_raw = _assisted_2pm * _mid_2pt_share
+        _spot_up_mid_raw = stats.fgm_mid * (1.0 - stats.pct_uast_mid)
         _emit("Jump Shooting:Spot Up Shot Mid-Range",
-              path="pre-2013", fgm=f"{stats.fgm:.2f}", pct_uast_2pm=f"{stats.pct_uast_2pm:.3f}",
-              assisted_2pm=f"{_assisted_2pm:.3f}", mid_2pt_share=f"{_mid_2pt_share:.3f}",
+              path="pre-2013", fgm_mid=f"{stats.fgm_mid:.3f}",
+              pct_uast_mid=f"{stats.pct_uast_mid:.3f}",
               spot_up_mid_raw=f"{_spot_up_mid_raw:.3f}",
-              result=_scale(_spot_up_mid_raw, 0, 4.5, 5, 55))
-        t["Jump Shooting:Spot Up Shot Mid-Range"] = _scale(_spot_up_mid_raw, 0, 4.5, 5, 55)
+              result=_scale(_spot_up_mid_raw, 0, 2.0, 5, 55))
+        t["Jump Shooting:Spot Up Shot Mid-Range"] = _scale(_spot_up_mid_raw, 0, 2.0, 5, 55)
     _emit("Jump Shooting:Off Screen Shot Mid-Range",
           synergy_offscreen=f"{stats.synergy_offscreen:.3f}", cs_mid_frac=f"{cs_mid_frac:.3f}",
           raw=f"{stats.synergy_offscreen * cs_mid_frac:.3f}",
