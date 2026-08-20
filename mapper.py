@@ -204,12 +204,11 @@ def compute(stats: PlayerStats, trace: list[str] | None = None) -> dict:
 
     # Spot Up Mid-Range — cap 55
     # 2013-14+: catch_shoot_fga is directly measured; split by cs_mid_frac.
-    # Pre-2013: use the mid-range zone-specific PCT_UAST_2PM from ShotAreaPlayerDashboard.
-    # This is more accurate than the overall PCT_UAST_2PM, which conflates close-shot
-    # self-creation (drives/layups) with mid-range creation and understates catch-and-shoot
-    # mid-range for wings who both attack the rim and receive mid-range passes.
-    # Raw = fgm_mid × (1 - pct_uast_mid) = mid-range makes that came off assists. Ceiling 2.0
-    # (makes, not FGA) is calibrated so ~2 assisted mid makes/game → cap.
+    # Pre-2013: raw = fga_mid (total mid-range FGA per game).
+    #   A player who attempts a high volume of mid-range shots will take the spot-up mid
+    #   when the opportunity arises, regardless of how those shots are usually created.
+    #   No assisted-fraction discount: pct_uast_mid reflects shot origin, not willingness.
+    #   high_raw=7.5: Dirk (9.14/g) → capped at 55; Wade (4.96/g) → 38; Deng (3.80/g) → 30.
     if stats.catch_shoot_fga > 0:
         _spot_up_mid_raw = stats.catch_shoot_fga * cs_mid_frac
         _emit("Jump Shooting:Spot Up Shot Mid-Range",
@@ -218,13 +217,12 @@ def compute(stats: PlayerStats, trace: list[str] | None = None) -> dict:
               result=_scale(_spot_up_mid_raw, 0, 3.0, 5, 55))
         t["Jump Shooting:Spot Up Shot Mid-Range"] = _scale(_spot_up_mid_raw, 0, 3.0, 5, 55)
     else:
-        _spot_up_mid_raw = stats.fgm_mid * (1.0 - stats.pct_uast_mid)
+        _spot_up_mid_raw = stats.fga_mid
         _emit("Jump Shooting:Spot Up Shot Mid-Range",
-              path="pre-2013", fgm_mid=f"{stats.fgm_mid:.3f}",
-              pct_uast_mid=f"{stats.pct_uast_mid:.3f}",
+              path="pre-2013", fga_mid=f"{stats.fga_mid:.3f}",
               spot_up_mid_raw=f"{_spot_up_mid_raw:.3f}",
-              result=_scale(_spot_up_mid_raw, 0, 2.0, 5, 55))
-        t["Jump Shooting:Spot Up Shot Mid-Range"] = _scale(_spot_up_mid_raw, 0, 2.0, 5, 55)
+              result=_scale(_spot_up_mid_raw, 0, 7.5, 5, 55))
+        t["Jump Shooting:Spot Up Shot Mid-Range"] = _scale(_spot_up_mid_raw, 0, 7.5, 5, 55)
     _emit("Jump Shooting:Off Screen Shot Mid-Range",
           synergy_offscreen=f"{stats.synergy_offscreen:.3f}", cs_mid_frac=f"{cs_mid_frac:.3f}",
           raw=f"{stats.synergy_offscreen * cs_mid_frac:.3f}",
@@ -393,12 +391,14 @@ def compute(stats: PlayerStats, trace: list[str] | None = None) -> dict:
     t["Layups And Dunks:Standing Dunk"] = _scale(dunk_pref, 0, 1.0, 5, 85)
 
     # Driving Dunk  — cap 80
+    # Definition: preference for dunk over layup when a viable dunk window exists.
+    # Proxy: total dunk volume (per game). A player who dunks frequently IS someone
+    # who goes for the dunk when the window opens — no penalty for also doing layups
+    # in other situations (traffic, off-balance, transition geometry, etc.).
     _emit("Layups And Dunks:Driving Dunk",
           fga_driving_dunk=f"{stats.fga_driving_dunk:.3f}", fga_dunk=f"{stats.fga_dunk:.3f}",
-          _driving_dunk_est=f"{_driving_dunk_est:.3f}",
-          pct=f"{_pct(_driving_dunk_est, fga):.4f}",
-          result=_scale(_pct(_driving_dunk_est, fga), 0, 0.15, 5, 80))
-    t["Layups And Dunks:Driving Dunk"] = _scale(_pct(_driving_dunk_est, fga), 0, 0.15, 5, 80)
+          result=_scale(stats.fga_dunk, 0.05, 0.80, 5, 80))
+    t["Layups And Dunks:Driving Dunk"] = _scale(stats.fga_dunk, 0.05, 0.80, 5, 80)
 
     # Flashy Dunk  — cap 70
     # Sub-selection preference after choosing to dunk (flashy vs. safe animation).
@@ -572,12 +572,14 @@ def compute(stats: PlayerStats, trace: list[str] | None = None) -> dict:
     # Pure faceup_iso inverse: the only available signal that directly measures "how often
     # does this player create via dribble moves." High ISO = frequently adds moves = low No Move.
     # Calibrated so faceup_iso ≈ 0 → 90 (cap, drives straight always);
-    #              faceup_iso ≈ 10 → 10 (out_low, almost always adds a move).
+    #              faceup_iso ≈ 10 → 35 (out_low, floor). Even elite ISO players rarely add a
+    # mid-drive counter on every single drive — Rose-level creators still drive straight most of
+    # the time, so floor is 35 rather than 10.
     no_move_raw = max(0.0, 1.0 - faceup_iso / 10.0)
     _emit("Driving:No Driving Dribble Move",
           faceup_iso=f"{faceup_iso:.3f}", no_move_raw=f"{no_move_raw:.3f}",
-          result=_scale(no_move_raw, 0, 1.0, 10, 90))
-    t["Driving:No Driving Dribble Move"] = _scale(no_move_raw, 0, 1.0, 10, 90)
+          result=_scale(no_move_raw, 0, 1.0, 35, 90))
+    t["Driving:No Driving Dribble Move"] = _scale(no_move_raw, 0, 1.0, 35, 90)
 
     # Dribble-move suppression: when No Driving Dribble Move is high (≥70), the player
     # almost never adds a counter move mid-drive. Cap all individual move tendencies at 5
@@ -714,7 +716,7 @@ def compute(stats: PlayerStats, trace: list[str] | None = None) -> dict:
     # Freelance:Shot but inverted — 0 discount at 12 FGA, 30% discount at 24+ FGA.
     dish_raw = stats.ast_pct * 15 + post_freq * 0.10
     _fga_vol = max(0.0, min(1.0, (stats.fga - 12.0) / 12.0))
-    dish_raw *= (1.0 - _fga_vol * 0.55)
+    dish_raw *= (1.0 - _fga_vol * 0.30)
     _emit("Passing:Dish To Open Man",
           ast_pct=f"{stats.ast_pct:.3f}", post_freq=f"{post_freq:.3f}",
           fga_vol=f"{_fga_vol:.3f}", dish_raw=f"{dish_raw:.3f}",

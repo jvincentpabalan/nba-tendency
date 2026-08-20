@@ -34,6 +34,7 @@ CASES = [
             "Drive":              (70, 75),   # at cap — elite rim attacker
             "Shot Under Basket":  (45, 60),   # primary interior threat
             "Spot Up Shot Three": (28, 40),   # takes some spot-up 3s
+            "Dish To Open Man":   (40, 45),   # elite drive-and-kick; 37.2% AST_PCT, 30% FGA discount cap
         },
     ),
     (
@@ -55,13 +56,21 @@ CASES = [
         },
     ),
     (
+        "Wade 2010-11",
+        2548, "2010-11", "Regular Season",
+        {
+            "Spot Up Shot Mid-Range": (35, 42),   # high mid-range volume (4.96 FGA/g); raw = fga_mid, no discount
+            "Drive":                  (70, 75),   # at cap — elite rim attacker
+        },
+    ),
+    (
         "Deng 2010-11",
         2736, "2010-11", "Regular Season",
         {
             "Shot Three":           (35, 44),   # above-avg but not specialist; rim_vol discount
             "Spot Up Shot Three":   (40, 52),   # high C&S rate but not at cap (high_raw=8.0)
             "Drive":                (35, 48),   # versatile wing
-            "Spot Up Shot Mid-Range": (28, 42), # receives mid-range passes; 76% of mid makes assisted
+            "Spot Up Shot Mid-Range": (28, 42), # receives mid-range passes; 76% assisted; fga_mid × sqrt(assisted_frac)
         },
     ),
     (
