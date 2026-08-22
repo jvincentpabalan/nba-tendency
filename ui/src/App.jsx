@@ -37,6 +37,8 @@ export default function App() {
 
   const [rosterPlayers, setRosterPlayers] = useState([])
   const [activePlayerId, setActivePlayerId] = useState(null)
+  const [generatingAll, setGeneratingAll] = useState(false)
+  const [generateAllProgress, setGenerateAllProgress] = useState(null) // { current, total } | null
 
   // All seasons sent to the API (primary + extras).
   const allSeasons = [season, ...extraSeasons]
@@ -131,6 +133,50 @@ export default function App() {
     }
   }
 
+  async function handleGenerateAll() {
+    if (!canGenerateAll) return
+    setGeneratingAll(true)
+    setError(null)
+    const total = roster.length
+    for (let i = 0; i < total; i++) {
+      const player = roster[i]
+      setGenerateAllProgress({ current: i + 1, total })
+      try {
+        const body = {
+          player_id: player.player_id,
+          player_name: player.player_name,
+          seasons: allSeasons,
+          season_type: blendEnabled ? 'Regular Season' : seasonType,
+          blend_pct: blendEnabled ? blendPct : null,
+        }
+        const res = await fetch('/api/generate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body),
+        })
+        if (!res.ok) {
+          const b = await res.json().catch(() => ({}))
+          throw new Error(`${player.player_name}: ${b.detail || 'Generation failed'}`)
+        }
+        const result = await res.json()
+        setRosterPlayers(prev => {
+          const exists = prev.findIndex(p => p.result._player_id === result._player_id)
+          if (exists !== -1) {
+            const next = [...prev]
+            next[exists] = { ...next[exists], result }
+            return next
+          }
+          return [...prev, { result, overrides: {} }]
+        })
+        setActivePlayerId(result._player_id)
+      } catch (e) {
+        setError(e.message)
+      }
+    }
+    setGeneratingAll(false)
+    setGenerateAllProgress(null)
+  }
+
   function handleNormalize() {
     if (rosterPlayers.length < 2) return
     const touchRaws = rosterPlayers.map(p => p.result._touch_raw ?? 0)
@@ -204,7 +250,8 @@ export default function App() {
     setSelectedPlayer(player || null)
   }
 
-  const canGenerate = !!selectedPlayer && !generating
+  const canGenerate = !!selectedPlayer && !generating && !generatingAll
+  const canGenerateAll = !!selectedTeam && roster.length > 0 && !generating && !generatingAll
   const hasRoster = rosterPlayers.length > 0
   const canNormalize = rosterPlayers.length >= 2
   const activePlayer = rosterPlayers.find(p => p.result._player_id === activePlayerId) ?? null
@@ -352,11 +399,26 @@ export default function App() {
             ) : 'Generate Tendencies'}
           </button>
 
-          {generating && (
+          <button
+            className={styles.generateAllBtn}
+            onClick={handleGenerateAll}
+            disabled={!canGenerateAll}
+          >
+            {generatingAll ? (
+              <>
+                <span className={styles.spinner} />
+                {generateAllProgress
+                  ? `${generateAllProgress.current} / ${generateAllProgress.total}`
+                  : 'Starting…'}
+              </>
+            ) : 'Generate Entire Roster'}
+          </button>
+
+          {(generating || generatingAll) && (
             <p className={styles.hint}>
-              Fetching stats from NBA.com
-              {allSeasons.length > 1 ? ` (${allSeasons.length} seasons…)` : ' (~15s)'}
-              {blendEnabled ? ' — RS + PO' : ''}
+              {generatingAll && generateAllProgress
+                ? `${generateAllProgress.current} of ${generateAllProgress.total} players — fetching from NBA.com…`
+                : `Fetching stats from NBA.com${allSeasons.length > 1 ? ` (${allSeasons.length} seasons…)` : ' (~15s)'}${blendEnabled ? ' — RS + PO' : ''}`}
             </p>
           )}
 
